@@ -235,7 +235,8 @@
     });
     byId('tk-actions').innerHTML = groups.map(function (g) {
       return '<div><h4 class="lbl">' + esc(g) + '</h4>' + seen[g].map(function (a) {
-        return '<button type="button" data-action="' + esc(a.name) + '" aria-current="' + (a.name === state.action) + '">' +
+        return '<button type="button" data-action="' + esc(a.name) + '" aria-current="' + (a.name === state.action) + '"' +
+          (a.status === 'implemented' ? ' class="live" title="Runs in the kernel"' : '') + '>' +
           '<span>' + esc(a.name) + '</span><span class="eff e-' + a.effect + '">' + a.effect + '</span></button>';
       }).join('') + '</div>';
     }).join('');
@@ -249,7 +250,8 @@
       '<div class="adetail-head"><h3>' + esc(a.name) + '</h3>' +
       '<div class="chips"><span class="eff e-' + a.effect + '">' + a.effect + '</span>' +
       '<span class="chip">costs ' + a.time_cost_s + ' s of world time</span>' +
-      '<span class="chip s-planned"><i></i>' + esc(a.status) + '</span>' +
+      (a.status === 'implemented' ? '<span class="chip s-done"><i></i>runs in the kernel</span>'
+                                    : '<span class="chip s-planned"><i></i>declared, not running yet</span>') +
       '<span class="chip">' + a.roles.map(esc).join(' · ') + '</span></div>' +
       '<p>' + rich(a.summary) + '</p>' +
       (a.description ? '<p class="dim">' + rich(a.description) + '</p>' : '') +
@@ -260,7 +262,7 @@
         (ex ? '<button class="btn ghost small" type="button" id="tk-fill">Fill with the example</button>' : '') + '</div>' +
         '<div id="tk-out"></div></form></div>' +
         '<div class="pane"><h4 class="lbl">Response</h4>' +
-        (ex ? '<p class="note">Example response. The world is not connected yet, so nothing is computed here.</p>' +
+        (ex ? '<p class="note">Example response. This page does not run the world, so nothing is computed here.</p>' +
               (ex.note ? '<p class="note">' + rich(ex.note) + '</p>' : '') +
               '<pre class="json">' + pretty(ex.response) + '</pre>'
             : '<p class="note">No example yet. The response schema is below.</p>') + '</div>' +
@@ -282,7 +284,7 @@
       }
       var call = { action: a.name, payload: r.payload };
       if (a.effect === 'write') call.request_id = requestId();
-      out.innerHTML = '<p class="note">This is the call a seat would send. It is not sent: the world is not connected yet.</p>' +
+      out.innerHTML = '<p class="note">This is the call a seat would send. It is not sent: this page does not run the world.</p>' +
         '<pre class="json">' + pretty(call) + '</pre>';
     });
     var fill = byId('tk-fill');
@@ -290,6 +292,8 @@
   }
   function renderStatic() {
     byId('tk-version').textContent = TK.version;
+    byId('tk-live').textContent = TK.actions.filter(function (x) { return x.status === 'implemented'; }).length;
+    byId('tk-total').textContent = TK.actions.length;
     byId('tk-conventions').innerHTML = Object.keys(TK.conventions).map(function (k) {
       return '<dt>' + esc(k) + '</dt><dd>' + rich(TK.conventions[k]) + '</dd>';
     }).join('');

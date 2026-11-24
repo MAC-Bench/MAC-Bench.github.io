@@ -52,12 +52,15 @@ def main() -> None:
         code = pathlib.Path(sys.argv[2]) / "build"
         shutil.copy(code / "interface" / "ticketing.json", HERE / "data" / "ticketing.json")
         shutil.copy(code / "world" / "ticketing_dev.json", HERE / "data" / "ticketing_world.json")
+        shutil.copy(code / "demo" / "ticketing_session.json", HERE / "data" / "ticketing_session.json")
     ticketing = json.loads((HERE / "data" / "ticketing.json").read_text(encoding="utf-8"))
     world = json.loads((HERE / "data" / "ticketing_world.json").read_text(encoding="utf-8"))
+    session = json.loads((HERE / "data" / "ticketing_session.json").read_text(encoding="utf-8"))
     progress = json.loads((SRC / "progress.json").read_text(encoding="utf-8"))
     css = (SRC / "styles.css").read_text(encoding="utf-8")
     js = (SRC / "app.js").read_text(encoding="utf-8")
     world_js = (SRC / "world.js").read_text(encoding="utf-8")
+    session_js = (SRC / "session.js").read_text(encoding="utf-8")
     body = (SRC / "body.html").read_text(encoding="utf-8")
     for marker, name in (("<!--FIG_LAYERS-->", "fig_layers.html"), ("<!--FIG_RUNTIME-->", "fig_runtime.html")):
         fig = (SRC / "figs" / name).read_text(encoding="utf-8").strip()
@@ -73,7 +76,8 @@ def main() -> None:
     tail = (f'<script type="application/json" id="data-ticketing">{embed(ticketing)}</script>\n'
             f'<script type="application/json" id="data-progress">{embed(progress)}</script>\n'
             f'<script type="application/json" id="data-world">{embed(world)}</script>\n'
-            f"<script>\n{js}\n</script>\n<script>\n{world_js}\n</script>\n")
+            f'<script type="application/json" id="data-session">{embed(session)}</script>\n'
+            f"<script>\n{js}\n</script>\n<script>\n{world_js}\n</script>\n<script>\n{session_js}\n</script>\n")
     head_common = f'<link rel="stylesheet" href="{FONTS}">\n<style>\n{css}\n</style>\n'
 
     page = ("<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
@@ -90,7 +94,7 @@ def main() -> None:
     assert not check.errors and not check.stack, (check.errors[:3], check.stack)
     ids = re.findall(r'\sid="([^"{}+]+)"', body)
     assert len(ids) == len(set(ids)), [x for x in ids if ids.count(x) > 1]
-    for needed in re.findall(r"byId\('([^']+)'\)", js + world_js):
+    for needed in re.findall(r"byId\('([^']+)'\)", js + world_js + session_js):
         assert needed in ids or needed.startswith(("tk-fill", "tk-form", "tk-out")), needed
 
     (HERE / "index.html").write_text(page, encoding="utf-8")

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-23",
+  "updated": "2026-11-24",
   "groups": [
     {
       "id": "foundations",
@@ -52,14 +52,37 @@
           ]
         },
         {
-          "id": "design-v01",
-          "title": "Design revision after the review",
+          "id": "spec-kernel",
+          "title": "Kernel specification: scheduling, termination, sealing",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "Seat and episode state machines; the eleven steps a call goes through, each with its error",
+            "Clock rules: every call costs world time, waiting advances it, scripted seats act inside events",
+            "Event order by time, priority and id; half-open validity windows",
+            "Finishing hands back control but does not stop the world before the observation end",
+            "A sealed, hash-chained record that is verified by replaying it from the initial world"
+          ],
+          "where": [
+            "docs/spec/kernel.md in the code repository"
+          ],
+          "checked": [
+            "Each rule has a test on a toy domain in tests/test_kernel.py"
+          ],
+          "open": [
+            "Turn-taking between several live agents is not specified yet",
+            "This answers three of the review's blocking issues at kernel level; the verifier container is still to come"
+          ]
+        },
+        {
+          "id": "spec-scoring",
+          "title": "Scoring contract per task family",
           "status": "planned",
           "plan": [
-            "A scoring contract per task family, replacing the single normalised score",
-            "A state machine for scheduling, termination and what happens after a seat finishes",
-            "Trusted sealing of world state and event log before verification",
-            "Corrected rules: the 24-hour cancellation is the agency's own policy; California claim deadlines run from their real triggers"
+            "Written together with the role-card format, because both define what a seat is asked to achieve",
+            "Per family and tested role: legal outcomes, raw utility, a reachable reference, and what happens when there is nothing to gain",
+            "No single normalised score across families"
           ]
         }
       ]
@@ -133,26 +156,59 @@
         {
           "id": "tk-kernel",
           "title": "Kernel: state, logical clock, event log",
-          "status": "next",
-          "plan": [
-            "Actions validated, applied atomically and logged with a global sequence number",
-            "The clock advances with every call; events at one instant have a fixed order",
-            "Replay from the log reproduces the final state"
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "One dispatcher for every call: role check, schema check, idempotency, clock, events, handler, commit, log",
+            "A failed write is rolled back completely and still costs its world time",
+            "Idempotent writes by request_id, per seat",
+            "Message board at run time: recipients only, typed attachments checked, read cursor, waiting",
+            "Scripted seats as controllers that react to deliveries and act inside scheduled events",
+            "Hash-chained log, sealing after the episode closes, replay check"
+          ],
+          "where": [
+            "src/macbench/kernel/engine.py and errors.py; src/macbench/board/board.py",
+            "Ticketing page of this site: Kernel section, one recorded session"
+          ],
+          "checked": [
+            "12 kernel tests on a toy domain, 58 tests in total, all pass",
+            "Covered: reading in a loop cannot hold the clock; events fire before the call that reaches them; rollback; sequence numbers; idempotency; permissions; waiting and time-outs; finishing; observation end; identical logs from identical calls; tampering detected"
+          ],
+          "open": [
+            "Single process, one call at a time. Several live agents at once need turn-taking rules",
+            "No container or network layer yet: the kernel is a Python object"
           ]
         },
         {
           "id": "tk-read",
-          "title": "Search goes live: offers, fare rules, seat maps",
-          "status": "planned",
-          "plan": [
-            "search_flights, get_offer, get_seat_map and get_flight_status run against the world",
-            "The Ticketing page calls the same code in the browser"
+          "title": "Search runs in the kernel: offers, seat maps, pricing",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "12 of 30 actions run: list_airports, search_flights, get_offer, get_seat_map, get_flight_status, price_offer, get_my_profile, get_my_wallet, and the four board actions",
+            "Offers are stored when a search returns them and expire 20 minutes later; price_offer confirms the price and extends the expiry",
+            "An undeclared error code from a handler is treated as a kernel failure, so the error catalogue stays honest",
+            "A recorded session: the agent asks two scripted travellers, searches, prices, waits too long, finds the offer expired and searches again"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/service.py, controllers.py and demo.py",
+            "tools/export_demo.py writes the session shown on this site"
+          ],
+          "checked": [
+            "8 service tests, including expiry exactly at the expiry instant and the replay of the recorded session"
+          ],
+          "open": [
+            "search_policy has no policy documents yet",
+            "The 18 booking and after-booking actions return NOT_IMPLEMENTED",
+            "The site shows stored results; running the world in the browser is a separate item"
           ]
         },
         {
           "id": "tk-book",
           "title": "Booking: proposal, authorization, order, payment",
-          "status": "planned",
+          "status": "next",
           "plan": [
             "Hold and instant orders, split payments, single-use authorizations",
             "Price changes, expired offers and sold-out buckets as real failure paths"
@@ -261,6 +317,23 @@
           ],
           "open": [
             "The code repository is not pushed yet"
+          ]
+        },
+        {
+          "id": "site-session",
+          "title": "Recorded session and live-status markers",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "Kernel section on the Ticketing page: every log entry with time, seat, action, outcome and world-time cost",
+            "A green dot on each action that runs in the kernel"
+          ],
+          "where": [
+            "src/session.js in the site repository"
+          ],
+          "checked": [
+            "Scripts run without error in a JavaScript engine against a stub page. Not viewed in a real browser by the author"
           ]
         },
         {

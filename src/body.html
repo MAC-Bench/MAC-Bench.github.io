@@ -38,7 +38,7 @@
               <div><dt>Total</dt><dd>$651.96</dd></div>
             </dl>
           </div>
-          <div class="stub-side"><p class="lbl">Status</p><p class="state">World data generated</p></div>
+          <div class="stub-side"><p class="lbl">Status</p><p class="state">Search runs in the kernel</p></div>
         </a>
         <a class="stub" href="#insurance">
           <div class="stub-main">
@@ -161,13 +161,14 @@
       <div class="chips">
         <span class="chip s-done"><i></i>Interface v<span id="tk-version"></span> defined</span>
         <span class="chip s-done"><i></i>World data generated</span>
-        <span class="chip s-planned"><i></i>Actions not running yet</span>
+        <span class="chip s-done"><i></i><span id="tk-live"></span> of <span id="tk-total"></span> actions run in the kernel</span>
+        <span class="chip s-planned"><i></i>Booking not built yet</span>
       </div>
       <ol class="steps" aria-label="Steps towards a booking site people recognise">
         <li class="done">Interface</li>
         <li class="done">World data</li>
-        <li class="now">Live search</li>
-        <li>Booking</li>
+        <li class="done">Kernel and search</li>
+        <li class="now">Booking</li>
         <li>Disruptions</li>
         <li>Booking interface</li>
       </ol>
@@ -252,9 +253,21 @@
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
+        <p class="lbl">Kernel</p>
+        <h2>One recorded session, with the clock at work</h2>
+        <p id="s-meta"></p>
+        <p>Every call costs world time. The agent waits 25 minutes for an answer that never comes, and the offer it priced has expired. Open a row for the payload and the result.</p>
+      </div>
+      <div class="sess" id="s-list"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
         <p class="lbl">Interface</p>
         <h2>What each seat can do</h2>
-        <p>Every action is declared with its roles, effect, errors and world-time cost. The forms build a call but cannot send it yet.</p>
+        <p>Every action is declared with its roles, effect, errors and world-time cost. A green dot marks the actions that already run in the kernel. This page does not run the world, so the forms build a call without sending it.</p>
       </div>
       <div class="seg" id="tk-roles" role="group" aria-label="Role"></div>
       <p class="role-note" id="tk-role-note"></p>

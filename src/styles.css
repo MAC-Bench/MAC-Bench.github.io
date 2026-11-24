@@ -378,3 +378,26 @@ img { max-width: 100%; }
   .it-prices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .two-col { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ---------- recorded session ---------- */
+.sess { border-top: 1px solid var(--line-strong); }
+.sx { border-bottom: 1px solid var(--line); }
+.sx-row { display: grid; grid-template-columns: 78px 100px 150px minmax(0, 1fr) auto; gap: 2px 14px; align-items: baseline; padding: 9px 4px; font-size: 14.5px; }
+summary.sx-row { cursor: pointer; list-style: none; }
+summary.sx-row::-webkit-details-marker { display: none; }
+summary.sx-row:hover .act { text-decoration: underline; text-underline-offset: 3px; }
+.sx .t { font-family: var(--mono); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.sx .who, .sx .act { font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere; }
+.sx.world .who, .sx.world .act, .sx.world .sum { color: var(--muted); }
+.sx.scripted .who { color: var(--agent); }
+.sx.fail .sum b { color: var(--eval); font-family: var(--mono); font-size: 13px; }
+.sx .cost { font-size: 12.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sx .cost.jump { color: var(--signal-ink); background: var(--signal); padding: 0 6px; }
+.sx-body { padding: 4px 4px 16px 96px; display: grid; gap: 12px; min-width: 0; }
+.alist button.live span:first-child::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 7px; vertical-align: 1px; }
+@media (max-width: 900px) {
+  .sx-row { grid-template-columns: 78px minmax(0, 1fr) auto; }
+  .sx-row .act { grid-column: 2; }
+  .sx-row .sum { grid-column: 1 / -1; }
+  .sx-body { padding-left: 4px; }
+}

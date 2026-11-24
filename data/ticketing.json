@@ -89,7 +89,8 @@
    "NOT_PERMITTED": "This role or seat may not call the action on this object.",
    "NOT_FOUND": "No object with that identifier is visible to the caller.",
    "IDEMPOTENCY_CONFLICT": "The request_id was already used with a different payload.",
-   "EPISODE_CLOSED": "The episode has ended or this seat has finished."
+   "EPISODE_CLOSED": "The episode has ended or this seat has finished.",
+   "NOT_IMPLEMENTED": "The action is declared in the interface but does not run yet."
   },
   "domain": {
    "UNKNOWN_RECIPIENT": "A recipient is not a seat in this episode.",
@@ -176,7 +177,7 @@
    "time_cost_s": 10,
    "visibility": "",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "ListAirportsRequest",
    "response": "ListAirportsResponse"
   },
@@ -213,7 +214,7 @@
     "UNKNOWN_AIRPORT",
     "DATE_OUT_OF_RANGE"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "SearchFlightsRequest",
    "response": "SearchFlightsResponse"
   },
@@ -232,7 +233,7 @@
    "errors": [
     "OFFER_EXPIRED"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "OfferIdRequest",
    "response": "OfferResponse"
   },
@@ -251,7 +252,7 @@
    "errors": [
     "UNKNOWN_FLIGHT"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "SeatMapRequest",
    "response": "SeatMapResponse"
   },
@@ -270,7 +271,7 @@
    "errors": [
     "UNKNOWN_FLIGHT"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "FlightIdRequest",
    "response": "FlightStatusResponse"
   },
@@ -289,7 +290,7 @@
     "OFFER_EXPIRED",
     "SOLD_OUT"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "OfferIdRequest",
    "response": "PriceOfferResponse"
   },
@@ -597,7 +598,7 @@
    "time_cost_s": 10,
    "visibility": "",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "Empty",
    "response": "ProfileResponse"
   },
@@ -613,7 +614,7 @@
    "time_cost_s": 10,
    "visibility": "",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "Empty",
    "response": "WalletResponse"
   },
@@ -707,7 +708,7 @@
     "UNKNOWN_FACT_KEY",
     "ATTACHMENT_NOT_VISIBLE"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "SendMessageRequest",
    "response": "SendMessageResponse"
   },
@@ -724,7 +725,7 @@
    "time_cost_s": 10,
    "visibility": "Only messages addressed to this seat.",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "ReadInboxRequest",
    "response": "ReadInboxResponse"
   },
@@ -741,7 +742,7 @@
    "time_cost_s": 10,
    "visibility": "Only messages this seat sent or received.",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "MessageHistoryRequest",
    "response": "MessageHistoryResponse"
   },
@@ -758,7 +759,7 @@
    "time_cost_s": 10,
    "visibility": "",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "FinishRequest",
    "response": "FinishResponse"
   }
