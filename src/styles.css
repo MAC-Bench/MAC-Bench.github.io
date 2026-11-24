@@ -401,3 +401,6 @@ summary.sx-row:hover .act { text-decoration: underline; text-underline-offset: 3
   .sx-row .sum { grid-column: 1 / -1; }
   .sx-body { padding-left: 4px; }
 }
+
+.tickets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 900px) { .tickets { grid-template-columns: minmax(0, 1fr); } }

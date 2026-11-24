@@ -1,6 +1,6 @@
 {
  "domain": "ticketing",
- "version": "0.1",
+ "version": "0.2",
  "title": "Flight ticketing",
  "conventions": {
   "money": "Integer US cents. Field names end in `_cents`.",
@@ -298,7 +298,7 @@
    "name": "create_proposal",
    "group": "Booking",
    "summary": "Put a concrete plan in front of the travellers.",
-   "description": "A proposal names one offer per traveller and who pays how much. Travellers accept it and authorise against it. Creating a new proposal for the same travellers supersedes the open one.",
+   "description": "A proposal names one offer per traveller and who pays how much. The world adds the seat and bag fees and fixes each traveller's total. Travellers accept it and authorise against it. An offer priced for several passengers must be given to exactly that many travellers. Creating a new proposal for the same travellers supersedes the earlier one.",
    "roles": [
     "ota_agent"
    ],
@@ -309,9 +309,10 @@
     "UNKNOWN_PARTICIPANT",
     "OFFER_EXPIRED",
     "SOLD_OUT",
-    "INVALID_SPLIT"
+    "INVALID_SPLIT",
+    "SEAT_UNAVAILABLE"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "CreateProposalRequest",
    "response": "ProposalResponseModel"
   },
@@ -328,7 +329,7 @@
    "time_cost_s": 10,
    "visibility": "The agent and the travellers named in it.",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "ProposalIdRequest",
    "response": "ProposalResponseModel"
   },
@@ -336,7 +337,7 @@
    "name": "create_order",
    "group": "Booking",
    "summary": "Book an offer: ticket it now, or hold it unpaid.",
-   "description": "`instant` needs payments that sum to the total, each backed by an authorization whose subject is the proposal being carried out. `hold` takes the seats without payment until `payment_required_by`, if the fare allows it.",
+   "description": "`instant` carries out a proposal: it needs `proposal_id` and payments that sum to the travellers' totals, each backed by an authorization for that proposal, with one authorization from every passenger, even at zero. `hold` takes the seats without payment until `payment_required_by`, if the fare allows it. Seat and bag requests of the proposal are applied.",
    "roles": [
     "ota_agent"
    ],
@@ -349,6 +350,8 @@
     "PRICE_CHANGED",
     "SOLD_OUT",
     "HOLD_NOT_ALLOWED",
+    "PROPOSAL_NOT_OPEN",
+    "SEAT_UNAVAILABLE",
     "AUTH_REQUIRED",
     "AUTH_SCOPE_MISMATCH",
     "AUTH_EXPIRED",
@@ -358,7 +361,7 @@
     "PAYMENT_DECLINED",
     "INVALID_SPLIT"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "CreateOrderRequest",
    "response": "OrderResponse"
   },
@@ -366,7 +369,7 @@
    "name": "pay_order",
    "group": "Booking",
    "summary": "Pay a held order and issue the tickets.",
-   "description": "Each payment consumes one authorization whose subject is this order at its current version.",
+   "description": "Each payment consumes one authorization whose subject is this order at its current version. Every passenger must be among the grantors, even at zero.",
    "roles": [
     "ota_agent"
    ],
@@ -386,7 +389,7 @@
     "PAYMENT_DECLINED",
     "INVALID_SPLIT"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "PayOrderRequest",
    "response": "OrderResponse"
   },
@@ -403,7 +406,7 @@
    "time_cost_s": 10,
    "visibility": "The agent that created it, and travellers who are passengers or payers on it.",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "OrderIdRequest",
    "response": "OrderResponse"
   },
@@ -420,7 +423,7 @@
    "time_cost_s": 10,
    "visibility": "",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "Empty",
    "response": "ListOrdersResponse"
   },
@@ -447,7 +450,7 @@
     "PAYMENT_DECLINED",
     "INVALID_SPLIT"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "UpdateOrderServicesRequest",
    "response": "UpdateOrderServicesResponse"
   },
@@ -632,7 +635,7 @@
    "errors": [
     "PROPOSAL_NOT_OPEN"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "RespondToProposalRequest",
    "response": "ProposalResponseModel"
   },
@@ -652,7 +655,7 @@
     "PROPOSAL_NOT_OPEN",
     "INVALID_STATE"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "GrantAuthorizationRequest",
    "response": "AuthorizationResponse"
   },
@@ -670,7 +673,7 @@
    "errors": [
     "AUTH_CONSUMED"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "AuthorizationIdRequest",
    "response": "AuthorizationResponse"
   },
@@ -687,7 +690,7 @@
    "time_cost_s": 10,
    "visibility": "",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "ListAuthorizationsRequest",
    "response": "ListAuthorizationsResponse"
   },
@@ -2408,6 +2411,35 @@
      "title": "Status",
      "type": "string"
     },
+    "cancellation_reason": {
+     "anyOf": [
+      {
+       "enum": [
+        "hold_expired",
+        "cancelled"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Cancellation Reason"
+    },
+    "proposal_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "The proposal this order carried out, if any.",
+     "title": "Proposal Id"
+    },
     "created_by": {
      "title": "Created By",
      "type": "string"
@@ -3077,8 +3109,19 @@
     "fare_brand": {
      "$ref": "#/schemas/FareBrand"
     },
+    "fare_cents": {
+     "description": "The fare for this traveller, taxes and fees included.",
+     "title": "Fare Cents",
+     "type": "integer"
+    },
+    "services_cents": {
+     "default": 0,
+     "description": "Seat fee plus checked-bag fees, computed by the world.",
+     "title": "Services Cents",
+     "type": "integer"
+    },
     "total_cents": {
-     "description": "Amount in US cents (integer minor units).",
+     "description": "Fare plus services: what this traveller's ticket costs.",
      "title": "Total Cents",
      "type": "integer"
     },
@@ -3092,6 +3135,7 @@
       }
      ],
      "default": null,
+     "description": "Applies to the first flight of the itinerary.",
      "examples": [
       "14C"
      ],
@@ -3107,6 +3151,7 @@
     "seat",
     "offer_id",
     "fare_brand",
+    "fare_cents",
     "total_cents"
    ],
    "title": "ProposalItem",
@@ -4648,6 +4693,8 @@
        "seat": "traveler_a",
        "offer_id": "off_8c1d42",
        "fare_brand": "standard",
+       "fare_cents": 32598,
+       "services_cents": 0,
        "total_cents": 32598,
        "seat_request": "14A",
        "checked_bags": 0
@@ -4656,6 +4703,8 @@
        "seat": "traveler_b",
        "offer_id": "off_8c1d42",
        "fare_brand": "standard",
+       "fare_cents": 32598,
+       "services_cents": 0,
        "total_cents": 32598,
        "seat_request": "14B",
        "checked_bags": 0
@@ -4695,6 +4744,8 @@
        "seat": "traveler_a",
        "offer_id": "off_8c1d42",
        "fare_brand": "standard",
+       "fare_cents": 32598,
+       "services_cents": 0,
        "total_cents": 32598,
        "seat_request": "14A",
        "checked_bags": 0
@@ -4703,6 +4754,8 @@
        "seat": "traveler_b",
        "offer_id": "off_8c1d42",
        "fare_brand": "standard",
+       "fare_cents": 32598,
+       "services_cents": 0,
        "total_cents": 32598,
        "seat_request": "14B",
        "checked_bags": 0
@@ -4815,6 +4868,8 @@
      "content_digest": "sha256:c40d3f12",
      "booking_reference": "Q7XK2M",
      "status": "ticketed",
+     "cancellation_reason": null,
+     "proposal_id": "prop_31f0",
      "created_by": "ota_agent",
      "created_at": "2027-02-20T18:10:00Z",
      "passengers": [
@@ -4953,6 +5008,8 @@
      "content_digest": "sha256:c40d3f12",
      "booking_reference": "Q7XK2M",
      "status": "ticketed",
+     "cancellation_reason": null,
+     "proposal_id": "prop_31f0",
      "created_by": "ota_agent",
      "created_at": "2027-02-20T18:10:00Z",
      "passengers": [

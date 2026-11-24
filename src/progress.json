@@ -208,16 +208,38 @@
         {
           "id": "tk-book",
           "title": "Booking: proposal, authorization, order, payment",
-          "status": "next",
-          "plan": [
-            "Hold and instant orders, split payments, single-use authorizations",
-            "Price changes, expired offers and sold-out buckets as real failure paths"
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "23 of 30 actions now run. New: create_proposal, get_proposal, respond_to_proposal, grant_authorization, revoke_authorization, list_authorizations, create_order, pay_order, get_order, list_orders, update_order_services",
+            "A proposal fixes each traveller's total: fare plus seat and bag fees. A new proposal supersedes the old one",
+            "Consent is enforced in the world: single use, bound to a digest of the proposal or order, with a ceiling, an expiry and revocation; every passenger must consent, even at zero",
+            "Instant orders ticket and charge in one commit. Held orders take the seats for 24 hours and are cancelled by an event if unpaid",
+            "Inventory moves: seats sold or held raise later prices, and an offer is priced again at order time",
+            "Seats and bags with their fees: free middle seats on the basic fare, a free bag for elite members, paid extra-legroom seats",
+            "A first scripted traveller that judges a proposal against its budget and constraints, then accepts and authorises or rejects with reasons"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/service.py and controllers.py",
+            "docs/spec/ticketing_booking.md",
+            "Ticketing page: the recorded session now ends with two tickets"
+          ],
+          "checked": [
+            "15 booking tests, 73 tests in total, all pass",
+            "Covered: money adds up between wallets, payments and orders; consent for one plan cannot pay for another; ceilings, splits, missing consent and declined cards each change nothing; a repeated order request does not charge twice; holds that are paid and holds that lapse; a fare that moves between offer and order; who can see an order",
+            "The recorded session replays identically from its sealed log"
+          ],
+          "open": [
+            "Seat requests apply to the first flight of a connection only",
+            "Interface is now version 0.2: a proposal item shows fare and services separately, and an instant order must name its proposal",
+            "The scripted traveller is a first version: it does not negotiate and handles proposals only"
           ]
         },
         {
           "id": "tk-after",
           "title": "After booking: changes, cancellations, disruptions",
-          "status": "planned",
+          "status": "next",
           "plan": [
             "Change offers and cancellation quotes that state the rule they apply",
             "Delays and cancellations announced by the airline, with refund eligibility"
@@ -228,8 +250,8 @@
           "title": "Scripted travellers and a reference policy",
           "status": "planned",
           "plan": [
-            "Travellers as complete finite-state policies that react to typed attachments",
-            "A reference agent policy that must succeed against those travellers"
+            "A first scripted traveller exists and is used in the recorded session",
+            "Still to do: complete finite-state policies with every input handled, several personas, and a reference agent policy that must succeed against them"
           ]
         },
         {
@@ -327,7 +349,8 @@
           "date": "2026-11-24",
           "done": [
             "Kernel section on the Ticketing page: every log entry with time, seat, action, outcome and world-time cost",
-            "A green dot on each action that runs in the kernel"
+            "A green dot on each action that runs in the kernel",
+            "The session now runs to ticketing and shows the two tickets it produced"
           ],
           "where": [
             "src/session.js in the site repository"
