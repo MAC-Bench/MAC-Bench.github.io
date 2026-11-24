@@ -1,12 +1,12 @@
 {
  "domain": "ticketing",
- "version": "0.2",
+ "version": "0.3",
  "title": "Flight ticketing",
  "conventions": {
   "money": "Integer US cents. Field names end in `_cents`.",
   "time": "UTC, ISO 8601, second precision. Local times are for display only.",
   "windows": "Half-open [start, end). At `expires_at` the object is already expired.",
-  "clock": "The world clock is logical. Every call advances it by the action's declared time cost, reads included, so repeated searching cannot freeze a deadline.",
+  "clock": "The world clock is logical. Every call advances it by the action's declared time cost, reads included, so repeated searching cannot freeze a deadline. `time_cost_s` in a result is the exact world time the call took, waiting included.",
   "ordering": "Accepted writes get a global sequence number `seq`. Events at the same instant are ordered by (time, priority, id).",
   "idempotency": "Write actions require `request_id`. A repeated key returns the first result.",
   "identity": "The actor comes from the seat credential. Every endpoint checks role and object ownership.",
@@ -34,7 +34,8 @@
     "price_offer",
     "create_proposal",
     "get_proposal",
-    "create_order",
+    "execute_proposal",
+    "hold_order",
     "pay_order",
     "get_order",
     "list_orders",
@@ -101,12 +102,12 @@
    "UNKNOWN_PARTICIPANT": "A named seat is not a traveller in this episode.",
    "DATE_OUT_OF_RANGE": "The date is outside the world's schedule horizon.",
    "OFFER_EXPIRED": "The offer or change offer passed its `expires_at`. Search or price again.",
-   "PRICE_CHANGED": "The price differs from the offer. The response carries the new offer.",
+   "PRICE_CHANGED": "The fare is no longer the one in the offer or in the proposal. `details` gives the new amount. Nothing was booked: price the offer again, and make a new proposal if one was involved.",
    "SOLD_OUT": "Not enough seats are left in the fare bucket.",
    "HOLD_NOT_ALLOWED": "This fare cannot be held unpaid.",
    "HOLD_EXPIRED": "The hold lapsed and the seats were released.",
    "INVALID_STATE": "The order or change is not in a state that allows this action.",
-   "INVALID_SPLIT": "Payer shares or payments do not add up to the amount due.",
+   "INVALID_SPLIT": "Payer shares or payments do not add up to the amount due, or a payer is not paying the agreed share.",
    "SEAT_UNAVAILABLE": "A requested seat is occupied or blocked.",
    "NOT_CHANGEABLE": "The fare conditions do not allow changes.",
    "QUOTE_EXPIRED": "The cancellation quote passed its `expires_at`.",
@@ -155,7 +156,7 @@
    "travel_date": "Date of travel, YYYY-MM-DD.",
    "earliest_departure_local": "Earliest acceptable local departure, HH:MM.",
    "latest_arrival_local": "Latest acceptable local arrival, YYYY-MM-DDTHH:MM.",
-   "budget_cents": "Most the traveller will pay in total, in cents.",
+   "budget_cents": "Most the traveller will pay in total over the whole episode, in cents.",
    "max_stops": "0 for nonstop only, 1 if one connection is acceptable.",
    "needs_refundable": "Whether the traveller needs a fare refundable to the original payment.",
    "checked_bags": "Number of checked bags.",
@@ -175,6 +176,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "",
    "errors": [],
    "status": "implemented",
@@ -192,6 +194,7 @@
    ],
    "effect": "read",
    "time_cost_s": 30,
+   "wait_field": null,
    "visibility": "The agent searches the agency handbook. A traveller searches the customer terms.",
    "errors": [],
    "status": "declared",
@@ -202,13 +205,14 @@
    "name": "search_flights",
    "group": "Flight shopping",
    "summary": "Search one-way itineraries and get priced offers.",
-   "description": "Returns nonstop and one-connection itineraries that respect the minimum connection time. Offers expire. `passengers` above 1 prices everyone from one fare bucket, so two seats may cost more each than one seat.",
+   "description": "Returns nonstop and one-connection itineraries that respect the minimum connection time. Offers expire after 20 minutes, or when sales close 60 minutes before the first departure, whichever comes first. `passengers` above 1 prices everyone from one fare bucket, so two seats may cost more each than one seat.",
    "roles": [
     "ota_agent",
     "traveler"
    ],
    "effect": "read",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "UNKNOWN_AIRPORT",
@@ -229,6 +233,7 @@
    ],
    "effect": "read",
    "time_cost_s": 20,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "OFFER_EXPIRED"
@@ -248,6 +253,7 @@
    ],
    "effect": "read",
    "time_cost_s": 20,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "UNKNOWN_FLIGHT"
@@ -267,6 +273,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "UNKNOWN_FLIGHT"
@@ -279,12 +286,13 @@
    "name": "price_offer",
    "group": "Booking",
    "summary": "Confirm an offer's price and availability before booking.",
-   "description": "Reserves nothing. Returns the offer at its current price with a fresh expiry.",
+   "description": "Reserves nothing. Returns the offer at its current price with a fresh expiry, never later than the close of sales, 60 minutes before the first departure. The offer keeps its identifier. A proposal made at the earlier price cannot be executed any more.",
    "roles": [
     "ota_agent"
    ],
    "effect": "read",
    "time_cost_s": 30,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "OFFER_EXPIRED",
@@ -298,16 +306,18 @@
    "name": "create_proposal",
    "group": "Booking",
    "summary": "Put a concrete plan in front of the travellers.",
-   "description": "A proposal names one offer per traveller and who pays how much. The world adds the seat and bag fees and fixes each traveller's total. Travellers accept it and authorise against it. An offer priced for several passengers must be given to exactly that many travellers. Creating a new proposal for the same travellers supersedes the earlier one.",
+   "description": "A proposal names one offer per traveller and who pays how much. The world adds the seat and bag fees and fixes each traveller's total. Travellers accept it and authorise against it. An offer priced for several passengers must be given to exactly that many travellers. Every offer must still sell at its stated fare, taking the offers in the order given. Creating a new proposal for the same travellers supersedes the earlier one.",
    "roles": [
     "ota_agent"
    ],
    "effect": "write",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "Visible to the agent and to every traveller named in it.",
    "errors": [
     "UNKNOWN_PARTICIPANT",
     "OFFER_EXPIRED",
+    "PRICE_CHANGED",
     "SOLD_OUT",
     "INVALID_SPLIT",
     "SEAT_UNAVAILABLE"
@@ -327,6 +337,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "The agent and the travellers named in it.",
    "errors": [],
    "status": "implemented",
@@ -334,22 +345,21 @@
    "response": "ProposalResponseModel"
   },
   {
-   "name": "create_order",
+   "name": "execute_proposal",
    "group": "Booking",
-   "summary": "Book an offer: ticket it now, or hold it unpaid.",
-   "description": "`instant` carries out a proposal: it needs `proposal_id` and payments that sum to the travellers' totals, each backed by an authorization for that proposal, with one authorization from every passenger, even at zero. `hold` takes the seats without payment until `payment_required_by`, if the fare allows it. Seat and bag requests of the proposal are applied.",
+   "summary": "Carry out a proposal: charge the payers and ticket every order in it.",
+   "description": "All or nothing. Every offer in the proposal must be unexpired and still sell at the proposal's fare; otherwise the call fails with `PRICE_CHANGED` or `SOLD_OUT` and a new proposal is needed. Each payment consumes one authorization for this proposal. A payer's payments must add up to exactly their share in the proposal, and every traveller named in it must be among the grantors, even at zero. The result is one ticketed order per offer. A payer's money goes first to the order they travel on, then to the others.",
    "roles": [
     "ota_agent"
    ],
    "effect": "write",
    "time_cost_s": 60,
-   "visibility": "",
+   "wait_field": null,
+   "visibility": "The orders are visible to the agent and to every traveller named in the proposal.",
    "errors": [
-    "UNKNOWN_PARTICIPANT",
     "OFFER_EXPIRED",
     "PRICE_CHANGED",
     "SOLD_OUT",
-    "HOLD_NOT_ALLOWED",
     "PROPOSAL_NOT_OPEN",
     "SEAT_UNAVAILABLE",
     "AUTH_REQUIRED",
@@ -362,7 +372,32 @@
     "INVALID_SPLIT"
    ],
    "status": "implemented",
-   "request": "CreateOrderRequest",
+   "request": "ExecuteProposalRequest",
+   "response": "ExecuteProposalResponse"
+  },
+  {
+   "name": "hold_order",
+   "group": "Booking",
+   "summary": "Hold an offer unpaid, if its fare allows it.",
+   "description": "Takes the seats at the offer's fare until `payment_required_by`. No money moves and no consent is needed. Pay with `pay_order`, with authorizations for the order. A hold that is not paid in time is cancelled by the world and its seats are released.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "wait_field": null,
+   "visibility": "",
+   "errors": [
+    "UNKNOWN_PARTICIPANT",
+    "OFFER_EXPIRED",
+    "PRICE_CHANGED",
+    "SOLD_OUT",
+    "HOLD_NOT_ALLOWED",
+    "PROPOSAL_NOT_OPEN",
+    "SEAT_UNAVAILABLE"
+   ],
+   "status": "implemented",
+   "request": "HoldOrderRequest",
    "response": "OrderResponse"
   },
   {
@@ -375,6 +410,7 @@
    ],
    "effect": "write",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "INVALID_STATE",
@@ -404,6 +440,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "The agent that created it, and travellers who are passengers or payers on it.",
    "errors": [],
    "status": "implemented",
@@ -421,6 +458,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "",
    "errors": [],
    "status": "implemented",
@@ -431,12 +469,13 @@
    "name": "update_order_services",
    "group": "Booking",
    "summary": "Assign seats and add checked bags.",
-   "description": "Free choices need no authorization. Paid ones need one from the paying traveller for this order version.",
+   "description": "Free choices need no authorization. Paid ones need one from the paying traveller for this order version. A passenger may appear once per flight in `seat_assignments` and once in `bags`. Passengers of one order can swap seats in a single call.",
    "roles": [
     "ota_agent"
    ],
    "effect": "write",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "INVALID_STATE",
@@ -464,6 +503,7 @@
    ],
    "effect": "read",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "INVALID_STATE",
@@ -484,6 +524,7 @@
    ],
    "effect": "write",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "OFFER_EXPIRED",
@@ -512,6 +553,7 @@
    ],
    "effect": "read",
    "time_cost_s": 30,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "INVALID_STATE"
@@ -530,6 +572,7 @@
    ],
    "effect": "write",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "QUOTE_EXPIRED",
@@ -554,6 +597,7 @@
    ],
    "effect": "write",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "INVALID_STATE",
@@ -574,6 +618,7 @@
    ],
    "effect": "write",
    "time_cost_s": 60,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "INVALID_STATE",
@@ -599,6 +644,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "",
    "errors": [],
    "status": "implemented",
@@ -615,6 +661,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "",
    "errors": [],
    "status": "implemented",
@@ -631,6 +678,7 @@
    ],
    "effect": "write",
    "time_cost_s": 30,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "PROPOSAL_NOT_OPEN"
@@ -649,6 +697,7 @@
    ],
    "effect": "write",
    "time_cost_s": 30,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "UNKNOWN_PAYMENT_METHOD",
@@ -669,6 +718,7 @@
    ],
    "effect": "write",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "",
    "errors": [
     "AUTH_CONSUMED"
@@ -688,6 +738,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "",
    "errors": [],
    "status": "implemented",
@@ -705,6 +756,7 @@
    ],
    "effect": "message",
    "time_cost_s": 30,
+   "wait_field": null,
    "visibility": "Delivered only to the named recipients. The board sets `sender`.",
    "errors": [
     "UNKNOWN_RECIPIENT",
@@ -719,13 +771,14 @@
    "name": "read_inbox",
    "group": "Messages",
    "summary": "Read unread messages, optionally waiting for the next one.",
-   "description": "With `wait_minutes` the world clock advances while the seat sleeps. The wait ends early when a message or an event notice for this seat arrives.",
+   "description": "With `wait_minutes` the world clock advances while the seat sleeps. The wait ends early when a message or an event notice for this seat arrives, and it never runs past the end of the observation period.",
    "roles": [
     "ota_agent",
     "traveler"
    ],
    "effect": "message",
    "time_cost_s": 10,
+   "wait_field": "wait_minutes",
    "visibility": "Only messages addressed to this seat.",
    "errors": [],
    "status": "implemented",
@@ -743,6 +796,7 @@
    ],
    "effect": "read",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "Only messages this seat sent or received.",
    "errors": [],
    "status": "implemented",
@@ -760,6 +814,7 @@
    ],
    "effect": "control",
    "time_cost_s": 10,
+   "wait_field": null,
    "visibility": "",
    "errors": [],
    "status": "implemented",
@@ -798,7 +853,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Old Departs At",
      "type": "string"
     },
@@ -807,7 +861,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Old Arrives At",
      "type": "string"
     },
@@ -818,7 +871,6 @@
        "examples": [
         "2027-03-12T14:30:00Z"
        ],
-       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
        "type": "string"
       },
       {
@@ -835,7 +887,6 @@
        "examples": [
         "2027-03-12T14:30:00Z"
        ],
-       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
        "type": "string"
       },
       {
@@ -867,7 +918,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Respond By",
      "type": "string"
     },
@@ -887,7 +937,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Announced At",
      "type": "string"
     }
@@ -1052,7 +1101,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Created At",
      "type": "string"
     },
@@ -1061,7 +1109,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Expires At",
      "type": "string"
     },
@@ -1271,7 +1318,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "World Time",
      "type": "string"
     },
@@ -1350,7 +1396,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Expires At",
      "type": "string"
     }
@@ -1444,7 +1489,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Expires At",
      "type": "string"
     }
@@ -1520,60 +1564,6 @@
    "title": "ConfirmChangeRequest",
    "type": "object"
   },
-  "CreateOrderRequest": {
-   "additionalProperties": false,
-   "properties": {
-    "offer_id": {
-     "title": "Offer Id",
-     "type": "string"
-    },
-    "passenger_seats": {
-     "description": "Travellers on this order. One order per offer.",
-     "items": {
-      "type": "string"
-     },
-     "minItems": 1,
-     "title": "Passenger Seats",
-     "type": "array"
-    },
-    "order_type": {
-     "enum": [
-      "instant",
-      "hold"
-     ],
-     "title": "Order Type",
-     "type": "string"
-    },
-    "proposal_id": {
-     "anyOf": [
-      {
-       "type": "string"
-      },
-      {
-       "type": "null"
-      }
-     ],
-     "default": null,
-     "description": "The proposal this order carries out, if any.",
-     "title": "Proposal Id"
-    },
-    "payments": {
-     "description": "Required for `instant`. Must sum to the total.",
-     "items": {
-      "$ref": "#/schemas/PaymentInput"
-     },
-     "title": "Payments",
-     "type": "array"
-    }
-   },
-   "required": [
-    "offer_id",
-    "passenger_seats",
-    "order_type"
-   ],
-   "title": "CreateOrderRequest",
-   "type": "object"
-  },
   "CreateProposalRequest": {
    "additionalProperties": false,
    "properties": {
@@ -1618,6 +1608,52 @@
    "additionalProperties": false,
    "properties": {},
    "title": "Empty",
+   "type": "object"
+  },
+  "ExecuteProposalRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "proposal_id": {
+     "title": "Proposal Id",
+     "type": "string"
+    },
+    "payments": {
+     "description": "One or more per payer, summing to that payer's share in the proposal. A traveller who pays nothing still appears, with an authorization and amount 0.",
+     "items": {
+      "$ref": "#/schemas/PaymentInput"
+     },
+     "minItems": 1,
+     "title": "Payments",
+     "type": "array"
+    }
+   },
+   "required": [
+    "proposal_id",
+    "payments"
+   ],
+   "title": "ExecuteProposalRequest",
+   "type": "object"
+  },
+  "ExecuteProposalResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "proposal": {
+     "$ref": "#/schemas/Proposal"
+    },
+    "orders": {
+     "description": "One ticketed order per offer in the proposal, in the proposal's order.",
+     "items": {
+      "$ref": "#/schemas/Order"
+     },
+     "title": "Orders",
+     "type": "array"
+    }
+   },
+   "required": [
+    "proposal",
+    "orders"
+   ],
+   "title": "ExecuteProposalResponse",
    "type": "object"
   },
   "Fact": {
@@ -1771,7 +1807,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Observation Ends At",
      "type": "string"
     }
@@ -1857,7 +1892,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Departs At",
      "type": "string"
     },
@@ -1866,7 +1900,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Arrives At",
      "type": "string"
     },
@@ -1875,7 +1908,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Updated At",
      "type": "string"
     }
@@ -1951,7 +1983,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Payment Required By",
      "type": "string"
     },
@@ -1962,7 +1993,6 @@
        "examples": [
         "2027-03-12T14:30:00Z"
        ],
-       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
        "type": "string"
       },
       {
@@ -1978,6 +2008,43 @@
     "payment_required_by"
    ],
    "title": "HoldInfo",
+   "type": "object"
+  },
+  "HoldOrderRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "offer_id": {
+     "title": "Offer Id",
+     "type": "string"
+    },
+    "passenger_seats": {
+     "description": "Travellers on this order. One order per offer.",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Passenger Seats",
+     "type": "array"
+    },
+    "proposal_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "If given, the proposal's seat and bag requests for these travellers go on the order.",
+     "title": "Proposal Id"
+    }
+   },
+   "required": [
+    "offer_id",
+    "passenger_seats"
+   ],
+   "title": "HoldOrderRequest",
    "type": "object"
   },
   "ListAirportsRequest": {
@@ -2142,7 +2209,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Sent At",
      "type": "string"
     },
@@ -2321,7 +2387,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Created At",
      "type": "string"
     },
@@ -2330,7 +2395,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Expires At",
      "type": "string"
     }
@@ -2449,7 +2513,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Created At",
      "type": "string"
     },
@@ -2649,7 +2712,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Departs At",
      "type": "string"
     },
@@ -2708,7 +2770,6 @@
      "examples": [
       "2027-03-12"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
      "title": "Birth Date",
      "type": "string"
     },
@@ -2911,7 +2972,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "At",
      "type": "string"
     },
@@ -3032,7 +3092,8 @@
       "accepted",
       "rejected",
       "expired",
-      "superseded"
+      "superseded",
+      "executed"
      ],
      "title": "Status",
      "type": "string"
@@ -3044,7 +3105,16 @@
      "title": "Responses",
      "type": "array"
     },
+    "order_ids": {
+     "description": "The orders ticketed when the proposal was executed.",
+     "items": {
+      "type": "string"
+     },
+     "title": "Order Ids",
+     "type": "array"
+    },
     "content_digest": {
+     "description": "Digest of the items and the payer split. Consent is bound to it.",
      "title": "Content Digest",
      "type": "string"
     },
@@ -3053,7 +3123,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Created At",
      "type": "string"
     },
@@ -3062,7 +3131,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Expires At",
      "type": "string"
     }
@@ -3231,7 +3299,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Responded At",
      "type": "string"
     }
@@ -3334,6 +3401,7 @@
      "type": "array"
     },
     "woke_by": {
+     "description": "`none`: the call did not wait. `message` or `event`: something arrived. `timeout`: the wait ran out.",
      "enum": [
       "none",
       "message",
@@ -3343,15 +3411,16 @@
      "title": "Woke By",
      "type": "string"
     },
-    "waited_minutes": {
-     "title": "Waited Minutes",
+    "waited_seconds": {
+     "description": "World seconds spent waiting, exact. The call's own cost comes on top.",
+     "title": "Waited Seconds",
      "type": "integer"
     }
    },
    "required": [
     "messages",
     "woke_by",
-    "waited_minutes"
+    "waited_seconds"
    ],
    "title": "ReadInboxResponse",
    "type": "object"
@@ -3478,7 +3547,6 @@
        "examples": [
         "2027-03-12"
        ],
-       "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
        "type": "string"
       },
       {
@@ -3491,7 +3559,10 @@
     "depart_after_local": {
      "anyOf": [
       {
-       "pattern": "^\\d{2}:\\d{2}$",
+       "description": "Time of day, 24-hour clock.",
+       "examples": [
+        "08:00"
+       ],
        "type": "string"
       },
       {
@@ -3556,7 +3627,6 @@
      "examples": [
       "2027-03-12"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
      "title": "Date",
      "type": "string"
     },
@@ -3595,7 +3665,10 @@
     "depart_after_local": {
      "anyOf": [
       {
-       "pattern": "^\\d{2}:\\d{2}$",
+       "description": "Time of day, 24-hour clock.",
+       "examples": [
+        "08:00"
+       ],
        "type": "string"
       },
       {
@@ -3603,15 +3676,15 @@
       }
      ],
      "default": null,
-     "examples": [
-      "08:00"
-     ],
      "title": "Depart After Local"
     },
     "arrive_before_local": {
      "anyOf": [
       {
-       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$",
+       "description": "Local wall-clock time at the airport. Display only; compare UTC times.",
+       "examples": [
+        "2027-03-12T07:30"
+       ],
        "type": "string"
       },
       {
@@ -3737,6 +3810,7 @@
      "type": "string"
     },
     "status": {
+     "description": "`occupied` means the seat is assigned to someone. A passenger without a seat assignment occupies none, so the number of occupied seats can be below the number of tickets sold.",
      "enum": [
       "available",
       "occupied",
@@ -3900,7 +3974,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Departs At",
      "type": "string"
     },
@@ -3909,7 +3982,6 @@
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
      "title": "Arrives At",
      "type": "string"
     },
@@ -3918,7 +3990,6 @@
      "examples": [
       "2027-03-12T07:30"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$",
      "title": "Departs Local",
      "type": "string"
     },
@@ -3927,7 +3998,6 @@
      "examples": [
       "2027-03-12T07:30"
      ],
-     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$",
      "title": "Arrives Local",
      "type": "string"
     },
@@ -4651,7 +4721,7 @@
      }
     ],
     "woke_by": "message",
-    "waited_minutes": 1
+    "waited_seconds": 50
    },
    "note": "The answer carries typed facts next to the free text."
   },
@@ -4723,6 +4793,7 @@
      "note": "Nonstop, lands 16:25, seats 14A and 14B together.",
      "status": "open",
      "responses": [],
+     "order_ids": [],
      "content_digest": "sha256:5b7e09a1",
      "created_at": "2027-02-20T18:04:00Z",
      "expires_at": "2027-02-20T19:04:00Z"
@@ -4781,6 +4852,7 @@
        "responded_at": "2027-02-20T18:06:30Z"
       }
      ],
+     "order_ids": [],
      "content_digest": "sha256:5b7e09a1",
      "created_at": "2027-02-20T18:04:00Z",
      "expires_at": "2027-02-20T19:04:00Z"
@@ -4841,14 +4913,8 @@
    },
    "note": "The world fills in the digest of the proposal as it stands. A changed proposal no longer matches."
   },
-  "create_order": {
+  "execute_proposal": {
    "request": {
-    "offer_id": "off_8c1d42",
-    "passenger_seats": [
-     "traveler_a",
-     "traveler_b"
-    ],
-    "order_type": "instant",
     "proposal_id": "prop_31f0",
     "payments": [
      {
@@ -4862,140 +4928,187 @@
     ]
    },
    "response": {
-    "order": {
-     "order_id": "ord_5521",
-     "version": 1,
-     "content_digest": "sha256:c40d3f12",
-     "booking_reference": "Q7XK2M",
-     "status": "ticketed",
-     "cancellation_reason": null,
+    "proposal": {
      "proposal_id": "prop_31f0",
      "created_by": "ota_agent",
-     "created_at": "2027-02-20T18:10:00Z",
-     "passengers": [
+     "items": [
       {
-       "passenger_id": "pax_a",
        "seat": "traveler_a",
-       "given_name": "Maya",
-       "family_name": "Chen",
-       "birth_date": "1994-05-17",
-       "loyalty": {
-        "program": "NovaMiles",
-        "tier": "gold"
-       }
+       "offer_id": "off_8c1d42",
+       "fare_brand": "standard",
+       "fare_cents": 32598,
+       "services_cents": 0,
+       "total_cents": 32598,
+       "seat_request": "14A",
+       "checked_bags": 0
       },
       {
-       "passenger_id": "pax_b",
        "seat": "traveler_b",
-       "given_name": "Daniel",
-       "family_name": "Okafor",
-       "birth_date": "1991-11-02",
-       "loyalty": null
+       "offer_id": "off_8c1d42",
+       "fare_brand": "standard",
+       "fare_cents": 32598,
+       "services_cents": 0,
+       "total_cents": 32598,
+       "seat_request": "14B",
+       "checked_bags": 0
       }
      ],
-     "slices": [
+     "payer_split": [
       {
-       "origin": "SFO",
-       "destination": "JFK",
-       "segments": [
-        {
-         "flight_id": "flt_NV212_20270312",
-         "carrier": "NV",
-         "flight_number": "NV212",
-         "origin": "SFO",
-         "destination": "JFK",
-         "departs_at": "2027-03-12T16:00:00Z",
-         "arrives_at": "2027-03-12T21:25:00Z",
-         "departs_local": "2027-03-12T08:00",
-         "arrives_local": "2027-03-12T16:25",
-         "arrival_day_offset": 0,
-         "distance_km": 4152,
-         "block_minutes": 325,
-         "aircraft": "A321"
-        }
-       ],
-       "stops": 0,
-       "duration_minutes": 325,
-       "layover_minutes": []
-      }
-     ],
-     "fare_brand": "standard",
-     "conditions": {
-      "changeable": true,
-      "change_fee_cents": 0,
-      "cancellable": true,
-      "cancel_fee_cents": 0,
-      "refund_to": "travel_credit",
-      "holdable": true,
-      "checked_bags_included": 0,
-      "seat_selection_included": true
-     },
-     "price_per_passenger": {
-      "base_cents": 28900,
-      "taxes_and_fees_cents": 3698,
-      "total_cents": 32598
-     },
-     "services_cents": 0,
-     "total_cents": 65196,
-     "paid_cents": 65196,
-     "refunded_cents": 0,
-     "payment_status": "paid",
-     "payments": [
-      {
-       "payment_id": "pay_1",
-       "kind": "charge",
        "payer": "traveler_a",
-       "payment_method_id": "pm_a1",
-       "amount_cents": 32598,
-       "authorization_id": "auth_a_77",
-       "at": "2027-02-20T18:10:00Z",
-       "seq": 41
+       "amount_cents": 32598
       },
       {
-       "payment_id": "pay_2",
-       "kind": "charge",
        "payer": "traveler_b",
-       "payment_method_id": "pm_b1",
-       "amount_cents": 32598,
-       "authorization_id": "auth_b_12",
-       "at": "2027-02-20T18:10:00Z",
-       "seq": 41
+       "amount_cents": 32598
       }
      ],
-     "hold": null,
-     "seat_assignments": [
-      {
-       "passenger_id": "pax_a",
-       "flight_id": "flt_NV212_20270312",
-       "seat": "14A"
+     "note": "Nonstop, lands 16:25, seats 14A and 14B together.",
+     "status": "executed",
+     "responses": [],
+     "order_ids": [
+      "ord_5521"
+     ],
+     "content_digest": "sha256:5b7e09a1",
+     "created_at": "2027-02-20T18:04:00Z",
+     "expires_at": "2027-02-20T19:04:00Z"
+    },
+    "orders": [
+     {
+      "order_id": "ord_5521",
+      "version": 1,
+      "content_digest": "sha256:c40d3f12",
+      "booking_reference": "Q7XK2M",
+      "status": "ticketed",
+      "cancellation_reason": null,
+      "proposal_id": "prop_31f0",
+      "created_by": "ota_agent",
+      "created_at": "2027-02-20T18:10:00Z",
+      "passengers": [
+       {
+        "passenger_id": "pax_a",
+        "seat": "traveler_a",
+        "given_name": "Maya",
+        "family_name": "Chen",
+        "birth_date": "1994-05-17",
+        "loyalty": {
+         "program": "NovaMiles",
+         "tier": "gold"
+        }
+       },
+       {
+        "passenger_id": "pax_b",
+        "seat": "traveler_b",
+        "given_name": "Daniel",
+        "family_name": "Okafor",
+        "birth_date": "1991-11-02",
+        "loyalty": null
+       }
+      ],
+      "slices": [
+       {
+        "origin": "SFO",
+        "destination": "JFK",
+        "segments": [
+         {
+          "flight_id": "flt_NV212_20270312",
+          "carrier": "NV",
+          "flight_number": "NV212",
+          "origin": "SFO",
+          "destination": "JFK",
+          "departs_at": "2027-03-12T16:00:00Z",
+          "arrives_at": "2027-03-12T21:25:00Z",
+          "departs_local": "2027-03-12T08:00",
+          "arrives_local": "2027-03-12T16:25",
+          "arrival_day_offset": 0,
+          "distance_km": 4152,
+          "block_minutes": 325,
+          "aircraft": "A321"
+         }
+        ],
+        "stops": 0,
+        "duration_minutes": 325,
+        "layover_minutes": []
+       }
+      ],
+      "fare_brand": "standard",
+      "conditions": {
+       "changeable": true,
+       "change_fee_cents": 0,
+       "cancellable": true,
+       "cancel_fee_cents": 0,
+       "refund_to": "travel_credit",
+       "holdable": true,
+       "checked_bags_included": 0,
+       "seat_selection_included": true
       },
-      {
-       "passenger_id": "pax_b",
-       "flight_id": "flt_NV212_20270312",
-       "seat": "14B"
-      }
-     ],
-     "bags": [],
-     "tickets": [
-      {
-       "ticket_number": "0492100000117",
-       "passenger_id": "pax_a"
+      "price_per_passenger": {
+       "base_cents": 28900,
+       "taxes_and_fees_cents": 3698,
+       "total_cents": 32598
       },
-      {
-       "ticket_number": "0492100000118",
-       "passenger_id": "pax_b"
-      }
-     ],
-     "airline_changes": [],
-     "available_actions": [
-      "update_services",
-      "change",
-      "cancel",
-      "split"
-     ]
-    }
+      "services_cents": 0,
+      "total_cents": 65196,
+      "paid_cents": 65196,
+      "refunded_cents": 0,
+      "payment_status": "paid",
+      "payments": [
+       {
+        "payment_id": "pay_1",
+        "kind": "charge",
+        "payer": "traveler_a",
+        "payment_method_id": "pm_a1",
+        "amount_cents": 32598,
+        "authorization_id": "auth_a_77",
+        "at": "2027-02-20T18:10:00Z",
+        "seq": 41
+       },
+       {
+        "payment_id": "pay_2",
+        "kind": "charge",
+        "payer": "traveler_b",
+        "payment_method_id": "pm_b1",
+        "amount_cents": 32598,
+        "authorization_id": "auth_b_12",
+        "at": "2027-02-20T18:10:00Z",
+        "seq": 41
+       }
+      ],
+      "hold": null,
+      "seat_assignments": [
+       {
+        "passenger_id": "pax_a",
+        "flight_id": "flt_NV212_20270312",
+        "seat": "14A"
+       },
+       {
+        "passenger_id": "pax_b",
+        "flight_id": "flt_NV212_20270312",
+        "seat": "14B"
+       }
+      ],
+      "bags": [],
+      "tickets": [
+       {
+        "ticket_number": "0492100000117",
+        "passenger_id": "pax_a"
+       },
+       {
+        "ticket_number": "0492100000118",
+        "passenger_id": "pax_b"
+       }
+      ],
+      "airline_changes": [],
+      "available_actions": [
+       "update_services",
+       "change",
+       "cancel",
+       "split"
+      ]
+     }
+    ]
    },
-   "note": "Both authorizations are consumed in the same commit, seq 41."
+   "note": "Both authorizations are consumed in the same commit, seq 41. Each payer is charged exactly the agreed share."
   },
   "get_order": {
    "request": {

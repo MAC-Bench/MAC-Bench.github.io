@@ -58,11 +58,11 @@
           "review": "awaiting",
           "date": "2026-11-24",
           "done": [
-            "Seat and episode state machines; the eleven steps a call goes through, each with its error",
-            "Clock rules: every call costs world time, waiting advances it, scripted seats act inside events",
+            "Seat and episode state machines; the fourteen steps a call goes through, each with its error",
+            "Clock rules: every call costs world time, the kernel does the waiting before a handler runs, scripted seats act inside events and cannot wait",
             "Event order by time, priority and id; half-open validity windows",
             "Finishing hands back control but does not stop the world before the observation end",
-            "A sealed, hash-chained record that is verified by replaying it from the initial world"
+            "A sealed, hash-chained record that is verified by replaying it from the initial world; scoring reads the replayed state only"
           ],
           "where": [
             "docs/spec/kernel.md in the code repository"
@@ -99,7 +99,7 @@
           "date": "2026-11-23",
           "done": [
             "2 roles and 3 seats: one booking agent, two travellers",
-            "30 actions: 25 visible to the agent, 19 to a traveller",
+            "31 actions since version 0.3: 26 visible to the agent, 19 to a traveller",
             "23 entities, named after the fields of Duffel, Amadeus and Expedia where those exist",
             "Authorization object: single-use, bound to a digest of what was consented to, with a charge ceiling",
             "Typed message attachments: object references, fact requests and facts over 11 declared fact keys",
@@ -212,10 +212,10 @@
           "review": "awaiting",
           "date": "2026-11-24",
           "done": [
-            "23 of 30 actions now run. New: create_proposal, get_proposal, respond_to_proposal, grant_authorization, revoke_authorization, list_authorizations, create_order, pay_order, get_order, list_orders, update_order_services",
+            "23 of 30 actions ran at this point. New: create_proposal, get_proposal, respond_to_proposal, grant_authorization, revoke_authorization, list_authorizations, create_order, pay_order, get_order, list_orders, update_order_services. Version 0.3 replaced create_order by execute_proposal and hold_order",
             "A proposal fixes each traveller's total: fare plus seat and bag fees. A new proposal supersedes the old one",
             "Consent is enforced in the world: single use, bound to a digest of the proposal or order, with a ceiling, an expiry and revocation; every passenger must consent, even at zero",
-            "Instant orders ticket and charge in one commit. Held orders take the seats for 24 hours and are cancelled by an event if unpaid",
+            "Ticketing and charging happen in one commit. Held orders take the seats for 24 hours and are cancelled by an event if unpaid",
             "Inventory moves: seats sold or held raise later prices, and an offer is priced again at order time",
             "Seats and bags with their fees: free middle seats on the basic fare, a free bag for elite members, paid extra-legroom seats",
             "A first scripted traveller that judges a proposal against its budget and constraints, then accepts and authorises or rejects with reasons"
@@ -232,8 +232,45 @@
           ],
           "open": [
             "Seat requests apply to the first flight of a connection only",
-            "Interface is now version 0.2: a proposal item shows fare and services separately, and an instant order must name its proposal",
+            "The code review below changed parts of this item. The interface is now version 0.3",
             "The scripted traveller is a first version: it does not negotiate and handles proposals only"
+          ]
+        },
+        {
+          "id": "tk-codereview-r1",
+          "title": "Code review, round 1: fifteen defects fixed",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "An independent code review of the kernel and the booking flow found 15 defects. All 15 were reproduced, accepted and fixed",
+            "Kernel: waiting now happens before a handler's transaction, so a refused call undoes only its own changes. Handlers and events cannot nest calls or move the clock. A scripted seat cannot wait inside its event",
+            "Kernel: a refusal that lands exactly on the observation end closes the episode. A malformed call is logged as it came and replays. The time cost of a call is exact",
+            "Sealed record: verification compares the log, both digests and the complete final state. A scorer reads the replayed state, never the stored one",
+            "Booking: the new action execute_proposal tickets every order of a proposal in one commit, at the proposal's amounts, with each payer charged exactly the agreed share. One payer can now fund several orders",
+            "A fare that moved makes the old proposal unexecutable. Before, consent for the old fare could pay the new one",
+            "Sales close 60 minutes before departure. An offer cannot be refreshed past that point",
+            "A seat belongs to one passenger. An order's seat table is replaced in one step, so a swap works and a doubled seat is refused. A repeated bag entry is refused instead of charged twice",
+            "Scripted traveller: the budget covers the whole episode, it rejects what it cannot check, and it keeps no memory",
+            "Interface version 0.3: 31 actions, 24 run. create_order is gone; hold_order only holds"
+          ],
+          "where": [
+            "src/macbench/kernel/engine.py, src/macbench/board/board.py",
+            "src/macbench/domains/ticketing/service.py, controllers.py and interface.py",
+            "docs/spec/kernel.md and docs/spec/ticketing_booking.md, both rewritten",
+            "Ticketing page: the recorded session now tickets both travellers with one call"
+          ],
+          "checked": [
+            "99 automated tests pass. 26 are new",
+            "Every finding has a regression test. Each fix was then broken on purpose, 17 changes in all, and each time a test failed",
+            "One long session of 48 calls, 16 of them refused, with five rules checked after every call: seats, inventory, money, consent, and plans carried out as written",
+            "Fees in that session are checked against a table written out in the test, not against the code that charges them",
+            "A sealed record with any single change is rejected: one log entry, the final state, either digest, or a dropped refusal"
+          ],
+          "open": [
+            "The fixes themselves have not been through a second review round",
+            "Holding seats for a proposal does not use the proposal up, so an agent can still book the same plan twice. This is left as an agent error",
+            "Callers written against interface 0.2 must change: create_order no longer exists"
           ]
         },
         {
