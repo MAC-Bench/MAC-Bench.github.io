@@ -1,0 +1,61 @@
+<figure class="fig" id="fig-layers">
+<div class="figscroll">
+<svg viewBox="0 0 1000 508" role="img" aria-label="Six layers. The world kernel and the domain packs form the Task module, the interface and runtime layers form the Agent module, the evaluation layer is the Evaluation module, and a release layer sits on top. The right column lists the contract files each layer reads and writes.">
+  <text x="160" y="54" text-anchor="end" class="t-sub">Release</text>
+
+  <path class="br s-eval" d="M180 94 h-9 v66 h9"/>
+  <text x="160" y="124" text-anchor="end" class="t-title">Evaluation</text>
+  <text x="160" y="143" text-anchor="end" class="t-sub">four metric tiers</text>
+
+  <path class="br s-agent" d="M180 172 h-9 v144 h9"/>
+  <text x="160" y="240" text-anchor="end" class="t-title">Agent</text>
+  <text x="160" y="259" text-anchor="end" class="t-sub">tool surface, seats</text>
+
+  <path class="br s-task" d="M180 328 h-9 v144 h9"/>
+  <text x="160" y="396" text-anchor="end" class="t-title">Task</text>
+  <text x="160" y="415" text-anchor="end" class="t-sub">world and scenarios</text>
+
+  <rect class="b k-file" x="190" y="16" width="450" height="66" rx="4"/>
+  <text x="206" y="43" class="t-title"><tspan class="t-num">6</tspan>  Release</text>
+  <text x="206" y="65" class="t-sub">splits · versions · registry · leaderboard</text>
+
+  <rect class="b k-eval" x="190" y="94" width="450" height="66" rx="4"/>
+  <text x="206" y="121" class="t-title"><tspan class="t-num">5</tspan>  Evaluation</text>
+  <text x="206" y="143" class="t-sub">verifier · analysers</text>
+
+  <rect class="b k-agent" x="190" y="172" width="450" height="66" rx="4"/>
+  <text x="206" y="199" class="t-title"><tspan class="t-num">4</tspan>  Runtime</text>
+  <text x="206" y="221" class="t-sub">seats · controllers · harness adapters · trajectories</text>
+
+  <rect class="b k-agent" x="190" y="250" width="450" height="66" rx="4"/>
+  <text x="206" y="277" class="t-title"><tspan class="t-num">3</tspan>  Interface</text>
+  <text x="206" y="299" class="t-sub">REST + OpenAPI · MCP · CLI · message board</text>
+
+  <rect class="b k-task" x="190" y="328" width="450" height="66" rx="4"/>
+  <text x="206" y="355" class="t-title"><tspan class="t-num">2</tspan>  Domain packs</text>
+  <text x="206" y="377" class="t-sub">schema · rules · events · generator · solver · policy docs</text>
+
+  <rect class="b k-task" x="190" y="406" width="450" height="66" rx="4"/>
+  <text x="206" y="433" class="t-title"><tspan class="t-num">1</tspan>  World kernel</text>
+  <text x="206" y="455" class="t-sub">state store · logical clock · event queue · identity · event log</text>
+
+  <text x="660" y="43"><tspan class="t-sub">reads</tspan>  trajectories · <tspan class="t-mono">reward.json</tspan></text>
+
+  <text x="660" y="121"><tspan class="t-sub">reads</tspan>  event log · final state · <tspan class="t-mono">truth.json</tspan></text>
+  <text x="660" y="143"><tspan class="t-sub">writes</tspan>  <tspan class="t-mono">reward.json</tspan></text>
+
+  <text x="660" y="199"><tspan class="t-sub">reads</tspan>  tool manifest · messages · role cards</text>
+  <text x="660" y="221"><tspan class="t-sub">writes</tspan>  one trajectory per seat</text>
+
+  <text x="660" y="277"><tspan class="t-sub">reads</tspan>  the world API definition</text>
+  <text x="660" y="299"><tspan class="t-sub">writes</tspan>  tool manifest · messages</text>
+
+  <text x="660" y="355"><tspan class="t-sub">writes</tspan>  world API · role cards · <tspan class="t-mono">truth.json</tspan></text>
+
+  <text x="660" y="433"><tspan class="t-sub">writes</tspan>  event log · final state snapshot</text>
+
+  <text x="190" y="497" class="t-sub">Each layer depends only on the layers below. Evaluation reads files; it never calls an agent or a running world.</text>
+</svg>
+</div>
+<figcaption>Six layers and the three modules they form. Layers talk only through the contract files on the right, so a new scenario touches the domain pack, a new model touches the runtime, and a new metric touches evaluation.</figcaption>
+</figure>

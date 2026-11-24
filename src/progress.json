@@ -1,0 +1,307 @@
+{
+  "updated": "2026-11-23",
+  "groups": [
+    {
+      "id": "foundations",
+      "title": "Foundations",
+      "items": [
+        {
+          "id": "design-v0",
+          "title": "Design v0: layers, contracts, seats, metrics",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-23",
+          "done": [
+            "Six-layer architecture with contract files between layers",
+            "Seat model: a role can be driven by the tested agent, a script, a frozen model, the reference policy or a person",
+            "Scenario designs for ticketing, shopping and insurance, each with a rule-source table",
+            "Survey of the tools in 7 agent harnesses and 6 service benchmarks"
+          ],
+          "where": [
+            "docs/DESIGN.md, docs/SCENARIOS.md and docs/APPENDIX_tools.md",
+            "Overview page of this site: the two architecture figures"
+          ],
+          "checked": [
+            "Harbor, tau2-bench and the Bespoke harness were read at the source",
+            "Eight paper abstracts were spot-checked; one number was corrected"
+          ],
+          "open": [
+            "Parts are superseded by the review below. The revision is the next item but one."
+          ]
+        },
+        {
+          "id": "review-r1",
+          "title": "Design review, round 1",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-23",
+          "done": [
+            "Review received. Verdict: the scoring, clock and verifier-input specifications need a rewrite; the layered direction stands",
+            "All five blocking issues accepted",
+            "Six of our factual statements corrected; one reviewer statement rejected after checking the source"
+          ],
+          "where": [
+            "Reading notes with a stance on every item, kept with the project's internal files"
+          ],
+          "checked": [
+            "Every numeric counterexample in the review was recomputed by hand",
+            "The closest shopping benchmark was read in full, which showed our claimed gap there does not exist"
+          ],
+          "open": [
+            "No formal written response yet"
+          ]
+        },
+        {
+          "id": "design-v01",
+          "title": "Design revision after the review",
+          "status": "planned",
+          "plan": [
+            "A scoring contract per task family, replacing the single normalised score",
+            "A state machine for scheduling, termination and what happens after a seat finishes",
+            "Trusted sealing of world state and event log before verification",
+            "Corrected rules: the 24-hour cancellation is the agency's own policy; California claim deadlines run from their real triggers"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ticketing",
+      "title": "Ticketing",
+      "items": [
+        {
+          "id": "tk-interface",
+          "title": "Interface definition v0.1",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-23",
+          "done": [
+            "2 roles and 3 seats: one booking agent, two travellers",
+            "30 actions: 25 visible to the agent, 19 to a traveller",
+            "23 entities, named after the fields of Duffel, Amadeus and Expedia where those exist",
+            "Authorization object: single-use, bound to a digest of what was consented to, with a charge ceiling",
+            "Typed message attachments: object references, fact requests and facts over 11 declared fact keys",
+            "33 error codes, and a world-time cost on every call so that repeated reads cannot freeze a deadline",
+            "13 worked examples that follow one booking from question to ticket"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/schema.py and interface.py",
+            "src/macbench/kernel/interface.py, the part other scenarios reuse",
+            "docs/interface/ticketing.md, generated",
+            "Ticketing page of this site: every action with its form, schema and example"
+          ],
+          "checked": [
+            "20 automated tests pass",
+            "Tests cover: the export is complete, travellers cannot transact, the agent cannot consent, every action that moves money requires an authorization, money is integer cents everywhere, every example validates against the interface"
+          ],
+          "open": [
+            "Nothing runs yet. Every action has the status 'declared'",
+            "Round trips are modelled as two slices, but the first world will hold one-way trips only",
+            "The role-card format and the scoring contract are separate items"
+          ]
+        },
+        {
+          "id": "tk-world",
+          "title": "World data: airports, schedule, fares, inventory",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-23",
+          "done": [
+            "16 airports with real coordinates and time zones, 107 city pairs, 4 fictional carriers with hubs",
+            "One week of flights, 8 to 14 March 2027: 6,123 flights, 902 on a weekday, fewer on Saturday",
+            "Block times from distance and heading, so westbound takes longer than eastbound",
+            "Three fare brands and six fare classes per flight, with seats already sold; a party is priced from one class, so several seats can cost more each",
+            "Taxes, bag fees and seat fees in integer cents",
+            "Seat maps for three aircraft types; the taken seats equal the seats sold",
+            "Search as a pure function: nonstops and same-carrier connections that respect each airport's minimum connection time",
+            "Details a traveller would notice: red-eyes that land the next day, the clock change on 14 March, Phoenix without daylight saving, perimeter rules at LaGuardia and Washington National"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/world.py and search.py; every constant of the fare and load model is in one place at the top of world.py",
+            "tools/export_world.py writes the file this site displays",
+            "Ticketing page, World section: search results, departures, network, fares and rules"
+          ],
+          "checked": [
+            "18 new automated tests, 38 in total, all pass",
+            "Tests cover: same seed gives the same world, schedule invariants on all 6,123 flights, great-circle distances against known values, time zones on the clock-change day, perimeter rules, fare ordering and the tax formula, connection rules, filters and sorting, error codes, seat maps against inventory"
+          ],
+          "open": [
+            "Loads and fares follow stated formulas with hand-set constants. They are not yet calibrated against public statistics",
+            "Search runs in Python. The site shows stored results for 12 sample searches, not live search",
+            "No delays or cancellations yet. Round trips are still out"
+          ]
+        },
+        {
+          "id": "tk-kernel",
+          "title": "Kernel: state, logical clock, event log",
+          "status": "next",
+          "plan": [
+            "Actions validated, applied atomically and logged with a global sequence number",
+            "The clock advances with every call; events at one instant have a fixed order",
+            "Replay from the log reproduces the final state"
+          ]
+        },
+        {
+          "id": "tk-read",
+          "title": "Search goes live: offers, fare rules, seat maps",
+          "status": "planned",
+          "plan": [
+            "search_flights, get_offer, get_seat_map and get_flight_status run against the world",
+            "The Ticketing page calls the same code in the browser"
+          ]
+        },
+        {
+          "id": "tk-book",
+          "title": "Booking: proposal, authorization, order, payment",
+          "status": "planned",
+          "plan": [
+            "Hold and instant orders, split payments, single-use authorizations",
+            "Price changes, expired offers and sold-out buckets as real failure paths"
+          ]
+        },
+        {
+          "id": "tk-after",
+          "title": "After booking: changes, cancellations, disruptions",
+          "status": "planned",
+          "plan": [
+            "Change offers and cancellation quotes that state the rule they apply",
+            "Delays and cancellations announced by the airline, with refund eligibility"
+          ]
+        },
+        {
+          "id": "tk-counterparts",
+          "title": "Scripted travellers and a reference policy",
+          "status": "planned",
+          "plan": [
+            "Travellers as complete finite-state policies that react to typed attachments",
+            "A reference agent policy that must succeed against those travellers"
+          ]
+        },
+        {
+          "id": "tk-verify",
+          "title": "Verifier, sealed outputs, Harbor export",
+          "status": "planned",
+          "plan": [
+            "Verifier rebuilds the final state from the log before scoring",
+            "Tasks exported as Harbor folders and run with real agents"
+          ]
+        },
+        {
+          "id": "tk-ui",
+          "title": "A booking interface people recognise",
+          "status": "planned",
+          "plan": [
+            "Search form, result list, fare comparison, seat picker and trip page on top of the same actions",
+            "A person can take any seat and play it"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "site",
+      "title": "This site",
+      "items": [
+        {
+          "id": "site-v0",
+          "title": "First version: overview, architecture, interface explorer, progress",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-23",
+          "done": [
+            "Overview with the design's key points and two architecture figures",
+            "One page per scenario in the navigation",
+            "Interface explorer for ticketing, generated from the interface definition: role switch, action list, request form, schemas, examples",
+            "This progress list, generated from one data file"
+          ],
+          "where": [
+            "src/ in the site repository; build.py assembles index.html"
+          ],
+          "checked": [
+            "HTML structure and every inline SVG parse cleanly; the script passes a syntax check",
+            "Not yet viewed in a browser by the author: layout needs your eyes"
+          ],
+          "open": [
+            "Forms build and validate a request but cannot send it: the world is not connected"
+          ]
+        },
+        {
+          "id": "site-world",
+          "title": "World explorer on the Ticketing page",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-23",
+          "done": [
+            "Search results laid out like a booking site: times, duration, stops, three fare brands side by side, seats left",
+            "Each result opens to its flights, fare breakdown and seat map",
+            "Departures board for any of the 16 airports on any of the 7 days",
+            "Route map, carrier list, and a sanity table of ten city pairs",
+            "Fare brands, fare classes and the pricing rules in words"
+          ],
+          "where": [
+            "src/world.js in the site repository; data/ticketing_world.json is exported by the code repository"
+          ],
+          "checked": [
+            "The page computes no fares or connections. Everything shown comes from the exported file",
+            "Script syntax and page structure checked. Not yet viewed in a browser by the author"
+          ],
+          "open": [
+            "Search is limited to the 12 stored samples until the world runs in the browser"
+          ]
+        },
+        {
+          "id": "site-pages",
+          "title": "Published on GitHub Pages",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-23",
+          "done": [
+            "Site repository pushed; the page is one self-contained index.html"
+          ],
+          "where": [
+            "github.com/MAC-Bench/MAC-Bench.github.io"
+          ],
+          "open": [
+            "The code repository is not pushed yet"
+          ]
+        },
+        {
+          "id": "site-live",
+          "title": "The world running in the browser",
+          "status": "planned",
+          "plan": [
+            "The same Python world code loaded in the page, so the site and the benchmark cannot drift apart",
+            "Replay of recorded trials, step by step"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "insurance",
+      "title": "Insurance claims",
+      "items": [
+        {
+          "id": "ins-ledger",
+          "title": "Claim ledger and rule review",
+          "status": "planned",
+          "plan": [
+            "One ledger for both claim routes, so the same loss cannot be paid twice and a policy limit cannot be used twice",
+            "California property-damage rules first, checked by someone who handles claims, before any task is generated"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shopping",
+      "title": "Shopping",
+      "items": [
+        {
+          "id": "shop-collab",
+          "title": "Built by a collaborator on the shared interface conventions",
+          "status": "planned",
+          "plan": [
+            "Uses the same way of declaring roles, actions, errors and time costs as ticketing"
+          ]
+        }
+      ]
+    }
+  ]
+}

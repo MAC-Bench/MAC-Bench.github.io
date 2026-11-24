@@ -1,0 +1,5106 @@
+{
+ "domain": "ticketing",
+ "version": "0.1",
+ "title": "Flight ticketing",
+ "conventions": {
+  "money": "Integer US cents. Field names end in `_cents`.",
+  "time": "UTC, ISO 8601, second precision. Local times are for display only.",
+  "windows": "Half-open [start, end). At `expires_at` the object is already expired.",
+  "clock": "The world clock is logical. Every call advances it by the action's declared time cost, reads included, so repeated searching cannot freeze a deadline.",
+  "ordering": "Accepted writes get a global sequence number `seq`. Events at the same instant are ordered by (time, priority, id).",
+  "idempotency": "Write actions require `request_id`. A repeated key returns the first result.",
+  "identity": "The actor comes from the seat credential. Every endpoint checks role and object ownership.",
+  "commitments": "Proposals, orders, authorizations and quotes are world objects. Free text never commits anyone."
+ },
+ "envelope": {
+  "request": "CallRequest",
+  "result": "CallResult"
+ },
+ "roles": [
+  {
+   "name": "ota_agent",
+   "title": "Booking agent",
+   "description": "Works for the travel agency. Sees all flights, fares and the orders it created. Does not know the travellers' private preferences and cannot move money or cancel without their authorization.",
+   "seats": [
+    "ota_agent"
+   ],
+   "actions": [
+    "list_airports",
+    "search_policy",
+    "search_flights",
+    "get_offer",
+    "get_seat_map",
+    "get_flight_status",
+    "price_offer",
+    "create_proposal",
+    "get_proposal",
+    "create_order",
+    "pay_order",
+    "get_order",
+    "list_orders",
+    "update_order_services",
+    "search_change_options",
+    "confirm_change",
+    "quote_cancellation",
+    "confirm_cancellation",
+    "split_order",
+    "respond_to_airline_change",
+    "list_authorizations",
+    "send_message",
+    "read_inbox",
+    "get_message_history",
+    "finish"
+   ]
+  },
+  {
+   "name": "traveler",
+   "title": "Traveller",
+   "description": "Holds private preferences, a budget and payment methods. Can search read-only, answer questions, accept or reject proposals and grant authorizations. Cannot book.",
+   "seats": [
+    "traveler_a",
+    "traveler_b"
+   ],
+   "actions": [
+    "list_airports",
+    "search_policy",
+    "search_flights",
+    "get_offer",
+    "get_seat_map",
+    "get_flight_status",
+    "get_proposal",
+    "get_order",
+    "list_orders",
+    "get_my_profile",
+    "get_my_wallet",
+    "respond_to_proposal",
+    "grant_authorization",
+    "revoke_authorization",
+    "list_authorizations",
+    "send_message",
+    "read_inbox",
+    "get_message_history",
+    "finish"
+   ]
+  }
+ ],
+ "errors": {
+  "common": {
+   "VALIDATION_ERROR": "The payload does not match the request schema.",
+   "NOT_PERMITTED": "This role or seat may not call the action on this object.",
+   "NOT_FOUND": "No object with that identifier is visible to the caller.",
+   "IDEMPOTENCY_CONFLICT": "The request_id was already used with a different payload.",
+   "EPISODE_CLOSED": "The episode has ended or this seat has finished."
+  },
+  "domain": {
+   "UNKNOWN_RECIPIENT": "A recipient is not a seat in this episode.",
+   "UNKNOWN_FACT_KEY": "A fact or fact request uses a key the domain does not declare.",
+   "ATTACHMENT_NOT_VISIBLE": "The sender attached an object it is not allowed to see.",
+   "UNKNOWN_AIRPORT": "No airport or metro area with that code.",
+   "UNKNOWN_FLIGHT": "No flight with that identifier.",
+   "UNKNOWN_PARTICIPANT": "A named seat is not a traveller in this episode.",
+   "DATE_OUT_OF_RANGE": "The date is outside the world's schedule horizon.",
+   "OFFER_EXPIRED": "The offer or change offer passed its `expires_at`. Search or price again.",
+   "PRICE_CHANGED": "The price differs from the offer. The response carries the new offer.",
+   "SOLD_OUT": "Not enough seats are left in the fare bucket.",
+   "HOLD_NOT_ALLOWED": "This fare cannot be held unpaid.",
+   "HOLD_EXPIRED": "The hold lapsed and the seats were released.",
+   "INVALID_STATE": "The order or change is not in a state that allows this action.",
+   "INVALID_SPLIT": "Payer shares or payments do not add up to the amount due.",
+   "SEAT_UNAVAILABLE": "A requested seat is occupied or blocked.",
+   "NOT_CHANGEABLE": "The fare conditions do not allow changes.",
+   "QUOTE_EXPIRED": "The cancellation quote passed its `expires_at`.",
+   "CANNOT_SPLIT": "The order has a single passenger or the split would leave an empty order.",
+   "RESPONSE_WINDOW_CLOSED": "The airline change is past its `respond_by`.",
+   "PROPOSAL_NOT_OPEN": "The proposal was already decided, expired or superseded.",
+   "AUTH_REQUIRED": "The action needs an authorization from each affected traveller.",
+   "AUTH_SCOPE_MISMATCH": "The authorization is for a different subject, or the subject changed after consent.",
+   "AUTH_EXPIRED": "The authorization passed its `expires_at`.",
+   "AUTH_CONSUMED": "The authorization was already used. Authorizations are single-use.",
+   "AUTH_REVOKED": "The traveller revoked the authorization.",
+   "AUTH_INSUFFICIENT": "The charge exceeds the authorization's `max_charge_cents`.",
+   "UNKNOWN_PAYMENT_METHOD": "The payment method is not in the grantor's wallet.",
+   "PAYMENT_DECLINED": "The payment method has less available than the charge."
+  }
+ },
+ "entities": [
+  "Airport",
+  "Segment",
+  "Slice",
+  "FareConditions",
+  "PassengerPrice",
+  "Offer",
+  "Seat",
+  "SeatMap",
+  "FlightStatus",
+  "Passenger",
+  "PaymentMethod",
+  "Wallet",
+  "TravelerProfile",
+  "PaymentRecord",
+  "AuthorizationSubject",
+  "Authorization",
+  "Proposal",
+  "Order",
+  "OrderSummary",
+  "AirlineChange",
+  "ChangeOffer",
+  "CancellationQuote",
+  "PolicyPassage"
+ ],
+ "extras": {
+  "fact_keys": {
+   "origin": "Airport or metro code the traveller departs from.",
+   "destination": "Airport or metro code the traveller is going to.",
+   "travel_date": "Date of travel, YYYY-MM-DD.",
+   "earliest_departure_local": "Earliest acceptable local departure, HH:MM.",
+   "latest_arrival_local": "Latest acceptable local arrival, YYYY-MM-DDTHH:MM.",
+   "budget_cents": "Most the traveller will pay in total, in cents.",
+   "max_stops": "0 for nonstop only, 1 if one connection is acceptable.",
+   "needs_refundable": "Whether the traveller needs a fare refundable to the original payment.",
+   "checked_bags": "Number of checked bags.",
+   "wants_adjacent_seat": "Whether sitting next to the other traveller matters.",
+   "payment_method_id": "The wallet method the traveller wants charged."
+  }
+ },
+ "actions": [
+  {
+   "name": "list_airports",
+   "group": "Reference",
+   "summary": "List airports, with coordinates, time zone and metro area.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "",
+   "errors": [],
+   "status": "declared",
+   "request": "ListAirportsRequest",
+   "response": "ListAirportsResponse"
+  },
+  {
+   "name": "search_policy",
+   "group": "Reference",
+   "summary": "Find passages in the policy documents.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 30,
+   "visibility": "The agent searches the agency handbook. A traveller searches the customer terms.",
+   "errors": [],
+   "status": "declared",
+   "request": "SearchPolicyRequest",
+   "response": "SearchPolicyResponse"
+  },
+  {
+   "name": "search_flights",
+   "group": "Flight shopping",
+   "summary": "Search one-way itineraries and get priced offers.",
+   "description": "Returns nonstop and one-connection itineraries that respect the minimum connection time. Offers expire. `passengers` above 1 prices everyone from one fare bucket, so two seats may cost more each than one seat.",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "UNKNOWN_AIRPORT",
+    "DATE_OUT_OF_RANGE"
+   ],
+   "status": "declared",
+   "request": "SearchFlightsRequest",
+   "response": "SearchFlightsResponse"
+  },
+  {
+   "name": "get_offer",
+   "group": "Flight shopping",
+   "summary": "Read one offer with its fare conditions.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 20,
+   "visibility": "",
+   "errors": [
+    "OFFER_EXPIRED"
+   ],
+   "status": "declared",
+   "request": "OfferIdRequest",
+   "response": "OfferResponse"
+  },
+  {
+   "name": "get_seat_map",
+   "group": "Flight shopping",
+   "summary": "Seat availability and seat fees for one flight.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 20,
+   "visibility": "",
+   "errors": [
+    "UNKNOWN_FLIGHT"
+   ],
+   "status": "declared",
+   "request": "SeatMapRequest",
+   "response": "SeatMapResponse"
+  },
+  {
+   "name": "get_flight_status",
+   "group": "Flight shopping",
+   "summary": "Current status of a flight: on time, delayed or cancelled.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "",
+   "errors": [
+    "UNKNOWN_FLIGHT"
+   ],
+   "status": "declared",
+   "request": "FlightIdRequest",
+   "response": "FlightStatusResponse"
+  },
+  {
+   "name": "price_offer",
+   "group": "Booking",
+   "summary": "Confirm an offer's price and availability before booking.",
+   "description": "Reserves nothing. Returns the offer at its current price with a fresh expiry.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "read",
+   "time_cost_s": 30,
+   "visibility": "",
+   "errors": [
+    "OFFER_EXPIRED",
+    "SOLD_OUT"
+   ],
+   "status": "declared",
+   "request": "OfferIdRequest",
+   "response": "PriceOfferResponse"
+  },
+  {
+   "name": "create_proposal",
+   "group": "Booking",
+   "summary": "Put a concrete plan in front of the travellers.",
+   "description": "A proposal names one offer per traveller and who pays how much. Travellers accept it and authorise against it. Creating a new proposal for the same travellers supersedes the open one.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "visibility": "Visible to the agent and to every traveller named in it.",
+   "errors": [
+    "UNKNOWN_PARTICIPANT",
+    "OFFER_EXPIRED",
+    "SOLD_OUT",
+    "INVALID_SPLIT"
+   ],
+   "status": "declared",
+   "request": "CreateProposalRequest",
+   "response": "ProposalResponseModel"
+  },
+  {
+   "name": "get_proposal",
+   "group": "Booking",
+   "summary": "Read a proposal and the travellers' responses.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "The agent and the travellers named in it.",
+   "errors": [],
+   "status": "declared",
+   "request": "ProposalIdRequest",
+   "response": "ProposalResponseModel"
+  },
+  {
+   "name": "create_order",
+   "group": "Booking",
+   "summary": "Book an offer: ticket it now, or hold it unpaid.",
+   "description": "`instant` needs payments that sum to the total, each backed by an authorization whose subject is the proposal being carried out. `hold` takes the seats without payment until `payment_required_by`, if the fare allows it.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "UNKNOWN_PARTICIPANT",
+    "OFFER_EXPIRED",
+    "PRICE_CHANGED",
+    "SOLD_OUT",
+    "HOLD_NOT_ALLOWED",
+    "AUTH_REQUIRED",
+    "AUTH_SCOPE_MISMATCH",
+    "AUTH_EXPIRED",
+    "AUTH_CONSUMED",
+    "AUTH_REVOKED",
+    "AUTH_INSUFFICIENT",
+    "PAYMENT_DECLINED",
+    "INVALID_SPLIT"
+   ],
+   "status": "declared",
+   "request": "CreateOrderRequest",
+   "response": "OrderResponse"
+  },
+  {
+   "name": "pay_order",
+   "group": "Booking",
+   "summary": "Pay a held order and issue the tickets.",
+   "description": "Each payment consumes one authorization whose subject is this order at its current version.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "INVALID_STATE",
+    "HOLD_EXPIRED",
+    "PRICE_CHANGED",
+    "AUTH_REQUIRED",
+    "AUTH_SCOPE_MISMATCH",
+    "AUTH_EXPIRED",
+    "AUTH_CONSUMED",
+    "AUTH_REVOKED",
+    "AUTH_INSUFFICIENT",
+    "PAYMENT_DECLINED",
+    "INVALID_SPLIT"
+   ],
+   "status": "declared",
+   "request": "PayOrderRequest",
+   "response": "OrderResponse"
+  },
+  {
+   "name": "get_order",
+   "group": "Booking",
+   "summary": "Read an order: status, payments, seats, airline changes.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "The agent that created it, and travellers who are passengers or payers on it.",
+   "errors": [],
+   "status": "declared",
+   "request": "OrderIdRequest",
+   "response": "OrderResponse"
+  },
+  {
+   "name": "list_orders",
+   "group": "Booking",
+   "summary": "List the orders visible to this seat.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "",
+   "errors": [],
+   "status": "declared",
+   "request": "Empty",
+   "response": "ListOrdersResponse"
+  },
+  {
+   "name": "update_order_services",
+   "group": "Booking",
+   "summary": "Assign seats and add checked bags.",
+   "description": "Free choices need no authorization. Paid ones need one from the paying traveller for this order version.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "INVALID_STATE",
+    "SEAT_UNAVAILABLE",
+    "AUTH_REQUIRED",
+    "AUTH_SCOPE_MISMATCH",
+    "AUTH_EXPIRED",
+    "AUTH_CONSUMED",
+    "AUTH_REVOKED",
+    "AUTH_INSUFFICIENT",
+    "PAYMENT_DECLINED",
+    "INVALID_SPLIT"
+   ],
+   "status": "declared",
+   "request": "UpdateOrderServicesRequest",
+   "response": "UpdateOrderServicesResponse"
+  },
+  {
+   "name": "search_change_options",
+   "group": "After booking",
+   "summary": "Price the ways an order could be changed.",
+   "description": "Each change offer states the penalty, the fare difference and the net amount due.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "read",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "INVALID_STATE",
+    "NOT_CHANGEABLE",
+    "DATE_OUT_OF_RANGE"
+   ],
+   "status": "declared",
+   "request": "SearchChangeOptionsRequest",
+   "response": "SearchChangeOptionsResponse"
+  },
+  {
+   "name": "confirm_change",
+   "group": "After booking",
+   "summary": "Carry out a change offer.",
+   "description": "",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "OFFER_EXPIRED",
+    "SOLD_OUT",
+    "INVALID_STATE",
+    "AUTH_REQUIRED",
+    "AUTH_SCOPE_MISMATCH",
+    "AUTH_EXPIRED",
+    "AUTH_CONSUMED",
+    "AUTH_REVOKED",
+    "AUTH_INSUFFICIENT",
+    "PAYMENT_DECLINED",
+    "INVALID_SPLIT"
+   ],
+   "status": "declared",
+   "request": "ConfirmChangeRequest",
+   "response": "OrderResponse"
+  },
+  {
+   "name": "quote_cancellation",
+   "group": "After booking",
+   "summary": "Ask what cancelling would refund, and under which rule.",
+   "description": "Changes nothing. The quote names the refund, the penalty, where the money goes and the rule applied.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "read",
+   "time_cost_s": 30,
+   "visibility": "",
+   "errors": [
+    "INVALID_STATE"
+   ],
+   "status": "declared",
+   "request": "QuoteCancellationRequest",
+   "response": "QuoteCancellationResponse"
+  },
+  {
+   "name": "confirm_cancellation",
+   "group": "After booking",
+   "summary": "Cancel as quoted and refund the payers.",
+   "description": "",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "QUOTE_EXPIRED",
+    "INVALID_STATE",
+    "AUTH_REQUIRED",
+    "AUTH_SCOPE_MISMATCH",
+    "AUTH_EXPIRED",
+    "AUTH_CONSUMED",
+    "AUTH_REVOKED"
+   ],
+   "status": "declared",
+   "request": "ConfirmCancellationRequest",
+   "response": "CancellationResponse"
+  },
+  {
+   "name": "split_order",
+   "group": "After booking",
+   "summary": "Move some travellers to an order of their own.",
+   "description": "Needed before changing or cancelling only part of a shared order. Payments follow their payer.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "INVALID_STATE",
+    "CANNOT_SPLIT",
+    "UNKNOWN_PARTICIPANT"
+   ],
+   "status": "declared",
+   "request": "SplitOrderRequest",
+   "response": "SplitOrderResponse"
+  },
+  {
+   "name": "respond_to_airline_change",
+   "group": "After booking",
+   "summary": "Accept an airline's change, rebook, or take the refund.",
+   "description": "`refund` is offered only when the change is significant or the flight was cancelled.",
+   "roles": [
+    "ota_agent"
+   ],
+   "effect": "write",
+   "time_cost_s": 60,
+   "visibility": "",
+   "errors": [
+    "INVALID_STATE",
+    "RESPONSE_WINDOW_CLOSED",
+    "OFFER_EXPIRED",
+    "AUTH_REQUIRED",
+    "AUTH_SCOPE_MISMATCH",
+    "AUTH_EXPIRED",
+    "AUTH_CONSUMED",
+    "AUTH_REVOKED"
+   ],
+   "status": "declared",
+   "request": "RespondToAirlineChangeRequest",
+   "response": "AirlineChangeResponse"
+  },
+  {
+   "name": "get_my_profile",
+   "group": "My account",
+   "summary": "This traveller's passenger details.",
+   "description": "",
+   "roles": [
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "",
+   "errors": [],
+   "status": "declared",
+   "request": "Empty",
+   "response": "ProfileResponse"
+  },
+  {
+   "name": "get_my_wallet",
+   "group": "My account",
+   "summary": "This traveller's payment methods and what is available on each.",
+   "description": "",
+   "roles": [
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "",
+   "errors": [],
+   "status": "declared",
+   "request": "Empty",
+   "response": "WalletResponse"
+  },
+  {
+   "name": "respond_to_proposal",
+   "group": "Consent",
+   "summary": "Accept or reject the agent's proposal.",
+   "description": "Accepting states agreement with the plan. It moves no money; that takes an authorization.",
+   "roles": [
+    "traveler"
+   ],
+   "effect": "write",
+   "time_cost_s": 30,
+   "visibility": "",
+   "errors": [
+    "PROPOSAL_NOT_OPEN"
+   ],
+   "status": "declared",
+   "request": "RespondToProposalRequest",
+   "response": "ProposalResponseModel"
+  },
+  {
+   "name": "grant_authorization",
+   "group": "Consent",
+   "summary": "Let the agent act on one specific subject, up to a charge ceiling.",
+   "description": "Single-use. The world stores a digest of the subject as it is now; if the proposal, order or quote changes afterwards, the authorization no longer matches and cannot be used.",
+   "roles": [
+    "traveler"
+   ],
+   "effect": "write",
+   "time_cost_s": 30,
+   "visibility": "",
+   "errors": [
+    "UNKNOWN_PAYMENT_METHOD",
+    "PROPOSAL_NOT_OPEN",
+    "INVALID_STATE"
+   ],
+   "status": "declared",
+   "request": "GrantAuthorizationRequest",
+   "response": "AuthorizationResponse"
+  },
+  {
+   "name": "revoke_authorization",
+   "group": "Consent",
+   "summary": "Withdraw an authorization that has not been used.",
+   "description": "",
+   "roles": [
+    "traveler"
+   ],
+   "effect": "write",
+   "time_cost_s": 10,
+   "visibility": "",
+   "errors": [
+    "AUTH_CONSUMED"
+   ],
+   "status": "declared",
+   "request": "AuthorizationIdRequest",
+   "response": "AuthorizationResponse"
+  },
+  {
+   "name": "list_authorizations",
+   "group": "Consent",
+   "summary": "List authorizations granted by this traveller, or granted to this agent.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "",
+   "errors": [],
+   "status": "declared",
+   "request": "ListAuthorizationsRequest",
+   "response": "ListAuthorizationsResponse"
+  },
+  {
+   "name": "send_message",
+   "group": "Messages",
+   "summary": "Send a message to one or more seats.",
+   "description": "Free text plus typed attachments. To make an offer, create the world object first and attach a reference to it; a price written in text commits nobody.",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "message",
+   "time_cost_s": 30,
+   "visibility": "Delivered only to the named recipients. The board sets `sender`.",
+   "errors": [
+    "UNKNOWN_RECIPIENT",
+    "UNKNOWN_FACT_KEY",
+    "ATTACHMENT_NOT_VISIBLE"
+   ],
+   "status": "declared",
+   "request": "SendMessageRequest",
+   "response": "SendMessageResponse"
+  },
+  {
+   "name": "read_inbox",
+   "group": "Messages",
+   "summary": "Read unread messages, optionally waiting for the next one.",
+   "description": "With `wait_minutes` the world clock advances while the seat sleeps. The wait ends early when a message or an event notice for this seat arrives.",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "message",
+   "time_cost_s": 10,
+   "visibility": "Only messages addressed to this seat.",
+   "errors": [],
+   "status": "declared",
+   "request": "ReadInboxRequest",
+   "response": "ReadInboxResponse"
+  },
+  {
+   "name": "get_message_history",
+   "group": "Messages",
+   "summary": "Page through earlier messages of this seat.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "visibility": "Only messages this seat sent or received.",
+   "errors": [],
+   "status": "declared",
+   "request": "MessageHistoryRequest",
+   "response": "MessageHistoryResponse"
+  },
+  {
+   "name": "finish",
+   "group": "Session",
+   "summary": "Hand back control and end this seat's session.",
+   "description": "Finishing does not stop the world. Pending holds, deadlines and scheduled events still settle until the task's observation end, with nobody acting for this seat.",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "control",
+   "time_cost_s": 10,
+   "visibility": "",
+   "errors": [],
+   "status": "declared",
+   "request": "FinishRequest",
+   "response": "FinishResponse"
+  }
+ ],
+ "schemas": {
+  "AirlineChange": {
+   "additionalProperties": false,
+   "description": "A change the airline made to a ticketed order. Mirrors Duffel's airline-initiated changes.",
+   "properties": {
+    "change_id": {
+     "title": "Change Id",
+     "type": "string"
+    },
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "schedule_change",
+      "delay",
+      "cancellation"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "flight_id": {
+     "title": "Flight Id",
+     "type": "string"
+    },
+    "old_departs_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Old Departs At",
+     "type": "string"
+    },
+    "old_arrives_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Old Arrives At",
+     "type": "string"
+    },
+    "new_departs_at": {
+     "anyOf": [
+      {
+       "description": "UTC timestamp, ISO 8601, second precision.",
+       "examples": [
+        "2027-03-12T14:30:00Z"
+       ],
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "New Departs At"
+    },
+    "new_arrives_at": {
+     "anyOf": [
+      {
+       "description": "UTC timestamp, ISO 8601, second precision.",
+       "examples": [
+        "2027-03-12T14:30:00Z"
+       ],
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "New Arrives At"
+    },
+    "significant": {
+     "description": "True when the change crosses the refund thresholds in the policy.",
+     "title": "Significant",
+     "type": "boolean"
+    },
+    "options": {
+     "items": {
+      "enum": [
+       "accept",
+       "rebook",
+       "refund"
+      ],
+      "type": "string"
+     },
+     "title": "Options",
+     "type": "array"
+    },
+    "respond_by": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Respond By",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "pending",
+      "accepted",
+      "rebooked",
+      "refunded",
+      "lapsed"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "announced_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Announced At",
+     "type": "string"
+    }
+   },
+   "required": [
+    "change_id",
+    "order_id",
+    "kind",
+    "flight_id",
+    "old_departs_at",
+    "old_arrives_at",
+    "significant",
+    "options",
+    "respond_by",
+    "status",
+    "announced_at"
+   ],
+   "title": "AirlineChange",
+   "type": "object"
+  },
+  "AirlineChangeResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "order": {
+     "$ref": "#/schemas/Order"
+    },
+    "refunds": {
+     "items": {
+      "$ref": "#/schemas/PaymentRecord"
+     },
+     "title": "Refunds",
+     "type": "array"
+    }
+   },
+   "required": [
+    "order"
+   ],
+   "title": "AirlineChangeResponse",
+   "type": "object"
+  },
+  "Airport": {
+   "additionalProperties": false,
+   "properties": {
+    "code": {
+     "description": "IATA code.",
+     "examples": [
+      "SFO"
+     ],
+     "title": "Code",
+     "type": "string"
+    },
+    "name": {
+     "title": "Name",
+     "type": "string"
+    },
+    "city": {
+     "title": "City",
+     "type": "string"
+    },
+    "metro": {
+     "description": "Metro-area code shared by nearby airports, for example NYC for JFK, LGA, EWR.",
+     "title": "Metro",
+     "type": "string"
+    },
+    "country": {
+     "title": "Country",
+     "type": "string"
+    },
+    "lat": {
+     "title": "Lat",
+     "type": "number"
+    },
+    "lon": {
+     "title": "Lon",
+     "type": "number"
+    },
+    "tz": {
+     "description": "IANA time zone.",
+     "examples": [
+      "America/Los_Angeles"
+     ],
+     "title": "Tz",
+     "type": "string"
+    },
+    "min_connection_minutes": {
+     "description": "Shortest legal connection between two flights at this airport.",
+     "title": "Min Connection Minutes",
+     "type": "integer"
+    },
+    "ground_minutes_to_center": {
+     "description": "Typical ground transfer time to the metro centre.",
+     "title": "Ground Minutes To Center",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "code",
+    "name",
+    "city",
+    "metro",
+    "country",
+    "lat",
+    "lon",
+    "tz",
+    "min_connection_minutes",
+    "ground_minutes_to_center"
+   ],
+   "title": "Airport",
+   "type": "object"
+  },
+  "Authorization": {
+   "additionalProperties": false,
+   "description": "A traveller's single-use consent for the agent to act on one specific subject, with a charge ceiling.",
+   "properties": {
+    "authorization_id": {
+     "title": "Authorization Id",
+     "type": "string"
+    },
+    "grantor": {
+     "description": "The traveller seat that consents.",
+     "title": "Grantor",
+     "type": "string"
+    },
+    "grantee": {
+     "description": "The seat allowed to use it.",
+     "title": "Grantee",
+     "type": "string"
+    },
+    "subject": {
+     "$ref": "#/schemas/AuthorizationSubject"
+    },
+    "max_charge_cents": {
+     "description": "Ceiling on what may be charged to the grantor. 0 is consent without payment.",
+     "minimum": 0,
+     "title": "Max Charge Cents",
+     "type": "integer"
+    },
+    "payment_method_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Payment Method Id"
+    },
+    "status": {
+     "enum": [
+      "active",
+      "consumed",
+      "expired",
+      "revoked"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "created_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Created At",
+     "type": "string"
+    },
+    "expires_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Expires At",
+     "type": "string"
+    },
+    "consumed_at_seq": {
+     "anyOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Consumed At Seq"
+    }
+   },
+   "required": [
+    "authorization_id",
+    "grantor",
+    "grantee",
+    "subject",
+    "max_charge_cents",
+    "status",
+    "created_at",
+    "expires_at"
+   ],
+   "title": "Authorization",
+   "type": "object"
+  },
+  "AuthorizationIdRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "authorization_id": {
+     "title": "Authorization Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "authorization_id"
+   ],
+   "title": "AuthorizationIdRequest",
+   "type": "object"
+  },
+  "AuthorizationResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "authorization": {
+     "$ref": "#/schemas/Authorization"
+    }
+   },
+   "required": [
+    "authorization"
+   ],
+   "title": "AuthorizationResponse",
+   "type": "object"
+  },
+  "AuthorizationSubject": {
+   "additionalProperties": false,
+   "description": "Exactly what a traveller consents to. The digest pins the content, so swapping the itinerary voids the consent.",
+   "properties": {
+    "type": {
+     "enum": [
+      "proposal",
+      "order",
+      "change_offer",
+      "cancellation_quote",
+      "airline_change"
+     ],
+     "title": "Type",
+     "type": "string"
+    },
+    "id": {
+     "title": "Id",
+     "type": "string"
+    },
+    "content_digest": {
+     "description": "Digest of the subject's content when consent was given. Filled in by the world.",
+     "title": "Content Digest",
+     "type": "string"
+    }
+   },
+   "required": [
+    "type",
+    "id",
+    "content_digest"
+   ],
+   "title": "AuthorizationSubject",
+   "type": "object"
+  },
+  "BagCount": {
+   "additionalProperties": false,
+   "properties": {
+    "passenger_id": {
+     "title": "Passenger Id",
+     "type": "string"
+    },
+    "checked_bags": {
+     "maximum": 3,
+     "minimum": 0,
+     "title": "Checked Bags",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "passenger_id",
+    "checked_bags"
+   ],
+   "title": "BagCount",
+   "type": "object"
+  },
+  "CallError": {
+   "additionalProperties": false,
+   "properties": {
+    "code": {
+     "description": "Machine-readable error code from the interface's error catalogue.",
+     "title": "Code",
+     "type": "string"
+    },
+    "message": {
+     "description": "Human-readable explanation.",
+     "title": "Message",
+     "type": "string"
+    },
+    "details": {
+     "additionalProperties": true,
+     "title": "Details",
+     "type": "object"
+    }
+   },
+   "required": [
+    "code",
+    "message"
+   ],
+   "title": "CallError",
+   "type": "object"
+  },
+  "CallRequest": {
+   "additionalProperties": false,
+   "description": "What a seat sends. The actor is taken from the seat's credential, never from the body.",
+   "properties": {
+    "action": {
+     "description": "Action name, for example `search_flights`.",
+     "title": "Action",
+     "type": "string"
+    },
+    "request_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Idempotency key chosen by the caller. Required for write actions. Repeating a call with the same key returns the first result and changes nothing.",
+     "title": "Request Id"
+    },
+    "payload": {
+     "additionalProperties": true,
+     "description": "The action's request object.",
+     "title": "Payload",
+     "type": "object"
+    }
+   },
+   "required": [
+    "action"
+   ],
+   "title": "CallRequest",
+   "type": "object"
+  },
+  "CallResult": {
+   "additionalProperties": false,
+   "description": "What the world returns for every call, successful or not.",
+   "properties": {
+    "ok": {
+     "title": "Ok",
+     "type": "boolean"
+    },
+    "result": {
+     "anyOf": [
+      {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "The action's response object when `ok`.",
+     "title": "Result"
+    },
+    "error": {
+     "anyOf": [
+      {
+       "$ref": "#/schemas/CallError"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null
+    },
+    "world_time": {
+     "description": "World clock after this call was applied.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "World Time",
+     "type": "string"
+    },
+    "seq": {
+     "description": "Global commit sequence number after this call. Total order of all accepted writes.",
+     "title": "Seq",
+     "type": "integer"
+    },
+    "time_cost_s": {
+     "description": "World seconds this call consumed.",
+     "title": "Time Cost S",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "ok",
+    "world_time",
+    "seq",
+    "time_cost_s"
+   ],
+   "title": "CallResult",
+   "type": "object"
+  },
+  "CancellationQuote": {
+   "additionalProperties": false,
+   "properties": {
+    "quote_id": {
+     "title": "Quote Id",
+     "type": "string"
+    },
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "order_version": {
+     "title": "Order Version",
+     "type": "integer"
+    },
+    "passenger_seats": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Passenger Seats",
+     "type": "array"
+    },
+    "refund_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Refund Cents",
+     "type": "integer"
+    },
+    "penalty_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Penalty Cents",
+     "type": "integer"
+    },
+    "refund_to": {
+     "$ref": "#/schemas/RefundTarget"
+    },
+    "rule_basis": {
+     "description": "Which rule produced the amounts. The 24-hour rule here is the agency's own policy: the US rule binds airlines, not agencies.",
+     "enum": [
+      "fare_conditions",
+      "agency_24h_policy",
+      "carrier_cancellation",
+      "significant_change"
+     ],
+     "title": "Rule Basis",
+     "type": "string"
+    },
+    "content_digest": {
+     "title": "Content Digest",
+     "type": "string"
+    },
+    "expires_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Expires At",
+     "type": "string"
+    }
+   },
+   "required": [
+    "quote_id",
+    "order_id",
+    "order_version",
+    "passenger_seats",
+    "refund_cents",
+    "penalty_cents",
+    "refund_to",
+    "rule_basis",
+    "content_digest",
+    "expires_at"
+   ],
+   "title": "CancellationQuote",
+   "type": "object"
+  },
+  "CancellationResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "order": {
+     "$ref": "#/schemas/Order"
+    },
+    "refunds": {
+     "description": "Refunds go to the payer, not the passenger.",
+     "items": {
+      "$ref": "#/schemas/PaymentRecord"
+     },
+     "title": "Refunds",
+     "type": "array"
+    }
+   },
+   "required": [
+    "order",
+    "refunds"
+   ],
+   "title": "CancellationResponse",
+   "type": "object"
+  },
+  "ChangeOffer": {
+   "additionalProperties": false,
+   "properties": {
+    "change_offer_id": {
+     "title": "Change Offer Id",
+     "type": "string"
+    },
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "order_version": {
+     "title": "Order Version",
+     "type": "integer"
+    },
+    "passenger_seats": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Passenger Seats",
+     "type": "array"
+    },
+    "new_offer": {
+     "$ref": "#/schemas/Offer"
+    },
+    "penalty_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Penalty Cents",
+     "type": "integer"
+    },
+    "fare_difference_cents": {
+     "description": "New fare minus old fare. Negative when the new fare is cheaper.",
+     "title": "Fare Difference Cents",
+     "type": "integer"
+    },
+    "total_due_cents": {
+     "description": "Penalty plus fare difference. Negative means money comes back.",
+     "title": "Total Due Cents",
+     "type": "integer"
+    },
+    "refund_to": {
+     "$ref": "#/schemas/RefundTarget"
+    },
+    "content_digest": {
+     "title": "Content Digest",
+     "type": "string"
+    },
+    "expires_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Expires At",
+     "type": "string"
+    }
+   },
+   "required": [
+    "change_offer_id",
+    "order_id",
+    "order_version",
+    "passenger_seats",
+    "new_offer",
+    "penalty_cents",
+    "fare_difference_cents",
+    "total_due_cents",
+    "refund_to",
+    "content_digest",
+    "expires_at"
+   ],
+   "title": "ChangeOffer",
+   "type": "object"
+  },
+  "ConfirmCancellationRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "quote_id": {
+     "title": "Quote Id",
+     "type": "string"
+    },
+    "authorization_ids": {
+     "description": "One from every traveller being cancelled.",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Authorization Ids",
+     "type": "array"
+    }
+   },
+   "required": [
+    "quote_id",
+    "authorization_ids"
+   ],
+   "title": "ConfirmCancellationRequest",
+   "type": "object"
+  },
+  "ConfirmChangeRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "change_offer_id": {
+     "title": "Change Offer Id",
+     "type": "string"
+    },
+    "authorization_ids": {
+     "description": "One from every affected traveller.",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Authorization Ids",
+     "type": "array"
+    },
+    "payments": {
+     "items": {
+      "$ref": "#/schemas/PaymentInput"
+     },
+     "title": "Payments",
+     "type": "array"
+    }
+   },
+   "required": [
+    "change_offer_id",
+    "authorization_ids"
+   ],
+   "title": "ConfirmChangeRequest",
+   "type": "object"
+  },
+  "CreateOrderRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "offer_id": {
+     "title": "Offer Id",
+     "type": "string"
+    },
+    "passenger_seats": {
+     "description": "Travellers on this order. One order per offer.",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Passenger Seats",
+     "type": "array"
+    },
+    "order_type": {
+     "enum": [
+      "instant",
+      "hold"
+     ],
+     "title": "Order Type",
+     "type": "string"
+    },
+    "proposal_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "The proposal this order carries out, if any.",
+     "title": "Proposal Id"
+    },
+    "payments": {
+     "description": "Required for `instant`. Must sum to the total.",
+     "items": {
+      "$ref": "#/schemas/PaymentInput"
+     },
+     "title": "Payments",
+     "type": "array"
+    }
+   },
+   "required": [
+    "offer_id",
+    "passenger_seats",
+    "order_type"
+   ],
+   "title": "CreateOrderRequest",
+   "type": "object"
+  },
+  "CreateProposalRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "items": {
+     "items": {
+      "$ref": "#/schemas/ProposalItemInput"
+     },
+     "minItems": 1,
+     "title": "Items",
+     "type": "array"
+    },
+    "payer_split": {
+     "items": {
+      "$ref": "#/schemas/PayerShare"
+     },
+     "minItems": 1,
+     "title": "Payer Split",
+     "type": "array"
+    },
+    "note": {
+     "default": "",
+     "maxLength": 1000,
+     "title": "Note",
+     "type": "string"
+    },
+    "expires_in_minutes": {
+     "default": 60,
+     "maximum": 1440,
+     "minimum": 5,
+     "title": "Expires In Minutes",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "items",
+    "payer_split"
+   ],
+   "title": "CreateProposalRequest",
+   "type": "object"
+  },
+  "Empty": {
+   "additionalProperties": false,
+   "properties": {},
+   "title": "Empty",
+   "type": "object"
+  },
+  "Fact": {
+   "additionalProperties": false,
+   "description": "One typed statement by the sender about itself or its principal.",
+   "properties": {
+    "kind": {
+     "const": "fact",
+     "default": "fact",
+     "title": "Kind",
+     "type": "string"
+    },
+    "key": {
+     "title": "Key",
+     "type": "string"
+    },
+    "value": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      },
+      {
+       "type": "boolean"
+      }
+     ],
+     "title": "Value"
+    }
+   },
+   "required": [
+    "key",
+    "value"
+   ],
+   "title": "Fact",
+   "type": "object"
+  },
+  "FactRequest": {
+   "additionalProperties": false,
+   "description": "Asks the recipient for typed facts. Keys come from the domain's `fact_keys` table.",
+   "properties": {
+    "kind": {
+     "const": "fact_request",
+     "default": "fact_request",
+     "title": "Kind",
+     "type": "string"
+    },
+    "keys": {
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Keys",
+     "type": "array"
+    }
+   },
+   "required": [
+    "keys"
+   ],
+   "title": "FactRequest",
+   "type": "object"
+  },
+  "FareBrand": {
+   "enum": [
+    "basic",
+    "standard",
+    "flex"
+   ],
+   "title": "FareBrand",
+   "type": "string"
+  },
+  "FareConditions": {
+   "additionalProperties": false,
+   "description": "What the fare allows before departure. Mirrors Duffel's `conditions`.",
+   "properties": {
+    "changeable": {
+     "title": "Changeable",
+     "type": "boolean"
+    },
+    "change_fee_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Change Fee Cents",
+     "type": "integer"
+    },
+    "cancellable": {
+     "title": "Cancellable",
+     "type": "boolean"
+    },
+    "cancel_fee_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Cancel Fee Cents",
+     "type": "integer"
+    },
+    "refund_to": {
+     "$ref": "#/schemas/RefundTarget",
+     "description": "Where a voluntary cancellation refund goes."
+    },
+    "holdable": {
+     "description": "Whether the fare can be held unpaid.",
+     "title": "Holdable",
+     "type": "boolean"
+    },
+    "checked_bags_included": {
+     "title": "Checked Bags Included",
+     "type": "integer"
+    },
+    "seat_selection_included": {
+     "title": "Seat Selection Included",
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "changeable",
+    "change_fee_cents",
+    "cancellable",
+    "cancel_fee_cents",
+    "refund_to",
+    "holdable",
+    "checked_bags_included",
+    "seat_selection_included"
+   ],
+   "title": "FareConditions",
+   "type": "object"
+  },
+  "FinishRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "summary": {
+     "description": "What the seat did and what it leaves open.",
+     "maxLength": 2000,
+     "title": "Summary",
+     "type": "string"
+    }
+   },
+   "required": [
+    "summary"
+   ],
+   "title": "FinishRequest",
+   "type": "object"
+  },
+  "FinishResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "acknowledged": {
+     "title": "Acknowledged",
+     "type": "boolean"
+    },
+    "observation_ends_at": {
+     "description": "The world keeps running until this time. Deadlines and events before it still settle without this seat.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Observation Ends At",
+     "type": "string"
+    }
+   },
+   "required": [
+    "acknowledged",
+    "observation_ends_at"
+   ],
+   "title": "FinishResponse",
+   "type": "object"
+  },
+  "FlightIdRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "flight_id": {
+     "title": "Flight Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "flight_id"
+   ],
+   "title": "FlightIdRequest",
+   "type": "object"
+  },
+  "FlightStatus": {
+   "additionalProperties": false,
+   "properties": {
+    "flight_id": {
+     "title": "Flight Id",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "scheduled",
+      "delayed",
+      "cancelled",
+      "departed",
+      "arrived"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "delay_minutes": {
+     "default": 0,
+     "title": "Delay Minutes",
+     "type": "integer"
+    },
+    "cause": {
+     "anyOf": [
+      {
+       "enum": [
+        "carrier",
+        "weather",
+        "air_traffic",
+        "security",
+        "late_aircraft"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Cause"
+    },
+    "controllable": {
+     "anyOf": [
+      {
+       "type": "boolean"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Whether the cause is within the airline's control.",
+     "title": "Controllable"
+    },
+    "departs_at": {
+     "description": "Current expected departure.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Departs At",
+     "type": "string"
+    },
+    "arrives_at": {
+     "description": "Current expected arrival.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Arrives At",
+     "type": "string"
+    },
+    "updated_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Updated At",
+     "type": "string"
+    }
+   },
+   "required": [
+    "flight_id",
+    "status",
+    "departs_at",
+    "arrives_at",
+    "updated_at"
+   ],
+   "title": "FlightStatus",
+   "type": "object"
+  },
+  "FlightStatusResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "status": {
+     "$ref": "#/schemas/FlightStatus"
+    }
+   },
+   "required": [
+    "status"
+   ],
+   "title": "FlightStatusResponse",
+   "type": "object"
+  },
+  "GrantAuthorizationRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "subject": {
+     "$ref": "#/schemas/SubjectInput"
+    },
+    "max_charge_cents": {
+     "description": "0 for consent without payment.",
+     "minimum": 0,
+     "title": "Max Charge Cents",
+     "type": "integer"
+    },
+    "payment_method_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Required when `max_charge_cents` is above 0.",
+     "title": "Payment Method Id"
+    },
+    "expires_in_minutes": {
+     "default": 60,
+     "maximum": 1440,
+     "minimum": 5,
+     "title": "Expires In Minutes",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "subject",
+    "max_charge_cents"
+   ],
+   "title": "GrantAuthorizationRequest",
+   "type": "object"
+  },
+  "HoldInfo": {
+   "additionalProperties": false,
+   "properties": {
+    "payment_required_by": {
+     "description": "Unpaid at this time, the order is cancelled and the seats released.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Payment Required By",
+     "type": "string"
+    },
+    "price_guaranteed_until": {
+     "anyOf": [
+      {
+       "description": "UTC timestamp, ISO 8601, second precision.",
+       "examples": [
+        "2027-03-12T14:30:00Z"
+       ],
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "None means the price may change until paid.",
+     "title": "Price Guaranteed Until"
+    }
+   },
+   "required": [
+    "payment_required_by"
+   ],
+   "title": "HoldInfo",
+   "type": "object"
+  },
+  "ListAirportsRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "query": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Matches code, city or name.",
+     "title": "Query"
+    },
+    "metro": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Metro"
+    }
+   },
+   "title": "ListAirportsRequest",
+   "type": "object"
+  },
+  "ListAirportsResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "airports": {
+     "items": {
+      "$ref": "#/schemas/Airport"
+     },
+     "title": "Airports",
+     "type": "array"
+    }
+   },
+   "required": [
+    "airports"
+   ],
+   "title": "ListAirportsResponse",
+   "type": "object"
+  },
+  "ListAuthorizationsRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "status": {
+     "anyOf": [
+      {
+       "enum": [
+        "active",
+        "consumed",
+        "expired",
+        "revoked"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Status"
+    }
+   },
+   "title": "ListAuthorizationsRequest",
+   "type": "object"
+  },
+  "ListAuthorizationsResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "authorizations": {
+     "items": {
+      "$ref": "#/schemas/Authorization"
+     },
+     "title": "Authorizations",
+     "type": "array"
+    }
+   },
+   "required": [
+    "authorizations"
+   ],
+   "title": "ListAuthorizationsResponse",
+   "type": "object"
+  },
+  "ListOrdersResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "orders": {
+     "items": {
+      "$ref": "#/schemas/OrderSummary"
+     },
+     "title": "Orders",
+     "type": "array"
+    }
+   },
+   "required": [
+    "orders"
+   ],
+   "title": "ListOrdersResponse",
+   "type": "object"
+  },
+  "LoyaltyAccount": {
+   "additionalProperties": false,
+   "properties": {
+    "program": {
+     "title": "Program",
+     "type": "string"
+    },
+    "tier": {
+     "enum": [
+      "member",
+      "silver",
+      "gold"
+     ],
+     "title": "Tier",
+     "type": "string"
+    }
+   },
+   "required": [
+    "program",
+    "tier"
+   ],
+   "title": "LoyaltyAccount",
+   "type": "object"
+  },
+  "Message": {
+   "additionalProperties": false,
+   "properties": {
+    "message_id": {
+     "title": "Message Id",
+     "type": "string"
+    },
+    "seq": {
+     "description": "Position in the board's total order.",
+     "title": "Seq",
+     "type": "integer"
+    },
+    "sender": {
+     "description": "Seat name, set by the board from the sender's credential.",
+     "title": "Sender",
+     "type": "string"
+    },
+    "recipients": {
+     "description": "Seat names. Empty means every seat.",
+     "items": {
+      "type": "string"
+     },
+     "title": "Recipients",
+     "type": "array"
+    },
+    "sent_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Sent At",
+     "type": "string"
+    },
+    "text": {
+     "title": "Text",
+     "type": "string"
+    },
+    "attachments": {
+     "items": {
+      "discriminator": {
+       "mapping": {
+        "fact": "#/schemas/Fact",
+        "fact_request": "#/schemas/FactRequest",
+        "object": "#/schemas/ObjectRef"
+       },
+       "propertyName": "kind"
+      },
+      "oneOf": [
+       {
+        "$ref": "#/schemas/ObjectRef"
+       },
+       {
+        "$ref": "#/schemas/FactRequest"
+       },
+       {
+        "$ref": "#/schemas/Fact"
+       }
+      ]
+     },
+     "title": "Attachments",
+     "type": "array"
+    },
+    "in_reply_to": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "In Reply To"
+    }
+   },
+   "required": [
+    "message_id",
+    "seq",
+    "sender",
+    "recipients",
+    "sent_at",
+    "text"
+   ],
+   "title": "Message",
+   "type": "object"
+  },
+  "MessageHistoryRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "after_seq": {
+     "default": 0,
+     "minimum": 0,
+     "title": "After Seq",
+     "type": "integer"
+    },
+    "limit": {
+     "default": 50,
+     "maximum": 200,
+     "minimum": 1,
+     "title": "Limit",
+     "type": "integer"
+    }
+   },
+   "title": "MessageHistoryRequest",
+   "type": "object"
+  },
+  "MessageHistoryResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "messages": {
+     "description": "Messages this seat sent or received, oldest first.",
+     "items": {
+      "$ref": "#/schemas/Message"
+     },
+     "title": "Messages",
+     "type": "array"
+    }
+   },
+   "required": [
+    "messages"
+   ],
+   "title": "MessageHistoryResponse",
+   "type": "object"
+  },
+  "ObjectRef": {
+   "additionalProperties": false,
+   "description": "Points at a world object. The recipient reads it through the domain API with its own rights.",
+   "properties": {
+    "kind": {
+     "const": "object",
+     "default": "object",
+     "title": "Kind",
+     "type": "string"
+    },
+    "object_type": {
+     "description": "Domain object type, for example `proposal` or `order`.",
+     "title": "Object Type",
+     "type": "string"
+    },
+    "id": {
+     "title": "Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "object_type",
+    "id"
+   ],
+   "title": "ObjectRef",
+   "type": "object"
+  },
+  "Offer": {
+   "additionalProperties": false,
+   "description": "A priced, time-limited way to fly. Searching never reserves anything.",
+   "properties": {
+    "offer_id": {
+     "title": "Offer Id",
+     "type": "string"
+    },
+    "slices": {
+     "items": {
+      "$ref": "#/schemas/Slice"
+     },
+     "maxItems": 2,
+     "minItems": 1,
+     "title": "Slices",
+     "type": "array"
+    },
+    "fare_brand": {
+     "$ref": "#/schemas/FareBrand"
+    },
+    "booking_class": {
+     "description": "Inventory bucket the price comes from.",
+     "title": "Booking Class",
+     "type": "string"
+    },
+    "passengers": {
+     "title": "Passengers",
+     "type": "integer"
+    },
+    "price_per_passenger": {
+     "$ref": "#/schemas/PassengerPrice"
+    },
+    "total_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Total Cents",
+     "type": "integer"
+    },
+    "seats_left": {
+     "description": "Seats left in this bucket, capped at 9 as real systems do.",
+     "maximum": 9,
+     "minimum": 0,
+     "title": "Seats Left",
+     "type": "integer"
+    },
+    "conditions": {
+     "$ref": "#/schemas/FareConditions"
+    },
+    "single_ticket": {
+     "description": "True when all segments are on one ticket, so a missed connection is the airline's to fix.",
+     "title": "Single Ticket",
+     "type": "boolean"
+    },
+    "created_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Created At",
+     "type": "string"
+    },
+    "expires_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Expires At",
+     "type": "string"
+    }
+   },
+   "required": [
+    "offer_id",
+    "slices",
+    "fare_brand",
+    "booking_class",
+    "passengers",
+    "price_per_passenger",
+    "total_cents",
+    "seats_left",
+    "conditions",
+    "single_ticket",
+    "created_at",
+    "expires_at"
+   ],
+   "title": "Offer",
+   "type": "object"
+  },
+  "OfferIdRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "offer_id": {
+     "title": "Offer Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "offer_id"
+   ],
+   "title": "OfferIdRequest",
+   "type": "object"
+  },
+  "OfferResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "offer": {
+     "$ref": "#/schemas/Offer"
+    }
+   },
+   "required": [
+    "offer"
+   ],
+   "title": "OfferResponse",
+   "type": "object"
+  },
+  "Order": {
+   "additionalProperties": false,
+   "properties": {
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "version": {
+     "description": "Increases with every change to the order.",
+     "title": "Version",
+     "type": "integer"
+    },
+    "content_digest": {
+     "title": "Content Digest",
+     "type": "string"
+    },
+    "booking_reference": {
+     "examples": [
+      "Q7XK2M"
+     ],
+     "title": "Booking Reference",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "held",
+      "ticketed",
+      "cancelled"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "created_by": {
+     "title": "Created By",
+     "type": "string"
+    },
+    "created_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Created At",
+     "type": "string"
+    },
+    "passengers": {
+     "items": {
+      "$ref": "#/schemas/Passenger"
+     },
+     "title": "Passengers",
+     "type": "array"
+    },
+    "slices": {
+     "items": {
+      "$ref": "#/schemas/Slice"
+     },
+     "title": "Slices",
+     "type": "array"
+    },
+    "fare_brand": {
+     "$ref": "#/schemas/FareBrand"
+    },
+    "conditions": {
+     "$ref": "#/schemas/FareConditions"
+    },
+    "price_per_passenger": {
+     "$ref": "#/schemas/PassengerPrice"
+    },
+    "services_cents": {
+     "description": "Seats and bags bought on top of the fare.",
+     "title": "Services Cents",
+     "type": "integer"
+    },
+    "total_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Total Cents",
+     "type": "integer"
+    },
+    "paid_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Paid Cents",
+     "type": "integer"
+    },
+    "refunded_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Refunded Cents",
+     "type": "integer"
+    },
+    "payment_status": {
+     "enum": [
+      "unpaid",
+      "paid",
+      "partially_refunded",
+      "refunded"
+     ],
+     "title": "Payment Status",
+     "type": "string"
+    },
+    "payments": {
+     "items": {
+      "$ref": "#/schemas/PaymentRecord"
+     },
+     "title": "Payments",
+     "type": "array"
+    },
+    "hold": {
+     "anyOf": [
+      {
+       "$ref": "#/schemas/HoldInfo"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null
+    },
+    "seat_assignments": {
+     "items": {
+      "$ref": "#/schemas/SeatAssignment"
+     },
+     "title": "Seat Assignments",
+     "type": "array"
+    },
+    "bags": {
+     "items": {
+      "$ref": "#/schemas/BagCount"
+     },
+     "title": "Bags",
+     "type": "array"
+    },
+    "tickets": {
+     "items": {
+      "$ref": "#/schemas/Ticket"
+     },
+     "title": "Tickets",
+     "type": "array"
+    },
+    "airline_changes": {
+     "items": {
+      "$ref": "#/schemas/AirlineChange"
+     },
+     "title": "Airline Changes",
+     "type": "array"
+    },
+    "available_actions": {
+     "items": {
+      "enum": [
+       "pay",
+       "update_services",
+       "change",
+       "cancel",
+       "split"
+      ],
+      "type": "string"
+     },
+     "title": "Available Actions",
+     "type": "array"
+    }
+   },
+   "required": [
+    "order_id",
+    "version",
+    "content_digest",
+    "booking_reference",
+    "status",
+    "created_by",
+    "created_at",
+    "passengers",
+    "slices",
+    "fare_brand",
+    "conditions",
+    "price_per_passenger",
+    "services_cents",
+    "total_cents",
+    "paid_cents",
+    "refunded_cents",
+    "payment_status",
+    "available_actions"
+   ],
+   "title": "Order",
+   "type": "object"
+  },
+  "OrderIdRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "order_id"
+   ],
+   "title": "OrderIdRequest",
+   "type": "object"
+  },
+  "OrderResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "order": {
+     "$ref": "#/schemas/Order"
+    }
+   },
+   "required": [
+    "order"
+   ],
+   "title": "OrderResponse",
+   "type": "object"
+  },
+  "OrderSummary": {
+   "additionalProperties": false,
+   "properties": {
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "booking_reference": {
+     "title": "Booking Reference",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "held",
+      "ticketed",
+      "cancelled"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "route": {
+     "examples": [
+      "SFO-JFK"
+     ],
+     "title": "Route",
+     "type": "string"
+    },
+    "departs_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Departs At",
+     "type": "string"
+    },
+    "passenger_seats": {
+     "items": {
+      "type": "string"
+     },
+     "title": "Passenger Seats",
+     "type": "array"
+    },
+    "total_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Total Cents",
+     "type": "integer"
+    },
+    "pending_airline_changes": {
+     "title": "Pending Airline Changes",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "order_id",
+    "booking_reference",
+    "status",
+    "route",
+    "departs_at",
+    "passenger_seats",
+    "total_cents",
+    "pending_airline_changes"
+   ],
+   "title": "OrderSummary",
+   "type": "object"
+  },
+  "Passenger": {
+   "additionalProperties": false,
+   "properties": {
+    "passenger_id": {
+     "title": "Passenger Id",
+     "type": "string"
+    },
+    "seat": {
+     "description": "The seat (participant) this passenger belongs to, for example `traveler_a`.",
+     "title": "Seat",
+     "type": "string"
+    },
+    "given_name": {
+     "title": "Given Name",
+     "type": "string"
+    },
+    "family_name": {
+     "title": "Family Name",
+     "type": "string"
+    },
+    "birth_date": {
+     "description": "Calendar date.",
+     "examples": [
+      "2027-03-12"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+     "title": "Birth Date",
+     "type": "string"
+    },
+    "loyalty": {
+     "anyOf": [
+      {
+       "$ref": "#/schemas/LoyaltyAccount"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null
+    }
+   },
+   "required": [
+    "passenger_id",
+    "seat",
+    "given_name",
+    "family_name",
+    "birth_date"
+   ],
+   "title": "Passenger",
+   "type": "object"
+  },
+  "PassengerPrice": {
+   "additionalProperties": false,
+   "properties": {
+    "base_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Base Cents",
+     "type": "integer"
+    },
+    "taxes_and_fees_cents": {
+     "description": "Returned in full whenever the ticket is refunded unused.",
+     "title": "Taxes And Fees Cents",
+     "type": "integer"
+    },
+    "total_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Total Cents",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "base_cents",
+    "taxes_and_fees_cents",
+    "total_cents"
+   ],
+   "title": "PassengerPrice",
+   "type": "object"
+  },
+  "PayOrderRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "payments": {
+     "items": {
+      "$ref": "#/schemas/PaymentInput"
+     },
+     "minItems": 1,
+     "title": "Payments",
+     "type": "array"
+    }
+   },
+   "required": [
+    "order_id",
+    "payments"
+   ],
+   "title": "PayOrderRequest",
+   "type": "object"
+  },
+  "PayerShare": {
+   "additionalProperties": false,
+   "properties": {
+    "payer": {
+     "description": "Traveller seat that pays.",
+     "title": "Payer",
+     "type": "string"
+    },
+    "amount_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "minimum": 0,
+     "title": "Amount Cents",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "payer",
+    "amount_cents"
+   ],
+   "title": "PayerShare",
+   "type": "object"
+  },
+  "PaymentInput": {
+   "additionalProperties": false,
+   "properties": {
+    "authorization_id": {
+     "title": "Authorization Id",
+     "type": "string"
+    },
+    "amount_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "minimum": 0,
+     "title": "Amount Cents",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "authorization_id",
+    "amount_cents"
+   ],
+   "title": "PaymentInput",
+   "type": "object"
+  },
+  "PaymentMethod": {
+   "additionalProperties": false,
+   "properties": {
+    "payment_method_id": {
+     "title": "Payment Method Id",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "card",
+      "travel_credit",
+      "gift_card"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "label": {
+     "examples": [
+      "Visa ending 4421"
+     ],
+     "title": "Label",
+     "type": "string"
+    },
+    "available_cents": {
+     "description": "What can still be charged to this method.",
+     "title": "Available Cents",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "payment_method_id",
+    "kind",
+    "label",
+    "available_cents"
+   ],
+   "title": "PaymentMethod",
+   "type": "object"
+  },
+  "PaymentRecord": {
+   "additionalProperties": false,
+   "properties": {
+    "payment_id": {
+     "title": "Payment Id",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "charge",
+      "refund"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "payer": {
+     "title": "Payer",
+     "type": "string"
+    },
+    "payment_method_id": {
+     "title": "Payment Method Id",
+     "type": "string"
+    },
+    "amount_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Amount Cents",
+     "type": "integer"
+    },
+    "authorization_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "The consent this charge consumed. Refunds need none.",
+     "title": "Authorization Id"
+    },
+    "at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "At",
+     "type": "string"
+    },
+    "seq": {
+     "title": "Seq",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "payment_id",
+    "kind",
+    "payer",
+    "payment_method_id",
+    "amount_cents",
+    "at",
+    "seq"
+   ],
+   "title": "PaymentRecord",
+   "type": "object"
+  },
+  "PolicyPassage": {
+   "additionalProperties": false,
+   "properties": {
+    "document": {
+     "title": "Document",
+     "type": "string"
+    },
+    "section": {
+     "title": "Section",
+     "type": "string"
+    },
+    "text": {
+     "title": "Text",
+     "type": "string"
+    }
+   },
+   "required": [
+    "document",
+    "section",
+    "text"
+   ],
+   "title": "PolicyPassage",
+   "type": "object"
+  },
+  "PriceOfferResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "offer": {
+     "$ref": "#/schemas/Offer",
+     "description": "The offer at its confirmed price, with a fresh `expires_at`."
+    },
+    "price_changed": {
+     "title": "Price Changed",
+     "type": "boolean"
+    },
+    "previous_total_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Previous Total Cents",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "offer",
+    "price_changed",
+    "previous_total_cents"
+   ],
+   "title": "PriceOfferResponse",
+   "type": "object"
+  },
+  "ProfileResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "profile": {
+     "$ref": "#/schemas/TravelerProfile"
+    }
+   },
+   "required": [
+    "profile"
+   ],
+   "title": "ProfileResponse",
+   "type": "object"
+  },
+  "Proposal": {
+   "additionalProperties": false,
+   "description": "The agent's concrete plan for the group. Travellers accept and authorise against it.",
+   "properties": {
+    "proposal_id": {
+     "title": "Proposal Id",
+     "type": "string"
+    },
+    "created_by": {
+     "title": "Created By",
+     "type": "string"
+    },
+    "items": {
+     "items": {
+      "$ref": "#/schemas/ProposalItem"
+     },
+     "title": "Items",
+     "type": "array"
+    },
+    "payer_split": {
+     "description": "Who pays how much. Must sum to the items' total.",
+     "items": {
+      "$ref": "#/schemas/PayerShare"
+     },
+     "title": "Payer Split",
+     "type": "array"
+    },
+    "note": {
+     "default": "",
+     "title": "Note",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "open",
+      "accepted",
+      "rejected",
+      "expired",
+      "superseded"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "responses": {
+     "items": {
+      "$ref": "#/schemas/ProposalResponse"
+     },
+     "title": "Responses",
+     "type": "array"
+    },
+    "content_digest": {
+     "title": "Content Digest",
+     "type": "string"
+    },
+    "created_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Created At",
+     "type": "string"
+    },
+    "expires_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Expires At",
+     "type": "string"
+    }
+   },
+   "required": [
+    "proposal_id",
+    "created_by",
+    "items",
+    "payer_split",
+    "status",
+    "content_digest",
+    "created_at",
+    "expires_at"
+   ],
+   "title": "Proposal",
+   "type": "object"
+  },
+  "ProposalIdRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "proposal_id": {
+     "title": "Proposal Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "proposal_id"
+   ],
+   "title": "ProposalIdRequest",
+   "type": "object"
+  },
+  "ProposalItem": {
+   "additionalProperties": false,
+   "properties": {
+    "seat": {
+     "description": "The traveller this item is for.",
+     "title": "Seat",
+     "type": "string"
+    },
+    "offer_id": {
+     "title": "Offer Id",
+     "type": "string"
+    },
+    "fare_brand": {
+     "$ref": "#/schemas/FareBrand"
+    },
+    "total_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Total Cents",
+     "type": "integer"
+    },
+    "seat_request": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "examples": [
+      "14C"
+     ],
+     "title": "Seat Request"
+    },
+    "checked_bags": {
+     "default": 0,
+     "title": "Checked Bags",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "seat",
+    "offer_id",
+    "fare_brand",
+    "total_cents"
+   ],
+   "title": "ProposalItem",
+   "type": "object"
+  },
+  "ProposalItemInput": {
+   "additionalProperties": false,
+   "properties": {
+    "seat": {
+     "description": "Traveller seat.",
+     "examples": [
+      "traveler_a"
+     ],
+     "title": "Seat",
+     "type": "string"
+    },
+    "offer_id": {
+     "title": "Offer Id",
+     "type": "string"
+    },
+    "seat_request": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Seat Request"
+    },
+    "checked_bags": {
+     "default": 0,
+     "maximum": 3,
+     "minimum": 0,
+     "title": "Checked Bags",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "seat",
+    "offer_id"
+   ],
+   "title": "ProposalItemInput",
+   "type": "object"
+  },
+  "ProposalResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "seat": {
+     "title": "Seat",
+     "type": "string"
+    },
+    "decision": {
+     "enum": [
+      "accept",
+      "reject"
+     ],
+     "title": "Decision",
+     "type": "string"
+    },
+    "reason": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Reason"
+    },
+    "responded_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Responded At",
+     "type": "string"
+    }
+   },
+   "required": [
+    "seat",
+    "decision",
+    "responded_at"
+   ],
+   "title": "ProposalResponse",
+   "type": "object"
+  },
+  "ProposalResponseModel": {
+   "additionalProperties": false,
+   "properties": {
+    "proposal": {
+     "$ref": "#/schemas/Proposal"
+    }
+   },
+   "required": [
+    "proposal"
+   ],
+   "title": "ProposalResponseModel",
+   "type": "object"
+  },
+  "QuoteCancellationRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "passenger_seats": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Default: everyone on the order.",
+     "title": "Passenger Seats"
+    }
+   },
+   "required": [
+    "order_id"
+   ],
+   "title": "QuoteCancellationRequest",
+   "type": "object"
+  },
+  "QuoteCancellationResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "quote": {
+     "$ref": "#/schemas/CancellationQuote"
+    }
+   },
+   "required": [
+    "quote"
+   ],
+   "title": "QuoteCancellationResponse",
+   "type": "object"
+  },
+  "ReadInboxRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "wait_minutes": {
+     "default": 0,
+     "description": "0 returns at once. Otherwise the seat sleeps until a message or a world event addressed to it arrives, or the wait runs out.",
+     "maximum": 1440,
+     "minimum": 0,
+     "title": "Wait Minutes",
+     "type": "integer"
+    },
+    "limit": {
+     "default": 50,
+     "maximum": 200,
+     "minimum": 1,
+     "title": "Limit",
+     "type": "integer"
+    }
+   },
+   "title": "ReadInboxRequest",
+   "type": "object"
+  },
+  "ReadInboxResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "messages": {
+     "description": "Unread messages, oldest first. Reading marks them read.",
+     "items": {
+      "$ref": "#/schemas/Message"
+     },
+     "title": "Messages",
+     "type": "array"
+    },
+    "woke_by": {
+     "enum": [
+      "none",
+      "message",
+      "event",
+      "timeout"
+     ],
+     "title": "Woke By",
+     "type": "string"
+    },
+    "waited_minutes": {
+     "title": "Waited Minutes",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "messages",
+    "woke_by",
+    "waited_minutes"
+   ],
+   "title": "ReadInboxResponse",
+   "type": "object"
+  },
+  "RefundTarget": {
+   "enum": [
+    "original_payment",
+    "travel_credit",
+    "none"
+   ],
+   "title": "RefundTarget",
+   "type": "string"
+  },
+  "RespondToAirlineChangeRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "change_id": {
+     "title": "Change Id",
+     "type": "string"
+    },
+    "action": {
+     "enum": [
+      "accept",
+      "rebook",
+      "refund"
+     ],
+     "title": "Action",
+     "type": "string"
+    },
+    "change_offer_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Required for `rebook`.",
+     "title": "Change Offer Id"
+    },
+    "authorization_ids": {
+     "description": "One from every affected traveller.",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Authorization Ids",
+     "type": "array"
+    }
+   },
+   "required": [
+    "change_id",
+    "action",
+    "authorization_ids"
+   ],
+   "title": "RespondToAirlineChangeRequest",
+   "type": "object"
+  },
+  "RespondToProposalRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "proposal_id": {
+     "title": "Proposal Id",
+     "type": "string"
+    },
+    "decision": {
+     "enum": [
+      "accept",
+      "reject"
+     ],
+     "title": "Decision",
+     "type": "string"
+    },
+    "reason": {
+     "anyOf": [
+      {
+       "maxLength": 500,
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Reason"
+    }
+   },
+   "required": [
+    "proposal_id",
+    "decision"
+   ],
+   "title": "RespondToProposalRequest",
+   "type": "object"
+  },
+  "SearchChangeOptionsRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "passenger_seats": {
+     "anyOf": [
+      {
+       "items": {
+        "type": "string"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Default: everyone on the order.",
+     "title": "Passenger Seats"
+    },
+    "date": {
+     "anyOf": [
+      {
+       "description": "Calendar date.",
+       "examples": [
+        "2027-03-12"
+       ],
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Date"
+    },
+    "depart_after_local": {
+     "anyOf": [
+      {
+       "pattern": "^\\d{2}:\\d{2}$",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Depart After Local"
+    },
+    "limit": {
+     "default": 10,
+     "maximum": 30,
+     "minimum": 1,
+     "title": "Limit",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "order_id"
+   ],
+   "title": "SearchChangeOptionsRequest",
+   "type": "object"
+  },
+  "SearchChangeOptionsResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "change_offers": {
+     "items": {
+      "$ref": "#/schemas/ChangeOffer"
+     },
+     "title": "Change Offers",
+     "type": "array"
+    }
+   },
+   "required": [
+    "change_offers"
+   ],
+   "title": "SearchChangeOptionsResponse",
+   "type": "object"
+  },
+  "SearchFlightsRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "origin": {
+     "description": "Airport or metro code.",
+     "examples": [
+      "SFO"
+     ],
+     "title": "Origin",
+     "type": "string"
+    },
+    "destination": {
+     "description": "Airport or metro code.",
+     "examples": [
+      "NYC"
+     ],
+     "title": "Destination",
+     "type": "string"
+    },
+    "date": {
+     "description": "Local departure date at the origin.",
+     "examples": [
+      "2027-03-12"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+     "title": "Date",
+     "type": "string"
+    },
+    "passengers": {
+     "default": 1,
+     "description": "Priced together from one fare bucket.",
+     "maximum": 9,
+     "minimum": 1,
+     "title": "Passengers",
+     "type": "integer"
+    },
+    "fare_brands": {
+     "anyOf": [
+      {
+       "items": {
+        "$ref": "#/schemas/FareBrand"
+       },
+       "type": "array"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Fare Brands"
+    },
+    "max_stops": {
+     "default": 1,
+     "enum": [
+      0,
+      1
+     ],
+     "title": "Max Stops",
+     "type": "integer"
+    },
+    "depart_after_local": {
+     "anyOf": [
+      {
+       "pattern": "^\\d{2}:\\d{2}$",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "examples": [
+      "08:00"
+     ],
+     "title": "Depart After Local"
+    },
+    "arrive_before_local": {
+     "anyOf": [
+      {
+       "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$",
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Arrive Before Local"
+    },
+    "sort": {
+     "default": "price",
+     "enum": [
+      "price",
+      "duration",
+      "departure",
+      "arrival"
+     ],
+     "title": "Sort",
+     "type": "string"
+    },
+    "limit": {
+     "default": 20,
+     "maximum": 50,
+     "minimum": 1,
+     "title": "Limit",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "origin",
+    "destination",
+    "date"
+   ],
+   "title": "SearchFlightsRequest",
+   "type": "object"
+  },
+  "SearchFlightsResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "offers": {
+     "items": {
+      "$ref": "#/schemas/Offer"
+     },
+     "title": "Offers",
+     "type": "array"
+    },
+    "truncated": {
+     "description": "True when more offers matched than `limit`.",
+     "title": "Truncated",
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "offers",
+    "truncated"
+   ],
+   "title": "SearchFlightsResponse",
+   "type": "object"
+  },
+  "SearchPolicyRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "query": {
+     "title": "Query",
+     "type": "string"
+    },
+    "limit": {
+     "default": 5,
+     "maximum": 20,
+     "minimum": 1,
+     "title": "Limit",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "query"
+   ],
+   "title": "SearchPolicyRequest",
+   "type": "object"
+  },
+  "SearchPolicyResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "passages": {
+     "items": {
+      "$ref": "#/schemas/PolicyPassage"
+     },
+     "title": "Passages",
+     "type": "array"
+    }
+   },
+   "required": [
+    "passages"
+   ],
+   "title": "SearchPolicyResponse",
+   "type": "object"
+  },
+  "Seat": {
+   "additionalProperties": false,
+   "properties": {
+    "seat": {
+     "examples": [
+      "14C"
+     ],
+     "title": "Seat",
+     "type": "string"
+    },
+    "row": {
+     "title": "Row",
+     "type": "integer"
+    },
+    "column": {
+     "title": "Column",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "window",
+      "middle",
+      "aisle"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "status": {
+     "enum": [
+      "available",
+      "occupied",
+      "blocked"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "fee_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Fee Cents",
+     "type": "integer"
+    },
+    "extra_legroom": {
+     "default": false,
+     "title": "Extra Legroom",
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "seat",
+    "row",
+    "column",
+    "kind",
+    "status",
+    "fee_cents"
+   ],
+   "title": "Seat",
+   "type": "object"
+  },
+  "SeatAssignment": {
+   "additionalProperties": false,
+   "properties": {
+    "passenger_id": {
+     "title": "Passenger Id",
+     "type": "string"
+    },
+    "flight_id": {
+     "title": "Flight Id",
+     "type": "string"
+    },
+    "seat": {
+     "title": "Seat",
+     "type": "string"
+    }
+   },
+   "required": [
+    "passenger_id",
+    "flight_id",
+    "seat"
+   ],
+   "title": "SeatAssignment",
+   "type": "object"
+  },
+  "SeatMap": {
+   "additionalProperties": false,
+   "properties": {
+    "flight_id": {
+     "title": "Flight Id",
+     "type": "string"
+    },
+    "columns": {
+     "examples": [
+      [
+       "A",
+       "B",
+       "C",
+       "D",
+       "E",
+       "F"
+      ]
+     ],
+     "items": {
+      "type": "string"
+     },
+     "title": "Columns",
+     "type": "array"
+    },
+    "aisle_after": {
+     "examples": [
+      [
+       "C"
+      ]
+     ],
+     "items": {
+      "type": "string"
+     },
+     "title": "Aisle After",
+     "type": "array"
+    },
+    "seats": {
+     "items": {
+      "$ref": "#/schemas/Seat"
+     },
+     "title": "Seats",
+     "type": "array"
+    }
+   },
+   "required": [
+    "flight_id",
+    "columns",
+    "aisle_after",
+    "seats"
+   ],
+   "title": "SeatMap",
+   "type": "object"
+  },
+  "SeatMapRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "flight_id": {
+     "title": "Flight Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "flight_id"
+   ],
+   "title": "SeatMapRequest",
+   "type": "object"
+  },
+  "SeatMapResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "seat_map": {
+     "$ref": "#/schemas/SeatMap"
+    }
+   },
+   "required": [
+    "seat_map"
+   ],
+   "title": "SeatMapResponse",
+   "type": "object"
+  },
+  "Segment": {
+   "additionalProperties": false,
+   "properties": {
+    "flight_id": {
+     "title": "Flight Id",
+     "type": "string"
+    },
+    "carrier": {
+     "description": "Two-letter carrier code. Marketing and operating carrier are the same in v1.",
+     "title": "Carrier",
+     "type": "string"
+    },
+    "flight_number": {
+     "title": "Flight Number",
+     "type": "string"
+    },
+    "origin": {
+     "title": "Origin",
+     "type": "string"
+    },
+    "destination": {
+     "title": "Destination",
+     "type": "string"
+    },
+    "departs_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Departs At",
+     "type": "string"
+    },
+    "arrives_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$",
+     "title": "Arrives At",
+     "type": "string"
+    },
+    "departs_local": {
+     "description": "Local wall-clock time at the airport. Display only; compare UTC times.",
+     "examples": [
+      "2027-03-12T07:30"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$",
+     "title": "Departs Local",
+     "type": "string"
+    },
+    "arrives_local": {
+     "description": "Local wall-clock time at the airport. Display only; compare UTC times.",
+     "examples": [
+      "2027-03-12T07:30"
+     ],
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$",
+     "title": "Arrives Local",
+     "type": "string"
+    },
+    "arrival_day_offset": {
+     "description": "Local arrival date minus local departure date, in days.",
+     "title": "Arrival Day Offset",
+     "type": "integer"
+    },
+    "distance_km": {
+     "description": "Great-circle distance.",
+     "title": "Distance Km",
+     "type": "integer"
+    },
+    "block_minutes": {
+     "description": "Scheduled gate-to-gate time.",
+     "title": "Block Minutes",
+     "type": "integer"
+    },
+    "aircraft": {
+     "title": "Aircraft",
+     "type": "string"
+    }
+   },
+   "required": [
+    "flight_id",
+    "carrier",
+    "flight_number",
+    "origin",
+    "destination",
+    "departs_at",
+    "arrives_at",
+    "departs_local",
+    "arrives_local",
+    "arrival_day_offset",
+    "distance_km",
+    "block_minutes",
+    "aircraft"
+   ],
+   "title": "Segment",
+   "type": "object"
+  },
+  "SendMessageRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "to": {
+     "description": "Seat names. Empty sends to every seat.",
+     "items": {
+      "type": "string"
+     },
+     "title": "To",
+     "type": "array"
+    },
+    "text": {
+     "maxLength": 4000,
+     "title": "Text",
+     "type": "string"
+    },
+    "attachments": {
+     "items": {
+      "discriminator": {
+       "mapping": {
+        "fact": "#/schemas/Fact",
+        "fact_request": "#/schemas/FactRequest",
+        "object": "#/schemas/ObjectRef"
+       },
+       "propertyName": "kind"
+      },
+      "oneOf": [
+       {
+        "$ref": "#/schemas/ObjectRef"
+       },
+       {
+        "$ref": "#/schemas/FactRequest"
+       },
+       {
+        "$ref": "#/schemas/Fact"
+       }
+      ]
+     },
+     "maxItems": 8,
+     "title": "Attachments",
+     "type": "array"
+    },
+    "in_reply_to": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "In Reply To"
+    }
+   },
+   "required": [
+    "text"
+   ],
+   "title": "SendMessageRequest",
+   "type": "object"
+  },
+  "SendMessageResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "message": {
+     "$ref": "#/schemas/Message"
+    }
+   },
+   "required": [
+    "message"
+   ],
+   "title": "SendMessageResponse",
+   "type": "object"
+  },
+  "Slice": {
+   "additionalProperties": false,
+   "description": "One direction of travel: one segment, or two with a connection.",
+   "properties": {
+    "origin": {
+     "title": "Origin",
+     "type": "string"
+    },
+    "destination": {
+     "title": "Destination",
+     "type": "string"
+    },
+    "segments": {
+     "items": {
+      "$ref": "#/schemas/Segment"
+     },
+     "maxItems": 2,
+     "minItems": 1,
+     "title": "Segments",
+     "type": "array"
+    },
+    "stops": {
+     "title": "Stops",
+     "type": "integer"
+    },
+    "duration_minutes": {
+     "description": "First departure to last arrival.",
+     "title": "Duration Minutes",
+     "type": "integer"
+    },
+    "layover_minutes": {
+     "description": "One entry per connection.",
+     "items": {
+      "type": "integer"
+     },
+     "title": "Layover Minutes",
+     "type": "array"
+    }
+   },
+   "required": [
+    "origin",
+    "destination",
+    "segments",
+    "stops",
+    "duration_minutes"
+   ],
+   "title": "Slice",
+   "type": "object"
+  },
+  "SplitOrderRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "passenger_seats": {
+     "description": "Travellers who move to the new order.",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Passenger Seats",
+     "type": "array"
+    }
+   },
+   "required": [
+    "order_id",
+    "passenger_seats"
+   ],
+   "title": "SplitOrderRequest",
+   "type": "object"
+  },
+  "SplitOrderResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "remaining": {
+     "$ref": "#/schemas/Order"
+    },
+    "separated": {
+     "$ref": "#/schemas/Order"
+    }
+   },
+   "required": [
+    "remaining",
+    "separated"
+   ],
+   "title": "SplitOrderResponse",
+   "type": "object"
+  },
+  "SubjectInput": {
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "enum": [
+      "proposal",
+      "order",
+      "change_offer",
+      "cancellation_quote",
+      "airline_change"
+     ],
+     "title": "Type",
+     "type": "string"
+    },
+    "id": {
+     "title": "Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "type",
+    "id"
+   ],
+   "title": "SubjectInput",
+   "type": "object"
+  },
+  "Ticket": {
+   "additionalProperties": false,
+   "properties": {
+    "ticket_number": {
+     "title": "Ticket Number",
+     "type": "string"
+    },
+    "passenger_id": {
+     "title": "Passenger Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "ticket_number",
+    "passenger_id"
+   ],
+   "title": "Ticket",
+   "type": "object"
+  },
+  "TravelerProfile": {
+   "additionalProperties": false,
+   "properties": {
+    "seat": {
+     "title": "Seat",
+     "type": "string"
+    },
+    "passenger": {
+     "$ref": "#/schemas/Passenger"
+    },
+    "home_airport": {
+     "title": "Home Airport",
+     "type": "string"
+    }
+   },
+   "required": [
+    "seat",
+    "passenger",
+    "home_airport"
+   ],
+   "title": "TravelerProfile",
+   "type": "object"
+  },
+  "UpdateOrderServicesRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "order_id": {
+     "title": "Order Id",
+     "type": "string"
+    },
+    "seat_assignments": {
+     "items": {
+      "$ref": "#/schemas/SeatAssignment"
+     },
+     "title": "Seat Assignments",
+     "type": "array"
+    },
+    "bags": {
+     "items": {
+      "$ref": "#/schemas/BagCount"
+     },
+     "title": "Bags",
+     "type": "array"
+    },
+    "payments": {
+     "description": "Needed when seats or bags cost money.",
+     "items": {
+      "$ref": "#/schemas/PaymentInput"
+     },
+     "title": "Payments",
+     "type": "array"
+    }
+   },
+   "required": [
+    "order_id"
+   ],
+   "title": "UpdateOrderServicesRequest",
+   "type": "object"
+  },
+  "UpdateOrderServicesResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "order": {
+     "$ref": "#/schemas/Order"
+    },
+    "charged_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Charged Cents",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "order",
+    "charged_cents"
+   ],
+   "title": "UpdateOrderServicesResponse",
+   "type": "object"
+  },
+  "Wallet": {
+   "additionalProperties": false,
+   "properties": {
+    "owner": {
+     "title": "Owner",
+     "type": "string"
+    },
+    "payment_methods": {
+     "items": {
+      "$ref": "#/schemas/PaymentMethod"
+     },
+     "title": "Payment Methods",
+     "type": "array"
+    }
+   },
+   "required": [
+    "owner",
+    "payment_methods"
+   ],
+   "title": "Wallet",
+   "type": "object"
+  },
+  "WalletResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "wallet": {
+     "$ref": "#/schemas/Wallet"
+    }
+   },
+   "required": [
+    "wallet"
+   ],
+   "title": "WalletResponse",
+   "type": "object"
+  }
+ },
+ "examples": {
+  "list_airports": {
+   "request": {
+    "metro": "NYC"
+   },
+   "response": {
+    "airports": [
+     {
+      "code": "JFK",
+      "name": "John F. Kennedy International",
+      "city": "New York",
+      "metro": "NYC",
+      "country": "US",
+      "lat": 40.6413,
+      "lon": -73.7781,
+      "tz": "America/New_York",
+      "min_connection_minutes": 60,
+      "ground_minutes_to_center": 60
+     }
+    ]
+   },
+   "note": ""
+  },
+  "search_flights": {
+   "request": {
+    "origin": "SFO",
+    "destination": "NYC",
+    "date": "2027-03-12",
+    "passengers": 2,
+    "max_stops": 1,
+    "arrive_before_local": "2027-03-12T18:00",
+    "sort": "price",
+    "limit": 20
+   },
+   "response": {
+    "offers": [
+     {
+      "offer_id": "off_8c1d42",
+      "slices": [
+       {
+        "origin": "SFO",
+        "destination": "JFK",
+        "segments": [
+         {
+          "flight_id": "flt_NV212_20270312",
+          "carrier": "NV",
+          "flight_number": "NV212",
+          "origin": "SFO",
+          "destination": "JFK",
+          "departs_at": "2027-03-12T16:00:00Z",
+          "arrives_at": "2027-03-12T21:25:00Z",
+          "departs_local": "2027-03-12T08:00",
+          "arrives_local": "2027-03-12T16:25",
+          "arrival_day_offset": 0,
+          "distance_km": 4152,
+          "block_minutes": 325,
+          "aircraft": "A321"
+         }
+        ],
+        "stops": 0,
+        "duration_minutes": 325,
+        "layover_minutes": []
+       }
+      ],
+      "fare_brand": "standard",
+      "booking_class": "Q",
+      "passengers": 2,
+      "price_per_passenger": {
+       "base_cents": 28900,
+       "taxes_and_fees_cents": 3698,
+       "total_cents": 32598
+      },
+      "total_cents": 65196,
+      "seats_left": 4,
+      "conditions": {
+       "changeable": true,
+       "change_fee_cents": 0,
+       "cancellable": true,
+       "cancel_fee_cents": 0,
+       "refund_to": "travel_credit",
+       "holdable": true,
+       "checked_bags_included": 0,
+       "seat_selection_included": true
+      },
+      "single_ticket": true,
+      "created_at": "2027-02-20T18:00:00Z",
+      "expires_at": "2027-02-20T18:20:00Z"
+     }
+    ],
+    "truncated": false
+   },
+   "note": "Priced for two passengers from one fare bucket. A real response lists many offers."
+  },
+  "get_seat_map": {
+   "request": {
+    "flight_id": "flt_NV212_20270312"
+   },
+   "response": {
+    "seat_map": {
+     "flight_id": "flt_NV212_20270312",
+     "columns": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F"
+     ],
+     "aisle_after": [
+      "C"
+     ],
+     "seats": [
+      {
+       "seat": "14A",
+       "row": 14,
+       "column": "A",
+       "kind": "window",
+       "status": "available",
+       "fee_cents": 1500,
+       "extra_legroom": false
+      },
+      {
+       "seat": "14B",
+       "row": 14,
+       "column": "B",
+       "kind": "middle",
+       "status": "available",
+       "fee_cents": 0,
+       "extra_legroom": false
+      },
+      {
+       "seat": "14C",
+       "row": 14,
+       "column": "C",
+       "kind": "aisle",
+       "status": "occupied",
+       "fee_cents": 1500,
+       "extra_legroom": false
+      },
+      {
+       "seat": "14D",
+       "row": 14,
+       "column": "D",
+       "kind": "aisle",
+       "status": "available",
+       "fee_cents": 1500,
+       "extra_legroom": false
+      },
+      {
+       "seat": "14E",
+       "row": 14,
+       "column": "E",
+       "kind": "middle",
+       "status": "available",
+       "fee_cents": 0,
+       "extra_legroom": false
+      },
+      {
+       "seat": "14F",
+       "row": 14,
+       "column": "F",
+       "kind": "window",
+       "status": "available",
+       "fee_cents": 1500,
+       "extra_legroom": false
+      },
+      {
+       "seat": "15A",
+       "row": 15,
+       "column": "A",
+       "kind": "window",
+       "status": "occupied",
+       "fee_cents": 1500,
+       "extra_legroom": false
+      },
+      {
+       "seat": "15B",
+       "row": 15,
+       "column": "B",
+       "kind": "middle",
+       "status": "occupied",
+       "fee_cents": 0,
+       "extra_legroom": false
+      },
+      {
+       "seat": "15C",
+       "row": 15,
+       "column": "C",
+       "kind": "aisle",
+       "status": "available",
+       "fee_cents": 1500,
+       "extra_legroom": false
+      },
+      {
+       "seat": "15D",
+       "row": 15,
+       "column": "D",
+       "kind": "aisle",
+       "status": "available",
+       "fee_cents": 1500,
+       "extra_legroom": false
+      },
+      {
+       "seat": "15E",
+       "row": 15,
+       "column": "E",
+       "kind": "middle",
+       "status": "available",
+       "fee_cents": 0,
+       "extra_legroom": false
+      },
+      {
+       "seat": "15F",
+       "row": 15,
+       "column": "F",
+       "kind": "window",
+       "status": "available",
+       "fee_cents": 1500,
+       "extra_legroom": false
+      }
+     ]
+    }
+   },
+   "note": "Two rows shown. 14A and 14B are free and adjacent."
+  },
+  "price_offer": {
+   "request": {
+    "offer_id": "off_8c1d42"
+   },
+   "response": {
+    "offer": {
+     "offer_id": "off_8c1d42",
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_NV212_20270312",
+         "carrier": "NV",
+         "flight_number": "NV212",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-12T16:00:00Z",
+         "arrives_at": "2027-03-12T21:25:00Z",
+         "departs_local": "2027-03-12T08:00",
+         "arrives_local": "2027-03-12T16:25",
+         "arrival_day_offset": 0,
+         "distance_km": 4152,
+         "block_minutes": 325,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 325,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "booking_class": "Q",
+     "passengers": 2,
+     "price_per_passenger": {
+      "base_cents": 28900,
+      "taxes_and_fees_cents": 3698,
+      "total_cents": 32598
+     },
+     "total_cents": 65196,
+     "seats_left": 4,
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "single_ticket": true,
+     "created_at": "2027-02-20T18:00:00Z",
+     "expires_at": "2027-02-20T18:20:00Z"
+    },
+    "price_changed": false,
+    "previous_total_cents": 65196
+   },
+   "note": ""
+  },
+  "send_message": {
+   "request": {
+    "to": [
+     "traveler_a"
+    ],
+    "text": "To find the right flight I need your budget and the latest you can land in New York.",
+    "attachments": [
+     {
+      "kind": "fact_request",
+      "keys": [
+       "budget_cents",
+       "latest_arrival_local"
+      ]
+     }
+    ]
+   },
+   "response": {
+    "message": {
+     "message_id": "msg_12",
+     "seq": 12,
+     "sender": "ota_agent",
+     "recipients": [
+      "traveler_a"
+     ],
+     "sent_at": "2027-02-20T18:01:00Z",
+     "text": "To find the right flight I need your budget and the latest you can land in New York.",
+     "attachments": [
+      {
+       "kind": "fact_request",
+       "keys": [
+        "budget_cents",
+        "latest_arrival_local"
+       ]
+      }
+     ],
+     "in_reply_to": null
+    }
+   },
+   "note": "The typed fact request tells the traveller exactly which facts are wanted."
+  },
+  "read_inbox": {
+   "request": {
+    "wait_minutes": 10,
+    "limit": 50
+   },
+   "response": {
+    "messages": [
+     {
+      "message_id": "msg_13",
+      "seq": 13,
+      "sender": "traveler_a",
+      "recipients": [
+       "ota_agent"
+      ],
+      "sent_at": "2027-02-20T18:02:00Z",
+      "text": "Up to $420, and I have to be on the ground by 6 pm on Friday.",
+      "attachments": [
+       {
+        "kind": "fact",
+        "key": "budget_cents",
+        "value": 42000
+       },
+       {
+        "kind": "fact",
+        "key": "latest_arrival_local",
+        "value": "2027-03-12T18:00"
+       }
+      ],
+      "in_reply_to": "msg_12"
+     }
+    ],
+    "woke_by": "message",
+    "waited_minutes": 1
+   },
+   "note": "The answer carries typed facts next to the free text."
+  },
+  "create_proposal": {
+   "request": {
+    "items": [
+     {
+      "seat": "traveler_a",
+      "offer_id": "off_8c1d42",
+      "seat_request": "14A",
+      "checked_bags": 0
+     },
+     {
+      "seat": "traveler_b",
+      "offer_id": "off_8c1d42",
+      "seat_request": "14B",
+      "checked_bags": 0
+     }
+    ],
+    "payer_split": [
+     {
+      "payer": "traveler_a",
+      "amount_cents": 32598
+     },
+     {
+      "payer": "traveler_b",
+      "amount_cents": 32598
+     }
+    ],
+    "note": "Nonstop, lands 16:25, seats 14A and 14B together.",
+    "expires_in_minutes": 60
+   },
+   "response": {
+    "proposal": {
+     "proposal_id": "prop_31f0",
+     "created_by": "ota_agent",
+     "items": [
+      {
+       "seat": "traveler_a",
+       "offer_id": "off_8c1d42",
+       "fare_brand": "standard",
+       "total_cents": 32598,
+       "seat_request": "14A",
+       "checked_bags": 0
+      },
+      {
+       "seat": "traveler_b",
+       "offer_id": "off_8c1d42",
+       "fare_brand": "standard",
+       "total_cents": 32598,
+       "seat_request": "14B",
+       "checked_bags": 0
+      }
+     ],
+     "payer_split": [
+      {
+       "payer": "traveler_a",
+       "amount_cents": 32598
+      },
+      {
+       "payer": "traveler_b",
+       "amount_cents": 32598
+      }
+     ],
+     "note": "Nonstop, lands 16:25, seats 14A and 14B together.",
+     "status": "open",
+     "responses": [],
+     "content_digest": "sha256:5b7e09a1",
+     "created_at": "2027-02-20T18:04:00Z",
+     "expires_at": "2027-02-20T19:04:00Z"
+    }
+   },
+   "note": ""
+  },
+  "respond_to_proposal": {
+   "request": {
+    "proposal_id": "prop_31f0",
+    "decision": "accept"
+   },
+   "response": {
+    "proposal": {
+     "proposal_id": "prop_31f0",
+     "created_by": "ota_agent",
+     "items": [
+      {
+       "seat": "traveler_a",
+       "offer_id": "off_8c1d42",
+       "fare_brand": "standard",
+       "total_cents": 32598,
+       "seat_request": "14A",
+       "checked_bags": 0
+      },
+      {
+       "seat": "traveler_b",
+       "offer_id": "off_8c1d42",
+       "fare_brand": "standard",
+       "total_cents": 32598,
+       "seat_request": "14B",
+       "checked_bags": 0
+      }
+     ],
+     "payer_split": [
+      {
+       "payer": "traveler_a",
+       "amount_cents": 32598
+      },
+      {
+       "payer": "traveler_b",
+       "amount_cents": 32598
+      }
+     ],
+     "note": "Nonstop, lands 16:25, seats 14A and 14B together.",
+     "status": "open",
+     "responses": [
+      {
+       "seat": "traveler_a",
+       "decision": "accept",
+       "reason": null,
+       "responded_at": "2027-02-20T18:06:30Z"
+      }
+     ],
+     "content_digest": "sha256:5b7e09a1",
+     "created_at": "2027-02-20T18:04:00Z",
+     "expires_at": "2027-02-20T19:04:00Z"
+    }
+   },
+   "note": ""
+  },
+  "get_my_wallet": {
+   "request": {},
+   "response": {
+    "wallet": {
+     "owner": "traveler_a",
+     "payment_methods": [
+      {
+       "payment_method_id": "pm_a1",
+       "kind": "card",
+       "label": "Visa ending 4421",
+       "available_cents": 120000
+      },
+      {
+       "payment_method_id": "pm_a2",
+       "kind": "travel_credit",
+       "label": "NovaAir credit",
+       "available_cents": 7500
+      }
+     ]
+    }
+   },
+   "note": ""
+  },
+  "grant_authorization": {
+   "request": {
+    "subject": {
+     "type": "proposal",
+     "id": "prop_31f0"
+    },
+    "max_charge_cents": 33000,
+    "payment_method_id": "pm_a1",
+    "expires_in_minutes": 60
+   },
+   "response": {
+    "authorization": {
+     "authorization_id": "auth_a_77",
+     "grantor": "traveler_a",
+     "grantee": "ota_agent",
+     "subject": {
+      "type": "proposal",
+      "id": "prop_31f0",
+      "content_digest": "sha256:5b7e09a1"
+     },
+     "max_charge_cents": 33000,
+     "payment_method_id": "pm_a1",
+     "status": "active",
+     "created_at": "2027-02-20T18:07:00Z",
+     "expires_at": "2027-02-20T19:07:00Z",
+     "consumed_at_seq": null
+    }
+   },
+   "note": "The world fills in the digest of the proposal as it stands. A changed proposal no longer matches."
+  },
+  "create_order": {
+   "request": {
+    "offer_id": "off_8c1d42",
+    "passenger_seats": [
+     "traveler_a",
+     "traveler_b"
+    ],
+    "order_type": "instant",
+    "proposal_id": "prop_31f0",
+    "payments": [
+     {
+      "authorization_id": "auth_a_77",
+      "amount_cents": 32598
+     },
+     {
+      "authorization_id": "auth_b_12",
+      "amount_cents": 32598
+     }
+    ]
+   },
+   "response": {
+    "order": {
+     "order_id": "ord_5521",
+     "version": 1,
+     "content_digest": "sha256:c40d3f12",
+     "booking_reference": "Q7XK2M",
+     "status": "ticketed",
+     "created_by": "ota_agent",
+     "created_at": "2027-02-20T18:10:00Z",
+     "passengers": [
+      {
+       "passenger_id": "pax_a",
+       "seat": "traveler_a",
+       "given_name": "Maya",
+       "family_name": "Chen",
+       "birth_date": "1994-05-17",
+       "loyalty": {
+        "program": "NovaMiles",
+        "tier": "gold"
+       }
+      },
+      {
+       "passenger_id": "pax_b",
+       "seat": "traveler_b",
+       "given_name": "Daniel",
+       "family_name": "Okafor",
+       "birth_date": "1991-11-02",
+       "loyalty": null
+      }
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_NV212_20270312",
+         "carrier": "NV",
+         "flight_number": "NV212",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-12T16:00:00Z",
+         "arrives_at": "2027-03-12T21:25:00Z",
+         "departs_local": "2027-03-12T08:00",
+         "arrives_local": "2027-03-12T16:25",
+         "arrival_day_offset": 0,
+         "distance_km": 4152,
+         "block_minutes": 325,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 325,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "price_per_passenger": {
+      "base_cents": 28900,
+      "taxes_and_fees_cents": 3698,
+      "total_cents": 32598
+     },
+     "services_cents": 0,
+     "total_cents": 65196,
+     "paid_cents": 65196,
+     "refunded_cents": 0,
+     "payment_status": "paid",
+     "payments": [
+      {
+       "payment_id": "pay_1",
+       "kind": "charge",
+       "payer": "traveler_a",
+       "payment_method_id": "pm_a1",
+       "amount_cents": 32598,
+       "authorization_id": "auth_a_77",
+       "at": "2027-02-20T18:10:00Z",
+       "seq": 41
+      },
+      {
+       "payment_id": "pay_2",
+       "kind": "charge",
+       "payer": "traveler_b",
+       "payment_method_id": "pm_b1",
+       "amount_cents": 32598,
+       "authorization_id": "auth_b_12",
+       "at": "2027-02-20T18:10:00Z",
+       "seq": 41
+      }
+     ],
+     "hold": null,
+     "seat_assignments": [
+      {
+       "passenger_id": "pax_a",
+       "flight_id": "flt_NV212_20270312",
+       "seat": "14A"
+      },
+      {
+       "passenger_id": "pax_b",
+       "flight_id": "flt_NV212_20270312",
+       "seat": "14B"
+      }
+     ],
+     "bags": [],
+     "tickets": [
+      {
+       "ticket_number": "0492100000117",
+       "passenger_id": "pax_a"
+      },
+      {
+       "ticket_number": "0492100000118",
+       "passenger_id": "pax_b"
+      }
+     ],
+     "airline_changes": [],
+     "available_actions": [
+      "update_services",
+      "change",
+      "cancel",
+      "split"
+     ]
+    }
+   },
+   "note": "Both authorizations are consumed in the same commit, seq 41."
+  },
+  "get_order": {
+   "request": {
+    "order_id": "ord_5521"
+   },
+   "response": {
+    "order": {
+     "order_id": "ord_5521",
+     "version": 1,
+     "content_digest": "sha256:c40d3f12",
+     "booking_reference": "Q7XK2M",
+     "status": "ticketed",
+     "created_by": "ota_agent",
+     "created_at": "2027-02-20T18:10:00Z",
+     "passengers": [
+      {
+       "passenger_id": "pax_a",
+       "seat": "traveler_a",
+       "given_name": "Maya",
+       "family_name": "Chen",
+       "birth_date": "1994-05-17",
+       "loyalty": {
+        "program": "NovaMiles",
+        "tier": "gold"
+       }
+      },
+      {
+       "passenger_id": "pax_b",
+       "seat": "traveler_b",
+       "given_name": "Daniel",
+       "family_name": "Okafor",
+       "birth_date": "1991-11-02",
+       "loyalty": null
+      }
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_NV212_20270312",
+         "carrier": "NV",
+         "flight_number": "NV212",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-12T16:00:00Z",
+         "arrives_at": "2027-03-12T21:25:00Z",
+         "departs_local": "2027-03-12T08:00",
+         "arrives_local": "2027-03-12T16:25",
+         "arrival_day_offset": 0,
+         "distance_km": 4152,
+         "block_minutes": 325,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 325,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "price_per_passenger": {
+      "base_cents": 28900,
+      "taxes_and_fees_cents": 3698,
+      "total_cents": 32598
+     },
+     "services_cents": 0,
+     "total_cents": 65196,
+     "paid_cents": 65196,
+     "refunded_cents": 0,
+     "payment_status": "paid",
+     "payments": [
+      {
+       "payment_id": "pay_1",
+       "kind": "charge",
+       "payer": "traveler_a",
+       "payment_method_id": "pm_a1",
+       "amount_cents": 32598,
+       "authorization_id": "auth_a_77",
+       "at": "2027-02-20T18:10:00Z",
+       "seq": 41
+      },
+      {
+       "payment_id": "pay_2",
+       "kind": "charge",
+       "payer": "traveler_b",
+       "payment_method_id": "pm_b1",
+       "amount_cents": 32598,
+       "authorization_id": "auth_b_12",
+       "at": "2027-02-20T18:10:00Z",
+       "seq": 41
+      }
+     ],
+     "hold": null,
+     "seat_assignments": [
+      {
+       "passenger_id": "pax_a",
+       "flight_id": "flt_NV212_20270312",
+       "seat": "14A"
+      },
+      {
+       "passenger_id": "pax_b",
+       "flight_id": "flt_NV212_20270312",
+       "seat": "14B"
+      }
+     ],
+     "bags": [],
+     "tickets": [
+      {
+       "ticket_number": "0492100000117",
+       "passenger_id": "pax_a"
+      },
+      {
+       "ticket_number": "0492100000118",
+       "passenger_id": "pax_b"
+      }
+     ],
+     "airline_changes": [],
+     "available_actions": [
+      "update_services",
+      "change",
+      "cancel",
+      "split"
+     ]
+    }
+   },
+   "note": ""
+  },
+  "quote_cancellation": {
+   "request": {
+    "order_id": "ord_5521"
+   },
+   "response": {
+    "quote": {
+     "quote_id": "cq_9a02",
+     "order_id": "ord_5521",
+     "order_version": 1,
+     "passenger_seats": [
+      "traveler_a",
+      "traveler_b"
+     ],
+     "refund_cents": 65196,
+     "penalty_cents": 0,
+     "refund_to": "original_payment",
+     "rule_basis": "agency_24h_policy",
+     "content_digest": "sha256:e19b77c0",
+     "expires_at": "2027-02-20T19:00:00Z"
+    }
+   },
+   "note": "Fifty minutes after booking, the agency's own 24-hour policy applies: full refund to the original payment."
+  }
+ }
+}

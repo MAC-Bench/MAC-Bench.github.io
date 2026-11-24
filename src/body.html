@@ -1,0 +1,363 @@
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#overview"><span class="brand-mark"></span>MAC-Bench</a>
+    <nav class="links" aria-label="Sections">
+      <a href="#overview" data-route="overview">Overview</a>
+      <a href="#ticketing" data-route="ticketing">Ticketing</a>
+      <a href="#insurance" data-route="insurance">Insurance</a>
+      <a href="#shopping" data-route="shopping">Shopping</a>
+      <a href="#progress" data-route="progress">Progress</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ============================ overview ============================ -->
+<div data-view="overview">
+  <div class="hero">
+    <div class="wrap hero-in">
+      <div class="hero-copy">
+        <span class="chip s-next"><i></i>Design stage · ticketing under construction</span>
+        <h1>Agents that act for different people have to <mark>coordinate</mark>. We measure whether they can.</h1>
+        <p>MAC-Bench places language-model agents in three everyday service settings. Each agent holds private information and its own permissions. Every booking, payment and settlement goes through a simulated service, and a program scores the final state.</p>
+        <div class="hero-cta">
+          <a class="btn" href="#ticketing">See the ticketing interface</a>
+          <a class="btn ghost" href="#progress">Progress</a>
+        </div>
+      </div>
+
+      <div class="stubs" aria-label="The three scenarios">
+        <a class="stub live" href="#ticketing">
+          <div class="stub-main">
+            <p class="lbl">Flight ticketing</p>
+            <p class="stub-title">SFO <span class="to" aria-hidden="true"></span> JFK</p>
+            <dl>
+              <div><dt>Seats</dt><dd>1 agent · 2 travellers</dd></div>
+              <div><dt>Flight</dt><dd>NV212</dd></div>
+              <div><dt>Fare</dt><dd>standard</dd></div>
+              <div><dt>Total</dt><dd>$651.96</dd></div>
+            </dl>
+          </div>
+          <div class="stub-side"><p class="lbl">Status</p><p class="state">World data generated</p></div>
+        </a>
+        <a class="stub" href="#insurance">
+          <div class="stub-main">
+            <p class="lbl">Auto-insurance claim</p>
+            <p class="stub-title">Two cars, four parties</p>
+            <dl>
+              <div><dt>Seats</dt><dd>2 drivers · 2 insurers</dd></div>
+              <div><dt>Fault</dt><dd>80 / 20</dd></div>
+              <div><dt>Damage</dt><dd>$10,000 · $6,000</dd></div>
+            </dl>
+          </div>
+          <div class="stub-side"><p class="lbl">Status</p><p class="state">Planned, after a rule review</p></div>
+        </a>
+        <a class="stub" href="#shopping">
+          <div class="stub-main">
+            <p class="lbl">Online shopping</p>
+            <p class="stub-title">One buyer, three merchants</p>
+            <dl>
+              <div><dt>Seats</dt><dd>1 buyer · 3 merchants</dd></div>
+              <div><dt>Phases</dt><dd>quote · checkout · after-sales</dd></div>
+            </dl>
+          </div>
+          <div class="stub-side"><p class="lbl">Status</p><p class="state">With a collaborator</p></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Design</p>
+        <h2>Four rules the benchmark is built on</h2>
+      </div>
+      <div class="points">
+        <div class="point">
+          <h3>The world keeps the truth</h3>
+          <p>Proposals, orders, authorizations and settlements are objects in a simulated service. A price written in a chat message commits nobody. The verifier reads the final state and the event log, and scores with code.</p>
+        </div>
+        <div class="point">
+          <h3>Roles are seats</h3>
+          <p>A seat can be driven by the agent under test, a script, a frozen model, the reference policy or a person. The same task serves as a training environment and as a team evaluation.</p>
+        </div>
+        <div class="point">
+          <h3>Consent is an object</h3>
+          <p>An agent cannot charge or cancel on its own. A traveller grants a single-use authorization for one specific proposal or order, with a charge ceiling. If the plan changes afterwards, the authorization no longer matches.</p>
+        </div>
+        <div class="point">
+          <h3>Tasks are Harbor folders</h3>
+          <p>Tasks follow the Harbor task format used by Terminal-Bench. General tools come from the agent's own harness. The environment adds a domain service over MCP and REST, and a message board.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="architecture">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Architecture</p>
+        <h2>Six layers that talk through files, and one trial end to end</h2>
+        <p>Colours mark the three modules: Task, Agent and Evaluation.</p>
+      </div>
+      <div class="figs">
+<!--FIG_LAYERS-->
+<!--FIG_RUNTIME-->
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Scenarios</p>
+        <h2>Three settings, from mostly cooperative to mostly opposed</h2>
+      </div>
+      <div class="rows">
+        <a class="row" href="#ticketing">
+          <span class="row-name">Ticketing</span>
+          <p>One booking agent, two travellers</p>
+          <p>Mostly cooperative. Scored against the fare rules and the best joint itinerary.</p>
+          <span class="chip s-next"><i></i>In progress</span>
+        </a>
+        <a class="row" href="#insurance">
+          <span class="row-name">Insurance claims</span>
+          <p>Two drivers, two insurers</p>
+          <p>Mostly opposed. Scored against liability rules and a claim ledger.</p>
+          <span class="chip s-planned"><i></i>Planned</span>
+        </a>
+        <a class="row" href="#shopping">
+          <span class="row-name">Shopping</span>
+          <p>One buyer, three competing merchants</p>
+          <p>Mixed motives, from quote to after-sales.</p>
+          <span class="chip s-planned"><i></i>With a collaborator</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Progress</p>
+        <h2>What is built so far</h2>
+      </div>
+      <div class="stack" style="gap:22px">
+        <div class="tally" id="tally-overview"></div>
+        <div><a class="btn ghost" href="#progress">Open the full list</a></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ ticketing ============================ -->
+<div data-view="ticketing" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <p class="lbl">Scenario</p>
+      <h1>Flight ticketing</h1>
+      <p>One booking agent serves two travellers. The agent can search and book, but cannot move money or cancel without consent. The travellers hold the preferences, the budget and the payment methods.</p>
+      <div class="chips">
+        <span class="chip s-done"><i></i>Interface v<span id="tk-version"></span> defined</span>
+        <span class="chip s-done"><i></i>World data generated</span>
+        <span class="chip s-planned"><i></i>Actions not running yet</span>
+      </div>
+      <ol class="steps" aria-label="Steps towards a booking site people recognise">
+        <li class="done">Interface</li>
+        <li class="done">World data</li>
+        <li class="now">Live search</li>
+        <li>Booking</li>
+        <li>Disruptions</li>
+        <li>Booking interface</li>
+      </ol>
+    </div>
+
+  </div>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">World</p>
+        <h2>What the booking service holds</h2>
+        <p id="w-meta"></p>
+      </div>
+      <div class="seg" id="w-tabs" role="group" aria-label="World views">
+        <button type="button" data-wtab="search" aria-pressed="true">Search results</button>
+        <button type="button" data-wtab="board" aria-pressed="false">Departures</button>
+        <button type="button" data-wtab="network" aria-pressed="false">Network</button>
+        <button type="button" data-wtab="fares" aria-pressed="false">Fares and rules</button>
+      </div>
+
+      <div class="wpanel" data-wpanel="search">
+        <div class="wbar">
+          <label for="w-sample">Sample search<select id="w-sample"></select></label>
+          <label for="w-sort">Sort by<select id="w-sort">
+            <option value="price">Lowest price</option>
+            <option value="duration">Shortest trip</option>
+            <option value="departure">Departure time</option>
+            <option value="arrival">Arrival time</option>
+          </select></label>
+        </div>
+        <p class="note" id="w-summary"></p>
+        <p class="note">These results were computed by the benchmark's own search code and stored with the page. Open a row for the flights, the fare breakdown and the seat map.</p>
+        <div class="itins" id="w-itins"></div>
+      </div>
+
+      <div class="wpanel" data-wpanel="board" hidden>
+        <div class="wbar">
+          <label for="w-airport">Airport<select id="w-airport"></select></label>
+          <label for="w-day">Day<select id="w-day"></select></label>
+        </div>
+        <p class="note" id="w-board-note"></p>
+        <div class="board"><table>
+          <thead><tr><th>Departs</th><th>Flight</th><th>To</th><th>Arrives</th><th>Duration</th><th>Aircraft</th><th>Standard fare from</th><th>Seats at that price</th></tr></thead>
+          <tbody id="w-board"></tbody>
+        </table></div>
+      </div>
+
+      <div class="wpanel" data-wpanel="network" hidden>
+        <div class="mapbox" id="w-map"></div>
+        <p class="note">Filled circles are hubs. Darker lines carry more flights per day. LaGuardia and Washington National have no long routes because of their perimeter rules.</p>
+        <div class="two-col">
+          <div class="stack"><h4 class="lbl">Carriers, all fictional</h4><dl class="kv" id="w-carriers"></dl></div>
+          <div class="stack"><h4 class="lbl">Sanity check on ten city pairs, Wednesday</h4>
+            <div class="tscroll"><table class="ft">
+              <thead><tr><th>Pair</th><th>Distance</th><th>Out</th><th>Back</th><th>Flights</th><th>Carriers</th><th>Standard fare</th></tr></thead>
+              <tbody id="w-checks"></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wpanel" data-wpanel="fares" hidden>
+        <div class="tscroll"><table class="ft">
+          <thead><tr><th>Fare brand</th><th>Price</th><th>Changes</th><th>Cancellation</th><th>Hold unpaid</th><th>Bags included</th><th>Seat choice</th></tr></thead>
+          <tbody id="w-brands"></tbody>
+        </table></div>
+        <div class="two-col">
+          <div class="stack"><h4 class="lbl">Fare classes, cheapest first</h4>
+            <div class="tscroll"><table class="ft" style="min-width:0">
+              <thead><tr><th>Class</th><th>Share of cabin</th><th>Price</th></tr></thead>
+              <tbody id="w-buckets"></tbody>
+            </table></div>
+          </div>
+          <div class="stack plain"><h4 class="lbl">How prices and connections are built</h4><ul id="w-rules"></ul></div>
+        </div>
+        <p class="note">Fees and taxes are modelled on US domestic practice and simplified. They are stated here so they can be checked and corrected.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Interface</p>
+        <h2>What each seat can do</h2>
+        <p>Every action is declared with its roles, effect, errors and world-time cost. The forms build a call but cannot send it yet.</p>
+      </div>
+      <div class="seg" id="tk-roles" role="group" aria-label="Role"></div>
+      <p class="role-note" id="tk-role-note"></p>
+      <div class="explorer">
+        <div class="alist" id="tk-actions" aria-label="Actions"></div>
+        <div class="adetail" id="tk-detail"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Conventions</p>
+        <h2>Rules every call follows</h2>
+      </div>
+      <dl class="kv" id="tk-conventions"></dl>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Data model</p>
+        <h2>Entities</h2>
+        <p>Field names follow public flight-booking APIs where one exists. Carriers and people in the examples are fictional.</p>
+      </div>
+      <div class="stack" id="tk-entities"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Reference</p>
+        <h2>Typed facts and error codes</h2>
+      </div>
+      <div class="stack">
+        <details class="box"><summary>Typed facts a seat can ask for or state in a message</summary><div><dl class="kv" id="tk-facts"></dl></div></details>
+        <details class="box"><summary>Error codes</summary><div><dl class="kv" id="tk-errors"></dl></div></details>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============================ insurance ============================ -->
+<div data-view="insurance" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <p class="lbl">Scenario</p>
+      <h1>Auto-insurance claims</h1>
+      <p>A two-car collision with four seats: each driver and each driver's insurer. Every driver is the insured of one company and a claimant against the other.</p>
+      <div class="chips"><span class="chip s-planned"><i></i>Planned</span></div>
+    </div>
+    <div class="plain" style="padding-bottom:72px">
+      <p>This scenario starts after ticketing runs end to end. Two things come first.</p>
+      <ul>
+        <li>One claim ledger for both routes, a claim on your own collision cover and a claim against the other insurer, so that the same loss cannot be paid twice and a policy limit cannot be used twice.</li>
+        <li>A review of the rules by someone who handles claims. The first rule set is California property damage, with the negligence regime as a switch.</li>
+      </ul>
+      <p>The worked example on the overview card: driver A is 80% at fault, damage is $10,000 to B's car and $6,000 to A's. Under pure comparative negligence B recovers $8,000 and A recovers $1,200.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ shopping ============================ -->
+<div data-view="shopping" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <p class="lbl">Scenario</p>
+      <h1>Online shopping</h1>
+      <p>One buyer's agent and three competing merchants, from first question to after-sales. The platform, payments, carrier and dispute rulings are played by the world.</p>
+      <div class="chips"><span class="chip s-planned"><i></i>Built by a collaborator</span></div>
+    </div>
+    <div class="plain" style="padding-bottom:72px">
+      <p>This scenario is implemented by a collaborator. It uses the same way of declaring an interface as ticketing.</p>
+      <ul>
+        <li>Roles, actions, error codes and a world-time cost per call are declared once and exported as data.</li>
+        <li>Money is integer cents, time is UTC, validity windows are half-open.</li>
+        <li>Offers and consent are world objects that messages point to.</li>
+      </ul>
+      <p>The shared part lives in <code>src/macbench/kernel/interface.py</code> and <code>src/macbench/board/interface.py</code>.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ progress ============================ -->
+<div data-view="progress" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <p class="lbl">Progress</p>
+      <h1>What is done, what is next</h1>
+      <p>Open an item to see what was done, where to look and how it was checked. A finished item waits for review until it is marked accepted.</p>
+      <div class="tally" id="tally-progress"></div>
+    </div>
+    <div class="pgroups" id="pgroups" style="padding-bottom:72px"></div>
+  </div>
+</div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>MAC-Bench · multi-agent coordination benchmark</span>
+    <span>Updated <span id="updated"></span></span>
+  </div>
+</footer>
