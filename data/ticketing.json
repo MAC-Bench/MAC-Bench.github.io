@@ -1,12 +1,12 @@
 {
  "domain": "ticketing",
- "version": "0.4",
+ "version": "0.5",
  "title": "Flight ticketing",
  "conventions": {
   "money": "Integer US cents. Field names end in `_cents`.",
   "time": "UTC, ISO 8601, second precision. Local times are for display only.",
   "windows": "Half-open [start, end). At `expires_at` the object is already expired.",
-  "clock": "The world clock is logical. Every call advances it by the action's declared time cost, reads included, so repeated searching cannot freeze a deadline. `time_cost_s` in a result is the exact world time the call took, waiting included.",
+  "clock": "The world clock is logical. Every call advances it by the action's declared time cost, reads included, so repeated searching cannot freeze a deadline. `time_cost_s` in a result is the exact world time from the start of the call to its commit, waiting included. When a call ends the episode, the run of the clock to the observation end is not counted as the call's.",
   "ordering": "Accepted writes get a global sequence number `seq`. Events at the same instant are ordered by (time, priority, id).",
   "idempotency": "Write actions require `request_id`. A repeated key returns the first result.",
   "identity": "The actor comes from the seat credential. Every endpoint checks role and object ownership.",
@@ -210,7 +210,7 @@
    "name": "search_flights",
    "group": "Flight shopping",
    "summary": "Search one-way itineraries and get priced offers.",
-   "description": "Returns nonstop and one-connection itineraries that respect the minimum connection time. Offers expire after 20 minutes, or when sales close 60 minutes before the first departure, whichever comes first. `passengers` above 1 prices everyone from one fare bucket, so two seats may cost more each than one seat.",
+   "description": "Returns nonstop and one-connection itineraries that leave on `date`, at the times the flights have now, and respect the minimum connection time. Offers expire after 20 minutes, or when sales close 60 minutes before the first departure, whichever comes first. `passengers` above 1 prices everyone from one fare bucket, so two seats may cost more each than one seat.",
    "roles": [
     "ota_agent",
     "traveler"
@@ -574,7 +574,7 @@
    "name": "quote_cancellation",
    "group": "After booking",
    "summary": "Ask what cancelling an order would refund, to whom and under which rule.",
-   "description": "Changes nothing. Without `airline_change_id` the quote follows the agency's 24-hour policy if it applies and the fare conditions otherwise. With it, the quote is the full refund that airline change entitles to. The two can differ a lot, and the world does not pick the better one.",
+   "description": "Changes nothing. Without `airline_change_id` the quote follows the agency's 24-hour policy if the order is still inside its window, and the fare conditions otherwise. With it, the quote is the full refund that airline change entitles to. The two can differ a lot. The world does not pick for you, but an ordinary quote names the open airline change in `full_refund_available` when there is one.",
    "roles": [
     "ota_agent"
    ],
@@ -988,7 +988,7 @@
      "type": "boolean"
     },
     "significant": {
-     "description": "True for a cancellation, a broken connection, or a shift of three hours or more.",
+     "description": "True for a cancellation, a broken connection, or a trip that now starts three hours or more earlier, or ends three hours or more later, than first scheduled.",
      "title": "Significant",
      "type": "boolean"
     },
@@ -1411,7 +1411,7 @@
      "default": null
     },
     "world_time": {
-     "description": "World clock after this call was applied.",
+     "description": "World clock when this call was committed or refused. If the call ended the episode, the world then runs on to the observation end; that is not part of the call.",
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
@@ -1424,7 +1424,7 @@
      "type": "integer"
     },
     "time_cost_s": {
-     "description": "World seconds this call consumed.",
+     "description": "World seconds from the start of this call to `world_time`, waiting included.",
      "title": "Time Cost S",
      "type": "integer"
     }
@@ -1467,6 +1467,19 @@
      "default": null,
      "description": "Set when this is the refund an airline change entitles to.",
      "title": "Airline Change Id"
+    },
+    "full_refund_available": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Set on an ordinary quote when an open airline change entitles the travellers to a full refund instead. Quote again with this identifier to get it. A traveller who authorises this quote has been shown the other path.",
+     "title": "Full Refund Available"
     },
     "passenger_seats": {
      "description": "Everyone on the order. A cancellation always covers the whole order.",
@@ -1603,6 +1616,19 @@
      "default": null,
      "description": "Set when this is a free rebooking after an airline change.",
      "title": "Airline Change Id"
+    },
+    "free_rebooking_available": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Set on an ordinary change offer when an open airline change entitles the travellers to rebook at no charge. Search the change options again with this identifier to get the free ones.",
+     "title": "Free Rebooking Available"
     },
     "passenger_seats": {
      "description": "Everyone on the order. A change always moves the whole order.",
@@ -2778,8 +2804,25 @@
       }
      ],
      "default": null,
-     "description": "When the tickets were issued. The 24-hour cancellation policy counts from here.",
+     "description": "When the tickets were issued.",
      "title": "Ticketed At"
+    },
+    "free_cancellation_until": {
+     "anyOf": [
+      {
+       "description": "UTC timestamp, ISO 8601, second precision.",
+       "examples": [
+        "2027-03-12T14:30:00Z"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Until this time the agency's 24-hour policy refunds everything. Fixed when the tickets are issued: 24 hours later if the first flight then left at least 7 days ahead, otherwise none. A later change of flights does not alter it.",
+     "title": "Free Cancellation Until"
     },
     "passengers": {
      "items": {
@@ -3301,6 +3344,19 @@
      "default": null,
      "description": "The consent this charge consumed. Refunds need none.",
      "title": "Authorization Id"
+    },
+    "refund_of": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "For a refund: the charge it returns money from. Charges are returned oldest first.",
+     "title": "Refund Of"
     },
     "at": {
      "description": "UTC timestamp, ISO 8601, second precision.",
@@ -5092,6 +5148,7 @@
       "created_by": "ota_agent",
       "created_at": "2027-02-20T18:10:00Z",
       "ticketed_at": "2027-02-20T18:10:00Z",
+      "free_cancellation_until": null,
       "passengers": [
        {
         "passenger_id": "pax_a",
@@ -5183,6 +5240,7 @@
         "amount_cents": 32598,
         "passenger_id": "pax_a",
         "authorization_id": "auth_a_77",
+        "refund_of": null,
         "at": "2027-02-20T18:10:00Z",
         "seq": 41
        },
@@ -5194,6 +5252,7 @@
         "amount_cents": 32598,
         "passenger_id": "pax_b",
         "authorization_id": "auth_b_12",
+        "refund_of": null,
         "at": "2027-02-20T18:10:00Z",
         "seq": 41
        }
@@ -5323,6 +5382,7 @@
      "created_by": "ota_agent",
      "created_at": "2027-02-20T18:10:00Z",
      "ticketed_at": "2027-02-20T18:10:00Z",
+     "free_cancellation_until": null,
      "passengers": [
       {
        "passenger_id": "pax_a",
@@ -5414,6 +5474,7 @@
        "amount_cents": 32598,
        "passenger_id": "pax_a",
        "authorization_id": "auth_a_77",
+       "refund_of": null,
        "at": "2027-02-20T18:10:00Z",
        "seq": 41
       },
@@ -5425,6 +5486,7 @@
        "amount_cents": 32598,
        "passenger_id": "pax_b",
        "authorization_id": "auth_b_12",
+       "refund_of": null,
        "at": "2027-02-20T18:10:00Z",
        "seq": 41
       }
@@ -5479,7 +5541,7 @@
      {
       "document": "agency_handbook",
       "section": "Free rebooking and refunds after an airline change",
-      "text": "The free rebooking is an itinerary of the same carrier between the same two metro areas, scheduled on the original date or up to 1 day later, on any flight with seats left. It costs nothing and keeps the fare brand, the fare paid and the bags. The refund after an airline change returns everything paid for the order, fees for seats, bags and changes included, to the original payment methods. Both must be asked for by naming the airline change: a change or a cancellation asked for without it follows the ordinary fare conditions, which can return much less."
+      "text": "The free rebooking is an itinerary of the same carrier between the same two metro areas, scheduled on the original date or up to 1 day later, on any flight with seats left. It costs nothing and keeps the fare brand, the fare paid and the bags. The refund after an airline change returns everything paid for the order, fees for seats, bags and changes included, to the original payment methods. Both must be asked for by naming the airline change: a change or a cancellation asked for without it follows the ordinary fare conditions, which can return much less. A quote or a change offer made the ordinary way while such an airline change is open says so, and names the change to ask with."
      }
     ]
    },
@@ -5495,6 +5557,7 @@
      "order_id": "ord_5521",
      "order_version": 1,
      "airline_change_id": null,
+     "full_refund_available": null,
      "passenger_seats": [
       "traveler_a",
       "traveler_b"
@@ -5541,6 +5604,7 @@
      "created_by": "ota_agent",
      "created_at": "2027-03-11T11:39:20Z",
      "ticketed_at": "2027-03-11T11:39:20Z",
+     "free_cancellation_until": null,
      "passengers": [
       {
        "passenger_id": "pax_a",
@@ -5618,6 +5682,7 @@
        "amount_cents": 45498,
        "passenger_id": "pax_a",
        "authorization_id": "auth_0001",
+       "refund_of": null,
        "at": "2027-03-11T11:39:20Z",
        "seq": 4
       }
@@ -5678,6 +5743,7 @@
      "created_by": "ota_agent",
      "created_at": "2027-03-11T12:40:40Z",
      "ticketed_at": "2027-03-11T11:39:20Z",
+     "free_cancellation_until": null,
      "passengers": [
       {
        "passenger_id": "pax_b",
@@ -5752,6 +5818,7 @@
        "amount_cents": 49998,
        "passenger_id": "pax_b",
        "authorization_id": "auth_0002",
+       "refund_of": null,
        "at": "2027-03-11T11:39:20Z",
        "seq": 4
       }
@@ -5818,6 +5885,7 @@
      "order_id": "ord_0002",
      "order_version": 1,
      "airline_change_id": "ac_0002",
+     "full_refund_available": null,
      "passenger_seats": [
       "traveler_b"
      ],
@@ -5832,7 +5900,7 @@
       }
      ],
      "rule_basis": "carrier_cancellation",
-     "content_digest": "sha256:20a8d90feca3488d",
+     "content_digest": "sha256:2e653a959fff5d16",
      "created_at": "2027-03-11T12:41:40Z",
      "expires_at": "2027-03-11T13:01:40Z"
     }
@@ -5859,6 +5927,7 @@
      "created_by": "ota_agent",
      "created_at": "2027-03-11T12:40:40Z",
      "ticketed_at": "2027-03-11T11:39:20Z",
+     "free_cancellation_until": null,
      "passengers": [
       {
        "passenger_id": "pax_b",
@@ -5933,6 +6002,7 @@
        "amount_cents": 49998,
        "passenger_id": "pax_b",
        "authorization_id": "auth_0002",
+       "refund_of": null,
        "at": "2027-03-11T11:39:20Z",
        "seq": 4
       },
@@ -5944,6 +6014,7 @@
        "amount_cents": 49998,
        "passenger_id": "pax_b",
        "authorization_id": null,
+       "refund_of": "pay_0002",
        "at": "2027-03-11T12:43:50Z",
        "seq": 12
       }
@@ -5997,6 +6068,7 @@
       "amount_cents": 49998,
       "passenger_id": "pax_b",
       "authorization_id": null,
+      "refund_of": "pay_0002",
       "at": "2027-03-11T12:43:50Z",
       "seq": 12
      }
@@ -6016,6 +6088,7 @@
       "order_id": "ord_0001",
       "order_version": 3,
       "airline_change_id": "ac_0001",
+      "free_rebooking_available": null,
       "passenger_seats": [
        "traveler_a"
       ],
@@ -6073,7 +6146,7 @@
       "fare_difference_cents": 0,
       "total_due_cents": 0,
       "refund_to": "travel_credit",
-      "content_digest": "sha256:4330c026bf9d2c01",
+      "content_digest": "sha256:1741ebee73f72ddc",
       "created_at": "2027-03-11T12:44:50Z",
       "expires_at": "2027-03-11T13:04:50Z"
      },
@@ -6082,6 +6155,7 @@
       "order_id": "ord_0001",
       "order_version": 3,
       "airline_change_id": "ac_0001",
+      "free_rebooking_available": null,
       "passenger_seats": [
        "traveler_a"
       ],
@@ -6139,7 +6213,7 @@
       "fare_difference_cents": 0,
       "total_due_cents": 0,
       "refund_to": "travel_credit",
-      "content_digest": "sha256:48b20509b7826b5b",
+      "content_digest": "sha256:fedc9868a395d81c",
       "created_at": "2027-03-11T12:44:50Z",
       "expires_at": "2027-03-11T13:04:50Z"
      }
@@ -6157,6 +6231,7 @@
      "order_id": "ord_0001",
      "order_version": 3,
      "airline_change_id": "ac_0001",
+     "free_rebooking_available": null,
      "passenger_seats": [
       "traveler_a"
      ],
@@ -6197,7 +6272,7 @@
      "fare_difference_cents": 0,
      "total_due_cents": 0,
      "refund_to": "travel_credit",
-     "content_digest": "sha256:90c67d3eb6921763",
+     "content_digest": "sha256:19ae008c2fc7a50d",
      "created_at": "2027-03-11T12:44:50Z",
      "expires_at": "2027-03-11T13:04:50Z"
     }
@@ -6227,6 +6302,7 @@
      "created_by": "ota_agent",
      "created_at": "2027-03-11T11:39:20Z",
      "ticketed_at": "2027-03-11T11:39:20Z",
+     "free_cancellation_until": null,
      "passengers": [
       {
        "passenger_id": "pax_a",
@@ -6304,6 +6380,7 @@
        "amount_cents": 45498,
        "passenger_id": "pax_a",
        "authorization_id": "auth_0001",
+       "refund_of": null,
        "at": "2027-03-11T11:39:20Z",
        "seq": 4
       }
@@ -6375,6 +6452,7 @@
      "created_by": "ota_agent",
      "created_at": "2027-03-11T11:39:20Z",
      "ticketed_at": "2027-03-11T11:39:20Z",
+     "free_cancellation_until": null,
      "passengers": [
       {
        "passenger_id": "pax_a",
@@ -6452,6 +6530,7 @@
        "amount_cents": 45498,
        "passenger_id": "pax_a",
        "authorization_id": "auth_0001",
+       "refund_of": null,
        "at": "2027-03-11T11:39:20Z",
        "seq": 4
       }

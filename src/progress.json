@@ -99,7 +99,7 @@
           "date": "2026-11-23",
           "done": [
             "2 roles and 3 seats: one booking agent, two travellers",
-            "33 actions since version 0.4: 28 visible to the agent, 21 to a traveller. All of them run",
+            "33 actions, 28 visible to the agent and 21 to a traveller. All of them run. Interface version 0.5",
             "23 entities, named after the fields of Duffel, Amadeus and Expedia where those exist",
             "Authorization object: single-use, bound to a digest of what was consented to, with a charge ceiling",
             "Typed message attachments: object references, fact requests and facts over 11 declared fact keys",
@@ -268,7 +268,7 @@
             "A sealed record with any single change is rejected: one log entry, the final state, either digest, or a dropped refusal"
           ],
           "open": [
-            "The fixes themselves have not been through a second review round",
+            "The second review round re-checked all 15 fixes. Two had a path left open, both fixed in the item below",
             "Holding seats for a proposal does not use the proposal up, so an agent can still book the same plan twice. This is left as an agent error",
             "Callers written against interface 0.2 must change: create_order no longer exists"
           ]
@@ -305,10 +305,44 @@
           ],
           "open": [
             "Nobody who handles airline refunds has reviewed the rules. They are this world's own rules, modelled on US practice and simplified",
-            "A cancellation asked for without naming the airline change follows the ordinary fare rules, which can return much less. This is deliberate; it should be confirmed before tasks are written",
+            "A cancellation asked for without naming the airline change still follows the ordinary fare rules, but the quote now names the change that would refund in full",
             "Scripted travellers answer proposals only. A change offer, a cancellation quote or an airline change needs a live traveller",
             "An order has one open airline change at a time, and a disruption after the trip has begun creates none",
-            "This stage has not been through code review"
+            "Reviewed in the second round; the findings are in the item below"
+          ]
+        },
+        {
+          "id": "tk-codereview-r2",
+          "title": "Code review, round 2: fixes re-checked, after-booking stage reviewed",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "The second review confirmed that none of the 15 defects of round one comes back, and found 7 new issues: 4 in behaviour, 1 in a test, 2 in stated contracts. All 7 were reproduced, accepted and fixed",
+            "24-hour refund: whether an order has the window is now settled when its tickets are issued and shown on the order. Before, changing flights could open or close it",
+            "Search after a delay past midnight: a flight is found on the date it leaves on now, and connections are built from current times",
+            "Scripted traveller: a promise stops counting against the budget once the order it was for is cancelled or has changed",
+            "Refunds to the original payment return a payer's charges one by one, oldest first, and every refund record names its charge",
+            "Airline changes: significance now follows the trip, not single flights. It counts when the trip starts 3 hours earlier or ends 3 hours later",
+            "An ordinary cancellation quote or change offer made while an airline change is open now names that change, so a traveller who reads it sees that a full refund or a free rebooking is available",
+            "The exported final state now commits to everything that steers later calls. A call's time cost is defined up to its own commit; closing the episode is the world's time",
+            "The rule text lists what needs no authorization, and the specification says where this world departs from US rules"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/aftersale.py, search.py, service.py and controllers.py; src/macbench/kernel/engine.py",
+            "docs/spec/kernel.md and docs/spec/ticketing_after_booking.md, sections 2, 3, 6 and 8",
+            "Ticketing page: World, Fares and rules"
+          ],
+          "checked": [
+            "142 automated tests pass. 15 are new",
+            "Every finding has a regression test. Each fix was broken on purpose, 23 changes in all; two slipped through at first, got sharper tests, and now all 23 make a test fail",
+            "Every call of the two long sessions is now also checked at the moment consent is used: which authorizations it consumed, that each was unused, unexpired and bound to the subject as it stood, and that everyone who had to agree did",
+            "Refund tests now state the expected balance of every payment method, not only the totals"
+          ],
+          "open": [
+            "The fixes of this round have not been reviewed again",
+            "When nobody answers an airline change, the ticket stays valid by default. The world has no boarding, so a kept ticket is not evidence that the traveller flew",
+            "Still not covered by tests: seats on the second flight of a connection, and several live seats acting at the same time"
           ]
         },
         {

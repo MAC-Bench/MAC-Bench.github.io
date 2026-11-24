@@ -230,10 +230,11 @@
     byId('w-after').innerHTML = [
       'Sales close ' + a.sale_close_minutes + ' minutes before the first departure. An unpaid hold lasts ' + (a.hold_minutes / 60) + ' hours, or until ' + (a.hold_cutoff_minutes / 60) + ' hours before departure.',
       'Changes and cancellations at the travellers\' request close ' + a.change_cutoff_minutes + ' minutes before departure. A change costs the change fee plus the fare difference; a cheaper flight returns the difference.',
-      'Cancelled within ' + a.free_cancel_hours + ' hours of ticketing, a ticket issued at least ' + a.free_cancel_min_days_ahead + ' days before departure is refunded in full to the original payment. This is the agency\'s own policy.',
+      'Cancelled within ' + a.free_cancel_hours + ' hours of ticketing, a ticket issued at least ' + a.free_cancel_min_days_ahead + ' days before departure is refunded in full to the original payment. This is the agency\'s own policy. Whether an order has this window is settled when its tickets are issued and does not change with a later change of flights.',
       'Otherwise the fare brand decides: the cancellation fee is kept from the base fare, taxes always come back, and seat, bag and change fees are not returned.',
-      'A refund goes to whoever paid for the passenger\'s ticket. Co-payers share a partial refund in proportion to what each paid.',
-      'When the airline moves a flight by ' + (a.significant_shift_minutes / 60) + ' hours or more, cancels it, or breaks a connection, the travellers may rebook at no charge or take a full refund. A smaller move can only be accepted.',
+      'A refund goes to whoever paid for the passenger\'s ticket. Co-payers share a partial refund in proportion to what each paid. A payer\'s charges are returned one by one, oldest first, each to the method it was made with.',
+      'When the airline makes a trip start ' + (a.significant_shift_minutes / 60) + ' hours or more earlier or end ' + (a.significant_shift_minutes / 60) + ' hours or more later, cancels a flight, or breaks a connection, the travellers may rebook at no charge or take a full refund. A smaller move can only be accepted.',
+      'Both must be asked for by naming the airline change. An ordinary quote or change offer made while such a change is open names it, so the better path is never hidden.',
       'Free rebooking: same carrier, same two metro areas, the scheduled date or up to ' + a.rebook_window_days + ' day later, any flight with seats left.',
       'No answer by the departure of the first flight: the travellers fly as rescheduled if they can, and are refunded in full if they cannot.',
       'Change offers and cancellation quotes expire after ' + a.quote_ttl_minutes + ' minutes. A change or a cancellation covers a whole order; split the order first for some travellers only.'
