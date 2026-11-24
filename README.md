@@ -15,3 +15,4 @@ python build.py --sync ../MAC-benchmark  # refresh data/ticketing.json from the 
 | `data/ticketing.json` | The ticketing interface, exported by the code repository |
 | `data/ticketing_world.json` | The dev world and sample searches |
 | `data/ticketing_session.json`, `data/ticketing_after_session.json` | The two recorded sessions |
+| `data/ticketing_tasks.json` | The development tasks with role cards and reference score cards |

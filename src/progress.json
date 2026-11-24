@@ -77,12 +77,31 @@
         },
         {
           "id": "spec-scoring",
-          "title": "Scoring contract per task family",
-          "status": "planned",
-          "plan": [
-            "Written together with the role-card format, because both define what a seat is asked to achieve",
-            "Per family and tested role: legal outcomes, raw utility, a reachable reference, and what happens when there is nothing to gain",
-            "No single normalised score across families"
+          "title": "Scoring contract: booking agent against scripted travellers",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "One contract for ticketing with the booking agent under test and scripted travellers as counterparts",
+            "Three things reported and kept apart: requirements, loss, process. There is no normalised score",
+            "Requirements: every traveller has what they wanted, within budget, and the record verifies. Success means all of them",
+            "Loss per traveller in cents: money out, less travel credit at their own rate, plus their penalties for connections and for not sitting together",
+            "A reachable reference: each task ships a solution that must succeed against the actual scripted travellers. Regret is loss above it, given only when both runs succeeded",
+            "Process: calls, refusals, attempts to act without consent, messages, world time, and whether the worse path was taken where more was owed",
+            "Leaving at once is scored like any other run. Where nothing needed doing it succeeds with zero regret"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/scoring.py and persona.py",
+            "docs/spec/ticketing_tasks.md, section 5"
+          ],
+          "checked": [
+            "The scorer and the scripted traveller use one definition of what a traveller wants, so they cannot disagree",
+            "Tests state the expected loss part by part for runs that take the worse refund, forget to choose seats, or meddle with a booking that was fine",
+            "A record that does not replay cannot be scored as a success"
+          ],
+          "open": [
+            "Losses of different travellers are added without weights. The sum is the agent's stated objective, not a measure of fairness",
+            "Contracts for a traveller seat under test, for model counterparts and for the other two scenarios are not written"
           ]
         }
       ]
@@ -306,7 +325,7 @@
           "open": [
             "Nobody who handles airline refunds has reviewed the rules. They are this world's own rules, modelled on US practice and simplified",
             "A cancellation asked for without naming the airline change still follows the ordinary fare rules, but the quote now names the change that would refund in full",
-            "Scripted travellers answer proposals only. A change offer, a cancellation quote or an airline change needs a live traveller",
+            "Scripted travellers now answer these subjects; see the item on scripted travellers and tasks",
             "An order has one open airline change at a time, and a disruption after the trip has begun creates none",
             "Reviewed in the second round; the findings are in the item below"
           ]
@@ -347,21 +366,46 @@
         },
         {
           "id": "tk-counterparts",
-          "title": "Scripted travellers and a reference policy",
-          "status": "next",
-          "plan": [
-            "A first scripted traveller exists. It judges proposals against its facts and a budget for the whole episode",
-            "Still to do: answers to change offers, cancellation quotes and airline changes; complete finite-state policies with every input handled; several personas; a reference agent policy that must succeed against them",
-            "Role cards and the scoring contract are written together with this item"
+          "title": "Scripted travellers, role cards and the first eight tasks",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "Scripted traveller with a complete protocol: one answer to every typed input. It now judges change offers, cancellation quotes, airline changes and held orders, and writes to the agent when its plans change or an airline changes its flight",
+            "What a traveller wants is defined once, from its facts, its plans, its orders and the time",
+            "Two settings per traveller: attentive or trusting about a better path, and how long it takes to answer",
+            "Role cards: the agent's card states everything that is scored and nothing private; the traveller's card can be handed to a person or a model",
+            "Eight development tasks in five families: travelling together, one seat at the low fare, a slow answer, three airline changes, two changes of plan",
+            "Every task ships a reference solution that plays the agent through the interface with nothing the agent could not know",
+            "Interface version 0.6: five more typed facts, so that requests and scoring rates can be stated"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/controllers.py, persona.py, tasks.py and devset.py",
+            "docs/spec/ticketing_tasks.md",
+            "Ticketing page: Tasks, with what is hidden from the agent, both role cards, and the score cards of the reference and of leaving at once"
+          ],
+          "checked": [
+            "180 automated tests pass. 38 are new",
+            "Every reference solution succeeds, with the state and every use of consent audited after each call. The same play gives the same record",
+            "An agent that leaves at once fails seven tasks and succeeds on the one where leaving is right",
+            "31 rules of the traveller script and the scorer were broken on purpose. Eight slipped through at first; each got a test, and now all 31 make a test fail"
+          ],
+          "open": [
+            "Not reviewed, and not yet run with a real model. The tasks have only been played by scripts",
+            "Families T2, meeting from different cities, and T7, a request the rules forbid, are not built",
+            "No held-out test set and no generator: eight hand-built tasks on two routes",
+            "The reference solutions are written per task. There is no general reference policy",
+            "A scripted traveller does not authorise a paid seat or bag after ticketing"
           ]
         },
         {
           "id": "tk-verify",
-          "title": "Verifier, sealed outputs, Harbor export",
-          "status": "planned",
+          "title": "Harbor export and runs with real models",
+          "status": "next",
           "plan": [
-            "Verifier rebuilds the final state from the log before scoring",
-            "Tasks exported as Harbor folders and run with real agents"
+            "Export each task as a Harbor folder: instruction from the agent's role card, the world as a service, the scorer as the verifier",
+            "Run the eight tasks with real models and read the failures before adding more tasks",
+            "Then: more families, a generator, and a held-out set"
           ]
         },
         {

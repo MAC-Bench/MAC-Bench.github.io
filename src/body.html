@@ -163,7 +163,8 @@
         <span class="chip s-done"><i></i>World data generated</span>
         <span class="chip s-done"><i></i><span id="tk-live"></span> of <span id="tk-total"></span> actions run in the kernel</span>
         <span class="chip s-done"><i></i>Changes, refunds and airline changes built</span>
-        <span class="chip s-planned"><i></i>Scripted travellers and scoring not built yet</span>
+        <span class="chip s-done"><i></i>8 development tasks with reference solutions</span>
+        <span class="chip s-planned"><i></i>Not yet run with real models</span>
       </div>
       <ol class="steps" aria-label="Steps towards a booking site people recognise">
         <li class="done">Interface</li>
@@ -171,7 +172,8 @@
         <li class="done">Kernel and search</li>
         <li class="done">Booking</li>
         <li class="done">Changes and disruptions</li>
-        <li class="now">Scripted travellers and scoring</li>
+        <li class="done">Travellers, scoring, first tasks</li>
+        <li class="now">Runs with real models</li>
         <li>Booking interface</li>
       </ol>
     </div>
@@ -269,6 +271,22 @@
       <p class="note" id="s-proposals" style="margin:12px 0 28px"></p>
       <h4 class="lbl" style="margin-bottom:6px">Every call and event, in order</h4>
       <div class="sess" id="s-list"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Tasks</p>
+        <h2>Eight development tasks</h2>
+        <p>A task fixes a world, two scripted travellers with private facts and plans, and what the airline will do. The booking agent is the seat under test. An episode is judged on the world as it stands at the end: every traveller must have what they wanted within budget, and among such outcomes a lower loss for the travellers is better. Every task ships a reference solution that must succeed, and an agent that leaves at once must fail unless nothing needed doing.</p>
+      </div>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th></tr></thead>
+        <tbody id="t-rows"></tbody>
+      </table></div>
+      <div class="seg" id="t-pick" role="group" aria-label="Task" style="margin-top:22px"></div>
+      <div id="t-detail"></div>
     </div>
   </section>
 
