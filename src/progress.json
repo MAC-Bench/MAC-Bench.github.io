@@ -99,7 +99,7 @@
           "date": "2026-11-23",
           "done": [
             "2 roles and 3 seats: one booking agent, two travellers",
-            "31 actions since version 0.3: 26 visible to the agent, 19 to a traveller",
+            "33 actions since version 0.4: 28 visible to the agent, 21 to a traveller. All of them run",
             "23 entities, named after the fields of Duffel, Amadeus and Expedia where those exist",
             "Authorization object: single-use, bound to a digest of what was consented to, with a charge ceiling",
             "Typed message attachments: object references, fact requests and facts over 11 declared fact keys",
@@ -252,7 +252,7 @@
             "Sales close 60 minutes before departure. An offer cannot be refreshed past that point",
             "A seat belongs to one passenger. An order's seat table is replaced in one step, so a swap works and a doubled seat is refused. A repeated bag entry is refused instead of charged twice",
             "Scripted traveller: the budget covers the whole episode, it rejects what it cannot check, and it keeps no memory",
-            "Interface version 0.3: 31 actions, 24 run. create_order is gone; hold_order only holds"
+            "Interface version 0.3 at this point: 31 actions, 24 of them running. create_order is gone; hold_order only holds"
           ],
           "where": [
             "src/macbench/kernel/engine.py, src/macbench/board/board.py",
@@ -275,20 +275,50 @@
         },
         {
           "id": "tk-after",
-          "title": "After booking: changes, cancellations, disruptions",
-          "status": "next",
-          "plan": [
-            "Change offers and cancellation quotes that state the rule they apply",
-            "Delays and cancellations announced by the airline, with refund eligibility"
+          "title": "After booking: changes, cancellations, airline changes",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "All 33 actions of the interface now run. New: search_change_options, get_change_offer, confirm_change, quote_cancellation, get_cancellation_quote, confirm_cancellation, split_order, accept_airline_change, search_policy",
+            "A ledger by passenger: every order keeps one account per passenger, and every payment record names the passenger it paid for. Refunds and splits follow the money exactly",
+            "Cancellation under three rules: the agency's 24-hour policy, the fare conditions, and the refund an airline change entitles to. A quote states the amounts, who gets them and the rule applied",
+            "Changes at today's fare: change fee plus fare difference. A cheaper flight returns the difference the way the fare brand refunds. Seats are released, bags stay",
+            "Refunds go to whoever paid, either to the original payment or to travel credit kept in the wallet. Co-payers share a partial refund in proportion",
+            "Splitting an order, so that travellers who booked together can go separate ways",
+            "Disruptions as part of a scenario: delays, earlier departures and cancellations announced during the episode. Offers on the flight expire, holds follow or are cancelled, ticketed orders get an airline change with options and a deadline",
+            "When nobody answers by the deadline: the travellers fly as rescheduled if they can, and are refunded in full if they cannot",
+            "The rules as searchable text for both roles, formatted from the same constants the world enforces",
+            "A second recorded session: a cancelled flight, a shortcut the world refuses, a split, one full refund and one free rebooking"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/aftersale.py, policy.py and state.py; the ledger in service.py",
+            "docs/spec/ticketing_after_booking.md, with a table of where each rule comes from and what is left out",
+            "Ticketing page: the second recorded session, and the after-sale rules under World, Fares and rules"
+          ],
+          "checked": [
+            "127 automated tests pass. 28 are new",
+            "Each rule was then broken on purpose, 32 changes in all. Six slipped through at first; each got a sharper test, and now every one of the 32 makes a test fail",
+            "A second long session of 63 calls is audited after every call. At its end one traveller has all his money back and the other has paid for exactly the one ticket she still holds",
+            "Both recorded sessions replay identically from their sealed logs. A world without the disruptions does not verify the record",
+            "The two US rules the refund policy is modelled on were looked up again before the text was written"
+          ],
+          "open": [
+            "Nobody who handles airline refunds has reviewed the rules. They are this world's own rules, modelled on US practice and simplified",
+            "A cancellation asked for without naming the airline change follows the ordinary fare rules, which can return much less. This is deliberate; it should be confirmed before tasks are written",
+            "Scripted travellers answer proposals only. A change offer, a cancellation quote or an airline change needs a live traveller",
+            "An order has one open airline change at a time, and a disruption after the trip has begun creates none",
+            "This stage has not been through code review"
           ]
         },
         {
           "id": "tk-counterparts",
           "title": "Scripted travellers and a reference policy",
-          "status": "planned",
+          "status": "next",
           "plan": [
-            "A first scripted traveller exists and is used in the recorded session",
-            "Still to do: complete finite-state policies with every input handled, several personas, and a reference agent policy that must succeed against them"
+            "A first scripted traveller exists. It judges proposals against its facts and a budget for the whole episode",
+            "Still to do: answers to change offers, cancellation quotes and airline changes; complete finite-state policies with every input handled; several personas; a reference agent policy that must succeed against them",
+            "Role cards and the scoring contract are written together with this item"
           ]
         },
         {

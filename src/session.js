@@ -3,7 +3,8 @@
 
   var node = document.getElementById('data-session');
   if (!node) return;
-  var S = JSON.parse(node.textContent);
+  var ALL = JSON.parse(node.textContent);
+  var LABELS = ['Booking', 'After booking'];
 
   function byId(id) { return document.getElementById(id); }
   function esc(s) {
@@ -15,17 +16,24 @@
     return (m ? m + ' min ' : '') + (s || !m ? s + ' s' : '');
   }
 
-  var m = S.meta;
-  byId('s-meta').innerHTML =
-    'Recorded by the kernel on the dev world, ' + esc(m.start.slice(11, 16)) + ' to ' + esc(m.end.slice(11, 16)) + ' UTC world time. One live seat, <code>' +
-    esc(m.live_seat) + '</code>. ' + m.scripted_seats.map(function (s) { return '<code>' + esc(s) + '</code>'; }).join(' and ') +
-    ' are scripted and only answer typed questions. ' + m.entries + ' log entries, ' + m.writes + ' commits. Sealed log head <code>' + esc(m.head) + '</code>. ' +
-    (m.replay_ok ? 'Replayed from the log into a fresh world: identical log and final state.'
-                 : 'Replay from the log did NOT reproduce the session.');
-
   function usd(c) { return '$' + (c / 100).toFixed(2); }
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   function when(local) { return Number(local.slice(8, 10)) + ' ' + MON[Number(local.slice(5, 7)) - 1] + ' ' + local.slice(11); }
+  function codes(list) { return list.map(function (s) { return '<code>' + esc(s) + '</code>'; }).join(', '); }
+
+  function render(S) {
+  var m = S.meta;
+  byId('s-title').textContent = m.title;
+  byId('s-story').textContent = m.story;
+  byId('s-meta').innerHTML =
+    'World time ' + esc(m.start.slice(5, 10)) + ' ' + esc(m.start.slice(11, 16)) + ' to ' + esc(m.end.slice(11, 16)) + ' UTC. ' +
+    (m.scripted_seats.length
+      ? 'Live: ' + codes(m.live_seats) + '. Scripted: ' + codes(m.scripted_seats) + ', which react to typed attachments only. '
+      : 'All three seats are live and played by one fixed script: ' + codes(m.live_seats) + '. ') +
+    m.entries + ' log entries, ' + m.writes + ' commits. Sealed log head <code>' + esc(m.head) + '</code>. ' +
+    (m.replay_ok ? 'Replayed from the log into a fresh world: identical log and final state.'
+                 : 'Replay from the log did NOT reproduce the session.');
+
   byId('s-tickets').innerHTML = (S.tickets || []).map(function (t) {
     return '<div class="stub live"><div class="stub-main"><p class="lbl">' + esc(t.name) + ' · ' + esc(t.fare) + ' fare</p>' +
       '<p class="stub-title">' + esc(t.from) + ' <span class="to" aria-hidden="true"></span> ' + esc(t.to) + '</p><dl>' +
@@ -43,8 +51,8 @@
     var who = p.responses.map(function (r) {
       return esc(r.seat) + ' ' + esc(r.decision) + 'ed' + (r.reason ? ' (' + esc(r.reason) + ')' : '');
     }).join(', ');
-    return '<code>' + esc(p.id) + '</code> ' + esc(p.status) + ': ' + who + '.';
-  }).join(' ');
+    return '<code>' + esc(p.id) + '</code> ' + esc(p.status) + (who ? ': ' + who : '') + '.';
+  }).concat((S.outcomes || []).map(function (line) { return esc(line) + '.'; })).join(' ');
 
   byId('s-list').innerHTML = S.entries.map(function (e) {
     var time = '<span class="t">' + esc(e.t.slice(11, 19)) + '</span>';
@@ -62,4 +70,18 @@
       '<span class="who">' + esc(e.seat) + '</span><span class="act">' + esc(e.action) + '</span><span class="sum">' +
       (e.ok ? '' : '<b>' + esc(e.error) + '</b> ') + esc(e.summary) + '</span>' + cost + '</summary>' + body + '</details>';
   }).join('');
+  }
+
+  var pick = byId('s-pick');
+  function choose(i) {
+    pick.innerHTML = ALL.map(function (S, n) {
+      return '<button type="button" data-session="' + n + '" aria-pressed="' + (n === i) + '">' + esc(LABELS[n] || S.meta.title) + '</button>';
+    }).join('');
+    render(ALL[i]);
+  }
+  pick.addEventListener('click', function (ev) {
+    var b = ev.target.closest ? ev.target.closest('button[data-session]') : null;
+    if (b) choose(Number(b.getAttribute('data-session')));
+  });
+  choose(0);
 })();

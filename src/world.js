@@ -226,6 +226,18 @@
       'No nonstop beyond ' + commas(String(f.perimeter_km.LGA)) + ' km from LaGuardia or ' + commas(String(f.perimeter_km.DCA)) + ' km from Washington National.',
       'An offer expires ' + f.offer_ttl_minutes + ' minutes after the search that produced it.'
     ].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
+    var a = W.after;
+    byId('w-after').innerHTML = [
+      'Sales close ' + a.sale_close_minutes + ' minutes before the first departure. An unpaid hold lasts ' + (a.hold_minutes / 60) + ' hours, or until ' + (a.hold_cutoff_minutes / 60) + ' hours before departure.',
+      'Changes and cancellations at the travellers\' request close ' + a.change_cutoff_minutes + ' minutes before departure. A change costs the change fee plus the fare difference; a cheaper flight returns the difference.',
+      'Cancelled within ' + a.free_cancel_hours + ' hours of ticketing, a ticket issued at least ' + a.free_cancel_min_days_ahead + ' days before departure is refunded in full to the original payment. This is the agency\'s own policy.',
+      'Otherwise the fare brand decides: the cancellation fee is kept from the base fare, taxes always come back, and seat, bag and change fees are not returned.',
+      'A refund goes to whoever paid for the passenger\'s ticket. Co-payers share a partial refund in proportion to what each paid.',
+      'When the airline moves a flight by ' + (a.significant_shift_minutes / 60) + ' hours or more, cancels it, or breaks a connection, the travellers may rebook at no charge or take a full refund. A smaller move can only be accepted.',
+      'Free rebooking: same carrier, same two metro areas, the scheduled date or up to ' + a.rebook_window_days + ' day later, any flight with seats left.',
+      'No answer by the departure of the first flight: the travellers fly as rescheduled if they can, and are refunded in full if they cannot.',
+      'Change offers and cancellation quotes expire after ' + a.quote_ttl_minutes + ' minutes. A change or a cancellation covers a whole order; split the order first for some travellers only.'
+    ].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('');
   }
 
   renderSearch();

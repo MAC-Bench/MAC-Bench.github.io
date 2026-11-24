@@ -53,9 +53,11 @@ def main() -> None:
         shutil.copy(code / "interface" / "ticketing.json", HERE / "data" / "ticketing.json")
         shutil.copy(code / "world" / "ticketing_dev.json", HERE / "data" / "ticketing_world.json")
         shutil.copy(code / "demo" / "ticketing_session.json", HERE / "data" / "ticketing_session.json")
+        shutil.copy(code / "demo" / "ticketing_after_session.json", HERE / "data" / "ticketing_after_session.json")
     ticketing = json.loads((HERE / "data" / "ticketing.json").read_text(encoding="utf-8"))
     world = json.loads((HERE / "data" / "ticketing_world.json").read_text(encoding="utf-8"))
-    session = json.loads((HERE / "data" / "ticketing_session.json").read_text(encoding="utf-8"))
+    session = [json.loads((HERE / "data" / name).read_text(encoding="utf-8"))
+               for name in ("ticketing_session.json", "ticketing_after_session.json")]
     progress = json.loads((SRC / "progress.json").read_text(encoding="utf-8"))
     css = (SRC / "styles.css").read_text(encoding="utf-8")
     js = (SRC / "app.js").read_text(encoding="utf-8")

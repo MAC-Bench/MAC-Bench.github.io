@@ -162,14 +162,16 @@
         <span class="chip s-done"><i></i>Interface v<span id="tk-version"></span> defined</span>
         <span class="chip s-done"><i></i>World data generated</span>
         <span class="chip s-done"><i></i><span id="tk-live"></span> of <span id="tk-total"></span> actions run in the kernel</span>
-        <span class="chip s-planned"><i></i>Changes and cancellations not built yet</span>
+        <span class="chip s-done"><i></i>Changes, refunds and airline changes built</span>
+        <span class="chip s-planned"><i></i>Scripted travellers and scoring not built yet</span>
       </div>
       <ol class="steps" aria-label="Steps towards a booking site people recognise">
         <li class="done">Interface</li>
         <li class="done">World data</li>
         <li class="done">Kernel and search</li>
         <li class="done">Booking</li>
-        <li class="now">Changes and disruptions</li>
+        <li class="done">Changes and disruptions</li>
+        <li class="now">Scripted travellers and scoring</li>
         <li>Booking interface</li>
       </ol>
     </div>
@@ -245,7 +247,8 @@
           </div>
           <div class="stack plain"><h4 class="lbl">How prices and connections are built</h4><ul id="w-rules"></ul></div>
         </div>
-        <p class="note">Fees and taxes are modelled on US domestic practice and simplified. They are stated here so they can be checked and corrected.</p>
+        <div class="stack plain" style="margin-top:22px"><h4 class="lbl">After the ticket: changes, refunds, airline changes</h4><ul id="w-after"></ul></div>
+        <p class="note">Fees, taxes and after-sale rules are modelled on US domestic practice and simplified. They are this world's own rules, stated here so they can be checked and corrected.</p>
       </div>
     </div>
   </section>
@@ -254,10 +257,13 @@
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Kernel</p>
-        <h2>One recorded session, from the first question to two tickets</h2>
-        <p id="s-meta"></p>
-        <p>The agent's first plan puts one traveller over budget and is rejected. The agent then tries to carry out a new plan on the other traveller's consent for the old one, and the world refuses. With fresh consent from both, one call tickets both travellers. Open a row for the payload and the result.</p>
+        <h2>Two recorded sessions</h2>
+        <p>Each session was run by the kernel, sealed, and replayed from its log. Each makes one deliberate mistake, so the record shows what the world refuses. Open a row for the payload and the result.</p>
       </div>
+      <div class="seg" id="s-pick" role="group" aria-label="Session" style="margin-bottom:18px"></div>
+      <h3 id="s-title" style="margin-bottom:8px"></h3>
+      <p id="s-story" style="max-width:74ch"></p>
+      <p class="note" id="s-meta" style="margin:10px 0 24px"></p>
       <h4 class="lbl" style="margin-bottom:10px">What the session produced</h4>
       <div class="tickets" id="s-tickets"></div>
       <p class="note" id="s-proposals" style="margin:12px 0 28px"></p>

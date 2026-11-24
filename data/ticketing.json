@@ -1,6 +1,6 @@
 {
  "domain": "ticketing",
- "version": "0.3",
+ "version": "0.4",
  "title": "Flight ticketing",
  "conventions": {
   "money": "Integer US cents. Field names end in `_cents`.",
@@ -41,11 +41,13 @@
     "list_orders",
     "update_order_services",
     "search_change_options",
+    "get_change_offer",
     "confirm_change",
     "quote_cancellation",
+    "get_cancellation_quote",
     "confirm_cancellation",
     "split_order",
-    "respond_to_airline_change",
+    "accept_airline_change",
     "list_authorizations",
     "send_message",
     "read_inbox",
@@ -71,6 +73,8 @@
     "get_proposal",
     "get_order",
     "list_orders",
+    "get_change_offer",
+    "get_cancellation_quote",
     "get_my_profile",
     "get_my_wallet",
     "respond_to_proposal",
@@ -106,13 +110,13 @@
    "SOLD_OUT": "Not enough seats are left in the fare bucket.",
    "HOLD_NOT_ALLOWED": "This fare cannot be held unpaid.",
    "HOLD_EXPIRED": "The hold lapsed and the seats were released.",
-   "INVALID_STATE": "The order or change is not in a state that allows this action.",
+   "INVALID_STATE": "The order, offer, quote or airline change is not in a state that allows this action.",
    "INVALID_SPLIT": "Payer shares or payments do not add up to the amount due, or a payer is not paying the agreed share.",
    "SEAT_UNAVAILABLE": "A requested seat is occupied or blocked.",
    "NOT_CHANGEABLE": "The fare conditions do not allow changes.",
-   "QUOTE_EXPIRED": "The cancellation quote passed its `expires_at`.",
+   "QUOTE_EXPIRED": "The cancellation quote passed its `expires_at`. Ask for a new one.",
    "CANNOT_SPLIT": "The order has a single passenger or the split would leave an empty order.",
-   "RESPONSE_WINDOW_CLOSED": "The airline change is past its `respond_by`.",
+   "RESPONSE_WINDOW_CLOSED": "The airline change is past its `respond_by` and the default was applied.",
    "PROPOSAL_NOT_OPEN": "The proposal was already decided, expired or superseded.",
    "AUTH_REQUIRED": "The action needs an authorization from each affected traveller.",
    "AUTH_SCOPE_MISMATCH": "The authorization is for a different subject, or the subject changed after consent.",
@@ -142,6 +146,7 @@
   "AuthorizationSubject",
   "Authorization",
   "Proposal",
+  "PassengerAccount",
   "Order",
   "OrderSummary",
   "AirlineChange",
@@ -187,7 +192,7 @@
    "name": "search_policy",
    "group": "Reference",
    "summary": "Find passages in the policy documents.",
-   "description": "",
+   "description": "Word search over the rules this world applies. Passages state amounts and deadlines exactly as the world enforces them.",
    "roles": [
     "ota_agent",
     "traveler"
@@ -197,7 +202,7 @@
    "wait_field": null,
    "visibility": "The agent searches the agency handbook. A traveller searches the customer terms.",
    "errors": [],
-   "status": "declared",
+   "status": "implemented",
    "request": "SearchPolicyRequest",
    "response": "SearchPolicyResponse"
   },
@@ -265,7 +270,7 @@
   {
    "name": "get_flight_status",
    "group": "Flight shopping",
-   "summary": "Current status of a flight: on time, delayed or cancelled.",
+   "summary": "Current status of a flight: scheduled, delayed, cancelled, departed or arrived, with its current times.",
    "description": "",
    "roles": [
     "ota_agent",
@@ -496,8 +501,8 @@
   {
    "name": "search_change_options",
    "group": "After booking",
-   "summary": "Price the ways an order could be changed.",
-   "description": "Each change offer states the penalty, the fare difference and the net amount due.",
+   "summary": "Price the ways an order could be moved to another itinerary.",
+   "description": "Options keep the carrier and the fare brand and connect the same two metro areas. Each one states the change fee, the fare difference and the net amount due, which is negative when money comes back. With `airline_change_id` the options are the free rebooking that change entitles to: on the scheduled date or the day after, any seat left, nothing to pay.",
    "roles": [
     "ota_agent"
    ],
@@ -508,17 +513,38 @@
    "errors": [
     "INVALID_STATE",
     "NOT_CHANGEABLE",
-    "DATE_OUT_OF_RANGE"
+    "DATE_OUT_OF_RANGE",
+    "RESPONSE_WINDOW_CLOSED"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "SearchChangeOptionsRequest",
    "response": "SearchChangeOptionsResponse"
+  },
+  {
+   "name": "get_change_offer",
+   "group": "After booking",
+   "summary": "Read one change offer.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "wait_field": null,
+   "visibility": "The agent and everyone who can see the order.",
+   "errors": [
+    "OFFER_EXPIRED"
+   ],
+   "status": "implemented",
+   "request": "ChangeOfferIdRequest",
+   "response": "ChangeOfferResponse"
   },
   {
    "name": "confirm_change",
    "group": "After booking",
    "summary": "Carry out a change offer.",
-   "description": "",
+   "description": "All or nothing. The order must not have changed since the offer was made and the new itinerary must still sell at the offer's fare. Each payment consumes one authorization for this change offer; every passenger must be among the grantors. Seats are released and must be chosen again; seat fees already paid are not returned. Bags stay.",
    "roles": [
     "ota_agent"
    ],
@@ -528,6 +554,7 @@
    "visibility": "",
    "errors": [
     "OFFER_EXPIRED",
+    "PRICE_CHANGED",
     "SOLD_OUT",
     "INVALID_STATE",
     "AUTH_REQUIRED",
@@ -539,15 +566,15 @@
     "PAYMENT_DECLINED",
     "INVALID_SPLIT"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "ConfirmChangeRequest",
-   "response": "OrderResponse"
+   "response": "ConfirmChangeResponse"
   },
   {
    "name": "quote_cancellation",
    "group": "After booking",
-   "summary": "Ask what cancelling would refund, and under which rule.",
-   "description": "Changes nothing. The quote names the refund, the penalty, where the money goes and the rule applied.",
+   "summary": "Ask what cancelling an order would refund, to whom and under which rule.",
+   "description": "Changes nothing. Without `airline_change_id` the quote follows the agency's 24-hour policy if it applies and the fare conditions otherwise. With it, the quote is the full refund that airline change entitles to. The two can differ a lot, and the world does not pick the better one.",
    "roles": [
     "ota_agent"
    ],
@@ -556,17 +583,38 @@
    "wait_field": null,
    "visibility": "",
    "errors": [
-    "INVALID_STATE"
+    "INVALID_STATE",
+    "RESPONSE_WINDOW_CLOSED"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "QuoteCancellationRequest",
+   "response": "QuoteCancellationResponse"
+  },
+  {
+   "name": "get_cancellation_quote",
+   "group": "After booking",
+   "summary": "Read one cancellation quote.",
+   "description": "",
+   "roles": [
+    "ota_agent",
+    "traveler"
+   ],
+   "effect": "read",
+   "time_cost_s": 10,
+   "wait_field": null,
+   "visibility": "The agent and everyone who can see the order.",
+   "errors": [
+    "QUOTE_EXPIRED"
+   ],
+   "status": "implemented",
+   "request": "QuoteIdRequest",
    "response": "QuoteCancellationResponse"
   },
   {
    "name": "confirm_cancellation",
    "group": "After booking",
    "summary": "Cancel as quoted and refund the payers.",
-   "description": "",
+   "description": "All or nothing. The order must not have changed since the quote. Every passenger must have authorised this quote. Refunds go to whoever paid for each passenger's ticket.",
    "roles": [
     "ota_agent"
    ],
@@ -583,7 +631,7 @@
     "AUTH_CONSUMED",
     "AUTH_REVOKED"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "ConfirmCancellationRequest",
    "response": "CancellationResponse"
   },
@@ -591,7 +639,7 @@
    "name": "split_order",
    "group": "After booking",
    "summary": "Move some travellers to an order of their own.",
-   "description": "Needed before changing or cancelling only part of a shared order. Payments follow their payer.",
+   "description": "Needed before changing or cancelling for only some travellers of a shared order. Nobody's flights or money change, so no authorization is needed. Each passenger's account, payments, seat, bags and ticket move with them. A pending airline change is carried over to the new order under a new identifier.",
    "roles": [
     "ota_agent"
    ],
@@ -604,15 +652,15 @@
     "CANNOT_SPLIT",
     "UNKNOWN_PARTICIPANT"
    ],
-   "status": "declared",
+   "status": "implemented",
    "request": "SplitOrderRequest",
    "response": "SplitOrderResponse"
   },
   {
-   "name": "respond_to_airline_change",
+   "name": "accept_airline_change",
    "group": "After booking",
-   "summary": "Accept an airline's change, rebook, or take the refund.",
-   "description": "`refund` is offered only when the change is significant or the flight was cancelled.",
+   "summary": "Confirm that the travellers will fly the schedule the airline changed to.",
+   "description": "Only for a change that lists `accept` among its options. To rebook at no charge, search change options with the change's identifier and confirm one. To take the refund, quote the cancellation with the change's identifier and confirm it. If nobody responds by `respond_by`, the travellers fly as rescheduled when that is possible, and are refunded in full when it is not.",
    "roles": [
     "ota_agent"
    ],
@@ -623,16 +671,15 @@
    "errors": [
     "INVALID_STATE",
     "RESPONSE_WINDOW_CLOSED",
-    "OFFER_EXPIRED",
     "AUTH_REQUIRED",
     "AUTH_SCOPE_MISMATCH",
     "AUTH_EXPIRED",
     "AUTH_CONSUMED",
     "AUTH_REVOKED"
    ],
-   "status": "declared",
-   "request": "RespondToAirlineChangeRequest",
-   "response": "AirlineChangeResponse"
+   "status": "implemented",
+   "request": "AcceptAirlineChangeRequest",
+   "response": "OrderResponse"
   },
   {
    "name": "get_my_profile",
@@ -691,7 +738,7 @@
    "name": "grant_authorization",
    "group": "Consent",
    "summary": "Let the agent act on one specific subject, up to a charge ceiling.",
-   "description": "Single-use. The world stores a digest of the subject as it is now; if the proposal, order or quote changes afterwards, the authorization no longer matches and cannot be used.",
+   "description": "Single-use. The subject is a proposal, an order, a change offer, a cancellation quote or an airline change. The world stores a digest of the subject as it is now; if it changes afterwards, the authorization no longer matches and cannot be used.",
    "roles": [
     "traveler"
    ],
@@ -702,7 +749,9 @@
    "errors": [
     "UNKNOWN_PAYMENT_METHOD",
     "PROPOSAL_NOT_OPEN",
-    "INVALID_STATE"
+    "INVALID_STATE",
+    "OFFER_EXPIRED",
+    "QUOTE_EXPIRED"
    ],
    "status": "implemented",
    "request": "GrantAuthorizationRequest",
@@ -823,6 +872,30 @@
   }
  ],
  "schemas": {
+  "AcceptAirlineChangeRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "change_id": {
+     "title": "Change Id",
+     "type": "string"
+    },
+    "authorization_ids": {
+     "description": "One for this airline change from every passenger on the order.",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Authorization Ids",
+     "type": "array"
+    }
+   },
+   "required": [
+    "change_id",
+    "authorization_ids"
+   ],
+   "title": "AcceptAirlineChangeRequest",
+   "type": "object"
+  },
   "AirlineChange": {
    "additionalProperties": false,
    "description": "A change the airline made to a ticketed order. Mirrors Duffel's airline-initiated changes.",
@@ -846,6 +919,17 @@
     },
     "flight_id": {
      "title": "Flight Id",
+     "type": "string"
+    },
+    "cause": {
+     "enum": [
+      "carrier",
+      "weather",
+      "air_traffic",
+      "security",
+      "late_aircraft"
+     ],
+     "title": "Cause",
      "type": "string"
     },
     "old_departs_at": {
@@ -878,6 +962,7 @@
       }
      ],
      "default": null,
+     "description": "None when the flight is cancelled.",
      "title": "New Departs At"
     },
     "new_arrives_at": {
@@ -896,12 +981,19 @@
      "default": null,
      "title": "New Arrives At"
     },
+    "breaks_connection": {
+     "default": false,
+     "description": "True when the new times leave less than the minimum connection time.",
+     "title": "Breaks Connection",
+     "type": "boolean"
+    },
     "significant": {
-     "description": "True when the change crosses the refund thresholds in the policy.",
+     "description": "True for a cancellation, a broken connection, or a shift of three hours or more.",
      "title": "Significant",
      "type": "boolean"
     },
     "options": {
+     "description": "`accept`: fly the new schedule. `rebook`: move to another itinerary at no charge. `refund`: cancel with everything returned.",
      "items": {
       "enum": [
        "accept",
@@ -914,7 +1006,7 @@
      "type": "array"
     },
     "respond_by": {
-     "description": "UTC timestamp, ISO 8601, second precision.",
+     "description": "When nobody has responded by then, the world applies the default: fly as rescheduled if that is possible, otherwise a full refund.",
      "examples": [
       "2027-03-12T14:30:00Z"
      ],
@@ -922,14 +1014,37 @@
      "type": "string"
     },
     "status": {
+     "description": "`lapsed`: nobody responded and the passengers fly as rescheduled. `superseded`: a later change or a change of itinerary replaced it.",
      "enum": [
       "pending",
       "accepted",
       "rebooked",
       "refunded",
-      "lapsed"
+      "lapsed",
+      "superseded"
      ],
      "title": "Status",
+     "type": "string"
+    },
+    "resolved_by": {
+     "anyOf": [
+      {
+       "enum": [
+        "agent",
+        "default"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Resolved By"
+    },
+    "content_digest": {
+     "description": "Digest of the change. Consent to accept it is bound to this.",
+     "title": "Content Digest",
      "type": "string"
     },
     "announced_at": {
@@ -946,35 +1061,17 @@
     "order_id",
     "kind",
     "flight_id",
+    "cause",
     "old_departs_at",
     "old_arrives_at",
     "significant",
     "options",
     "respond_by",
     "status",
+    "content_digest",
     "announced_at"
    ],
    "title": "AirlineChange",
-   "type": "object"
-  },
-  "AirlineChangeResponse": {
-   "additionalProperties": false,
-   "properties": {
-    "order": {
-     "$ref": "#/schemas/Order"
-    },
-    "refunds": {
-     "items": {
-      "$ref": "#/schemas/PaymentRecord"
-     },
-     "title": "Refunds",
-     "type": "array"
-    }
-   },
-   "required": [
-    "order"
-   ],
-   "title": "AirlineChangeResponse",
    "type": "object"
   },
   "Airport": {
@@ -1343,6 +1440,7 @@
   },
   "CancellationQuote": {
    "additionalProperties": false,
+   "description": "What cancelling a ticketed order would return, to whom and under which rule. Nothing changes until it is confirmed.",
    "properties": {
     "quote_id": {
      "title": "Quote Id",
@@ -1353,10 +1451,25 @@
      "type": "string"
     },
     "order_version": {
+     "description": "The quote is void once the order has changed.",
      "title": "Order Version",
      "type": "integer"
     },
+    "airline_change_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Set when this is the refund an airline change entitles to.",
+     "title": "Airline Change Id"
+    },
     "passenger_seats": {
+     "description": "Everyone on the order. A cancellation always covers the whole order.",
      "items": {
       "type": "string"
      },
@@ -1369,12 +1482,25 @@
      "type": "integer"
     },
     "penalty_cents": {
-     "description": "Amount in US cents (integer minor units).",
+     "description": "Cancellation fee kept from the base fares.",
      "title": "Penalty Cents",
+     "type": "integer"
+    },
+    "non_refundable_cents": {
+     "description": "Seat, bag and change fees that are not returned. Refund, penalty and this add up to what was paid.",
+     "title": "Non Refundable Cents",
      "type": "integer"
     },
     "refund_to": {
      "$ref": "#/schemas/RefundTarget"
+    },
+    "payer_refunds": {
+     "description": "What each payer gets back.",
+     "items": {
+      "$ref": "#/schemas/PayerRefund"
+     },
+     "title": "Payer Refunds",
+     "type": "array"
     },
     "rule_basis": {
      "description": "Which rule produced the amounts. The 24-hour rule here is the agency's own policy: the US rule binds airlines, not agencies.",
@@ -1389,6 +1515,14 @@
     },
     "content_digest": {
      "title": "Content Digest",
+     "type": "string"
+    },
+    "created_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "title": "Created At",
      "type": "string"
     },
     "expires_at": {
@@ -1407,9 +1541,12 @@
     "passenger_seats",
     "refund_cents",
     "penalty_cents",
+    "non_refundable_cents",
     "refund_to",
+    "payer_refunds",
     "rule_basis",
     "content_digest",
+    "created_at",
     "expires_at"
    ],
    "title": "CancellationQuote",
@@ -1439,6 +1576,7 @@
   },
   "ChangeOffer": {
    "additionalProperties": false,
+   "description": "A priced way to move a ticketed order to another itinerary. Nothing changes until it is confirmed.",
    "properties": {
     "change_offer_id": {
      "title": "Change Offer Id",
@@ -1449,26 +1587,59 @@
      "type": "string"
     },
     "order_version": {
+     "description": "The offer is void once the order has changed.",
      "title": "Order Version",
      "type": "integer"
     },
+    "airline_change_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Set when this is a free rebooking after an airline change.",
+     "title": "Airline Change Id"
+    },
     "passenger_seats": {
+     "description": "Everyone on the order. A change always moves the whole order.",
      "items": {
       "type": "string"
      },
      "title": "Passenger Seats",
      "type": "array"
     },
-    "new_offer": {
-     "$ref": "#/schemas/Offer"
+    "slices": {
+     "description": "The new itinerary.",
+     "items": {
+      "$ref": "#/schemas/Slice"
+     },
+     "title": "Slices",
+     "type": "array"
+    },
+    "fare_brand": {
+     "$ref": "#/schemas/FareBrand"
+    },
+    "price_per_passenger": {
+     "$ref": "#/schemas/PassengerPrice",
+     "description": "The fare the order will carry after the change."
+    },
+    "seats_left": {
+     "maximum": 9,
+     "minimum": 0,
+     "title": "Seats Left",
+     "type": "integer"
     },
     "penalty_cents": {
-     "description": "Amount in US cents (integer minor units).",
+     "description": "Change fee for the whole order.",
      "title": "Penalty Cents",
      "type": "integer"
     },
     "fare_difference_cents": {
-     "description": "New fare minus old fare. Negative when the new fare is cheaper.",
+     "description": "New fare minus old fare, for the whole order. Negative when the new fare is cheaper.",
      "title": "Fare Difference Cents",
      "type": "integer"
     },
@@ -1478,10 +1649,19 @@
      "type": "integer"
     },
     "refund_to": {
-     "$ref": "#/schemas/RefundTarget"
+     "$ref": "#/schemas/RefundTarget",
+     "description": "Where the money goes when `total_due_cents` is negative."
     },
     "content_digest": {
      "title": "Content Digest",
+     "type": "string"
+    },
+    "created_at": {
+     "description": "UTC timestamp, ISO 8601, second precision.",
+     "examples": [
+      "2027-03-12T14:30:00Z"
+     ],
+     "title": "Created At",
      "type": "string"
     },
     "expires_at": {
@@ -1498,15 +1678,46 @@
     "order_id",
     "order_version",
     "passenger_seats",
-    "new_offer",
+    "slices",
+    "fare_brand",
+    "price_per_passenger",
+    "seats_left",
     "penalty_cents",
     "fare_difference_cents",
     "total_due_cents",
     "refund_to",
     "content_digest",
+    "created_at",
     "expires_at"
    ],
    "title": "ChangeOffer",
+   "type": "object"
+  },
+  "ChangeOfferIdRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "change_offer_id": {
+     "title": "Change Offer Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "change_offer_id"
+   ],
+   "title": "ChangeOfferIdRequest",
+   "type": "object"
+  },
+  "ChangeOfferResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "change_offer": {
+     "$ref": "#/schemas/ChangeOffer"
+    }
+   },
+   "required": [
+    "change_offer"
+   ],
+   "title": "ChangeOfferResponse",
    "type": "object"
   },
   "ConfirmCancellationRequest": {
@@ -1517,7 +1728,7 @@
      "type": "string"
     },
     "authorization_ids": {
-     "description": "One from every traveller being cancelled.",
+     "description": "One for this quote from every passenger on the order.",
      "items": {
       "type": "string"
      },
@@ -1540,28 +1751,48 @@
      "title": "Change Offer Id",
      "type": "string"
     },
-    "authorization_ids": {
-     "description": "One from every affected traveller.",
-     "items": {
-      "type": "string"
-     },
-     "minItems": 1,
-     "title": "Authorization Ids",
-     "type": "array"
-    },
     "payments": {
+     "description": "Authorizations for this change offer. They sum to the amount due, or to 0 when nothing is due. Every passenger appears, with amount 0 if they pay nothing.",
      "items": {
       "$ref": "#/schemas/PaymentInput"
      },
+     "minItems": 1,
      "title": "Payments",
      "type": "array"
     }
    },
    "required": [
     "change_offer_id",
-    "authorization_ids"
+    "payments"
    ],
    "title": "ConfirmChangeRequest",
+   "type": "object"
+  },
+  "ConfirmChangeResponse": {
+   "additionalProperties": false,
+   "properties": {
+    "order": {
+     "$ref": "#/schemas/Order"
+    },
+    "charged_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Charged Cents",
+     "type": "integer"
+    },
+    "refunds": {
+     "description": "What came back when the new fare was cheaper.",
+     "items": {
+      "$ref": "#/schemas/PaymentRecord"
+     },
+     "title": "Refunds",
+     "type": "array"
+    }
+   },
+   "required": [
+    "order",
+    "charged_cents"
+   ],
+   "title": "ConfirmChangeResponse",
    "type": "object"
   },
   "CreateProposalRequest": {
@@ -1852,6 +2083,7 @@
     },
     "delay_minutes": {
      "default": 0,
+     "description": "Minutes later than first scheduled. Negative when the flight was moved earlier.",
      "title": "Delay Minutes",
      "type": "integer"
     },
@@ -2480,7 +2712,9 @@
       {
        "enum": [
         "hold_expired",
-        "cancelled"
+        "cancelled",
+        "airline_change_refund",
+        "flight_cancelled"
        ],
        "type": "string"
       },
@@ -2489,6 +2723,7 @@
       }
      ],
      "default": null,
+     "description": "`cancelled`: at the travellers' request. `airline_change_refund`: refunded after an airline change. `flight_cancelled`: an unpaid hold whose flight was cancelled.",
      "title": "Cancellation Reason"
     },
     "proposal_id": {
@@ -2504,6 +2739,19 @@
      "description": "The proposal this order carried out, if any.",
      "title": "Proposal Id"
     },
+    "split_from": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "The order these passengers were separated from, if any.",
+     "title": "Split From"
+    },
     "created_by": {
      "title": "Created By",
      "type": "string"
@@ -2515,6 +2763,23 @@
      ],
      "title": "Created At",
      "type": "string"
+    },
+    "ticketed_at": {
+     "anyOf": [
+      {
+       "description": "UTC timestamp, ISO 8601, second precision.",
+       "examples": [
+        "2027-03-12T14:30:00Z"
+       ],
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "When the tickets were issued. The 24-hour cancellation policy counts from here.",
+     "title": "Ticketed At"
     },
     "passengers": {
      "items": {
@@ -2544,18 +2809,26 @@
      "title": "Services Cents",
      "type": "integer"
     },
+    "accounts": {
+     "description": "The cost of each passenger's ticket. They add up to `total_cents`.",
+     "items": {
+      "$ref": "#/schemas/PassengerAccount"
+     },
+     "title": "Accounts",
+     "type": "array"
+    },
     "total_cents": {
-     "description": "Amount in US cents (integer minor units).",
+     "description": "Fares plus services plus change fees.",
      "title": "Total Cents",
      "type": "integer"
     },
     "paid_cents": {
-     "description": "Amount in US cents (integer minor units).",
+     "description": "Everything charged for this order so far.",
      "title": "Paid Cents",
      "type": "integer"
     },
     "refunded_cents": {
-     "description": "Amount in US cents (integer minor units).",
+     "description": "Everything returned so far. A ticketed order has paid minus refunded equal to total.",
      "title": "Refunded Cents",
      "type": "integer"
     },
@@ -2622,7 +2895,8 @@
        "update_services",
        "change",
        "cancel",
-       "split"
+       "split",
+       "resolve_airline_change"
       ],
       "type": "string"
      },
@@ -2644,6 +2918,7 @@
     "conditions",
     "price_per_passenger",
     "services_cents",
+    "accounts",
     "total_cents",
     "paid_cents",
     "refunded_cents",
@@ -2795,6 +3070,39 @@
    "title": "Passenger",
    "type": "object"
   },
+  "PassengerAccount": {
+   "additionalProperties": false,
+   "description": "What one passenger's ticket costs on this order. Payments and refunds are recorded per passenger against it.",
+   "properties": {
+    "passenger_id": {
+     "title": "Passenger Id",
+     "type": "string"
+    },
+    "fare_cents": {
+     "description": "The fare, taxes and fees included.",
+     "title": "Fare Cents",
+     "type": "integer"
+    },
+    "services_cents": {
+     "default": 0,
+     "description": "Seat and bag fees bought for this passenger.",
+     "title": "Services Cents",
+     "type": "integer"
+    },
+    "change_fees_cents": {
+     "default": 0,
+     "description": "Change penalties paid for this passenger.",
+     "title": "Change Fees Cents",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "passenger_id",
+    "fare_cents"
+   ],
+   "title": "PassengerAccount",
+   "type": "object"
+  },
   "PassengerPrice": {
    "additionalProperties": false,
    "properties": {
@@ -2843,6 +3151,26 @@
     "payments"
    ],
    "title": "PayOrderRequest",
+   "type": "object"
+  },
+  "PayerRefund": {
+   "additionalProperties": false,
+   "properties": {
+    "payer": {
+     "title": "Payer",
+     "type": "string"
+    },
+    "amount_cents": {
+     "description": "Amount in US cents (integer minor units).",
+     "title": "Amount Cents",
+     "type": "integer"
+    }
+   },
+   "required": [
+    "payer",
+    "amount_cents"
+   ],
+   "title": "PayerRefund",
    "type": "object"
   },
   "PayerShare": {
@@ -2928,6 +3256,7 @@
   },
   "PaymentRecord": {
    "additionalProperties": false,
+   "description": "Money that moved for one passenger's ticket: a charge to a payer, or a refund to a payer.",
    "properties": {
     "payment_id": {
      "title": "Payment Id",
@@ -2946,6 +3275,7 @@
      "type": "string"
     },
     "payment_method_id": {
+     "description": "The method charged, or the method the refund went to.",
      "title": "Payment Method Id",
      "type": "string"
     },
@@ -2953,6 +3283,11 @@
      "description": "Amount in US cents (integer minor units).",
      "title": "Amount Cents",
      "type": "integer"
+    },
+    "passenger_id": {
+     "description": "The passenger whose ticket this money was for. Records move with the passenger when an order is split.",
+     "title": "Passenger Id",
+     "type": "string"
     },
     "authorization_id": {
      "anyOf": [
@@ -2986,6 +3321,7 @@
     "payer",
     "payment_method_id",
     "amount_cents",
+    "passenger_id",
     "at",
     "seq"
    ],
@@ -2996,6 +3332,10 @@
    "additionalProperties": false,
    "properties": {
     "document": {
+     "enum": [
+      "agency_handbook",
+      "customer_terms"
+     ],
      "title": "Document",
      "type": "string"
     },
@@ -3331,21 +3671,18 @@
      "title": "Order Id",
      "type": "string"
     },
-    "passenger_seats": {
+    "airline_change_id": {
      "anyOf": [
       {
-       "items": {
-        "type": "string"
-       },
-       "type": "array"
+       "type": "string"
       },
       {
        "type": "null"
       }
      ],
      "default": null,
-     "description": "Default: everyone on the order.",
-     "title": "Passenger Seats"
+     "description": "Ask for the refund this airline change entitles to, instead of a cancellation under the fare rules.",
+     "title": "Airline Change Id"
     }
    },
    "required": [
@@ -3365,6 +3702,20 @@
     "quote"
    ],
    "title": "QuoteCancellationResponse",
+   "type": "object"
+  },
+  "QuoteIdRequest": {
+   "additionalProperties": false,
+   "properties": {
+    "quote_id": {
+     "title": "Quote Id",
+     "type": "string"
+    }
+   },
+   "required": [
+    "quote_id"
+   ],
+   "title": "QuoteIdRequest",
    "type": "object"
   },
   "ReadInboxRequest": {
@@ -3434,53 +3785,6 @@
    "title": "RefundTarget",
    "type": "string"
   },
-  "RespondToAirlineChangeRequest": {
-   "additionalProperties": false,
-   "properties": {
-    "change_id": {
-     "title": "Change Id",
-     "type": "string"
-    },
-    "action": {
-     "enum": [
-      "accept",
-      "rebook",
-      "refund"
-     ],
-     "title": "Action",
-     "type": "string"
-    },
-    "change_offer_id": {
-     "anyOf": [
-      {
-       "type": "string"
-      },
-      {
-       "type": "null"
-      }
-     ],
-     "default": null,
-     "description": "Required for `rebook`.",
-     "title": "Change Offer Id"
-    },
-    "authorization_ids": {
-     "description": "One from every affected traveller.",
-     "items": {
-      "type": "string"
-     },
-     "minItems": 1,
-     "title": "Authorization Ids",
-     "type": "array"
-    }
-   },
-   "required": [
-    "change_id",
-    "action",
-    "authorization_ids"
-   ],
-   "title": "RespondToAirlineChangeRequest",
-   "type": "object"
-  },
   "RespondToProposalRequest": {
    "additionalProperties": false,
    "properties": {
@@ -3524,21 +3828,18 @@
      "title": "Order Id",
      "type": "string"
     },
-    "passenger_seats": {
+    "airline_change_id": {
      "anyOf": [
       {
-       "items": {
-        "type": "string"
-       },
-       "type": "array"
+       "type": "string"
       },
       {
        "type": "null"
       }
      ],
      "default": null,
-     "description": "Default: everyone on the order.",
-     "title": "Passenger Seats"
+     "description": "Ask for the free rebooking this airline change entitles to, instead of a change under the fare rules.",
+     "title": "Airline Change Id"
     },
     "date": {
      "anyOf": [
@@ -3554,6 +3855,7 @@
       }
      ],
      "default": null,
+     "description": "Local departure date. Default: the date the order was first scheduled for.",
      "title": "Date"
     },
     "depart_after_local": {
@@ -4363,27 +4665,81 @@
   }
  },
  "examples": {
-  "list_airports": {
+  "send_message": {
    "request": {
-    "metro": "NYC"
-   },
-   "response": {
-    "airports": [
+    "to": [
+     "traveler_a"
+    ],
+    "text": "To find the right flight I need your budget and the latest you can land in New York.",
+    "attachments": [
      {
-      "code": "JFK",
-      "name": "John F. Kennedy International",
-      "city": "New York",
-      "metro": "NYC",
-      "country": "US",
-      "lat": 40.6413,
-      "lon": -73.7781,
-      "tz": "America/New_York",
-      "min_connection_minutes": 60,
-      "ground_minutes_to_center": 60
+      "kind": "fact_request",
+      "keys": [
+       "budget_cents",
+       "latest_arrival_local"
+      ]
      }
     ]
    },
-   "note": ""
+   "response": {
+    "message": {
+     "message_id": "msg_12",
+     "seq": 12,
+     "sender": "ota_agent",
+     "recipients": [
+      "traveler_a"
+     ],
+     "sent_at": "2027-02-20T18:01:00Z",
+     "text": "To find the right flight I need your budget and the latest you can land in New York.",
+     "attachments": [
+      {
+       "kind": "fact_request",
+       "keys": [
+        "budget_cents",
+        "latest_arrival_local"
+       ]
+      }
+     ],
+     "in_reply_to": null
+    }
+   },
+   "note": "The typed fact request tells the traveller exactly which facts are wanted."
+  },
+  "read_inbox": {
+   "request": {
+    "wait_minutes": 10,
+    "limit": 50
+   },
+   "response": {
+    "messages": [
+     {
+      "message_id": "msg_13",
+      "seq": 13,
+      "sender": "traveler_a",
+      "recipients": [
+       "ota_agent"
+      ],
+      "sent_at": "2027-02-20T18:02:00Z",
+      "text": "Up to $420, and I have to be on the ground by 6 pm on Friday.",
+      "attachments": [
+       {
+        "kind": "fact",
+        "key": "budget_cents",
+        "value": 42000
+       },
+       {
+        "kind": "fact",
+        "key": "latest_arrival_local",
+        "value": "2027-03-12T18:00"
+       }
+      ],
+      "in_reply_to": "msg_12"
+     }
+    ],
+    "woke_by": "message",
+    "waited_seconds": 50
+   },
+   "note": "The answer carries typed facts next to the free text."
   },
   "search_flights": {
    "request": {
@@ -4587,144 +4943,6 @@
    },
    "note": "Two rows shown. 14A and 14B are free and adjacent."
   },
-  "price_offer": {
-   "request": {
-    "offer_id": "off_8c1d42"
-   },
-   "response": {
-    "offer": {
-     "offer_id": "off_8c1d42",
-     "slices": [
-      {
-       "origin": "SFO",
-       "destination": "JFK",
-       "segments": [
-        {
-         "flight_id": "flt_NV212_20270312",
-         "carrier": "NV",
-         "flight_number": "NV212",
-         "origin": "SFO",
-         "destination": "JFK",
-         "departs_at": "2027-03-12T16:00:00Z",
-         "arrives_at": "2027-03-12T21:25:00Z",
-         "departs_local": "2027-03-12T08:00",
-         "arrives_local": "2027-03-12T16:25",
-         "arrival_day_offset": 0,
-         "distance_km": 4152,
-         "block_minutes": 325,
-         "aircraft": "A321"
-        }
-       ],
-       "stops": 0,
-       "duration_minutes": 325,
-       "layover_minutes": []
-      }
-     ],
-     "fare_brand": "standard",
-     "booking_class": "Q",
-     "passengers": 2,
-     "price_per_passenger": {
-      "base_cents": 28900,
-      "taxes_and_fees_cents": 3698,
-      "total_cents": 32598
-     },
-     "total_cents": 65196,
-     "seats_left": 4,
-     "conditions": {
-      "changeable": true,
-      "change_fee_cents": 0,
-      "cancellable": true,
-      "cancel_fee_cents": 0,
-      "refund_to": "travel_credit",
-      "holdable": true,
-      "checked_bags_included": 0,
-      "seat_selection_included": true
-     },
-     "single_ticket": true,
-     "created_at": "2027-02-20T18:00:00Z",
-     "expires_at": "2027-02-20T18:20:00Z"
-    },
-    "price_changed": false,
-    "previous_total_cents": 65196
-   },
-   "note": ""
-  },
-  "send_message": {
-   "request": {
-    "to": [
-     "traveler_a"
-    ],
-    "text": "To find the right flight I need your budget and the latest you can land in New York.",
-    "attachments": [
-     {
-      "kind": "fact_request",
-      "keys": [
-       "budget_cents",
-       "latest_arrival_local"
-      ]
-     }
-    ]
-   },
-   "response": {
-    "message": {
-     "message_id": "msg_12",
-     "seq": 12,
-     "sender": "ota_agent",
-     "recipients": [
-      "traveler_a"
-     ],
-     "sent_at": "2027-02-20T18:01:00Z",
-     "text": "To find the right flight I need your budget and the latest you can land in New York.",
-     "attachments": [
-      {
-       "kind": "fact_request",
-       "keys": [
-        "budget_cents",
-        "latest_arrival_local"
-       ]
-      }
-     ],
-     "in_reply_to": null
-    }
-   },
-   "note": "The typed fact request tells the traveller exactly which facts are wanted."
-  },
-  "read_inbox": {
-   "request": {
-    "wait_minutes": 10,
-    "limit": 50
-   },
-   "response": {
-    "messages": [
-     {
-      "message_id": "msg_13",
-      "seq": 13,
-      "sender": "traveler_a",
-      "recipients": [
-       "ota_agent"
-      ],
-      "sent_at": "2027-02-20T18:02:00Z",
-      "text": "Up to $420, and I have to be on the ground by 6 pm on Friday.",
-      "attachments": [
-       {
-        "kind": "fact",
-        "key": "budget_cents",
-        "value": 42000
-       },
-       {
-        "kind": "fact",
-        "key": "latest_arrival_local",
-        "value": "2027-03-12T18:00"
-       }
-      ],
-      "in_reply_to": "msg_12"
-     }
-    ],
-    "woke_by": "message",
-    "waited_seconds": 50
-   },
-   "note": "The answer carries typed facts next to the free text."
-  },
   "create_proposal": {
    "request": {
     "items": [
@@ -4798,6 +5016,1575 @@
      "created_at": "2027-02-20T18:04:00Z",
      "expires_at": "2027-02-20T19:04:00Z"
     }
+   },
+   "note": ""
+  },
+  "execute_proposal": {
+   "request": {
+    "proposal_id": "prop_31f0",
+    "payments": [
+     {
+      "authorization_id": "auth_a_77",
+      "amount_cents": 32598
+     },
+     {
+      "authorization_id": "auth_b_12",
+      "amount_cents": 32598
+     }
+    ]
+   },
+   "response": {
+    "proposal": {
+     "proposal_id": "prop_31f0",
+     "created_by": "ota_agent",
+     "items": [
+      {
+       "seat": "traveler_a",
+       "offer_id": "off_8c1d42",
+       "fare_brand": "standard",
+       "fare_cents": 32598,
+       "services_cents": 0,
+       "total_cents": 32598,
+       "seat_request": "14A",
+       "checked_bags": 0
+      },
+      {
+       "seat": "traveler_b",
+       "offer_id": "off_8c1d42",
+       "fare_brand": "standard",
+       "fare_cents": 32598,
+       "services_cents": 0,
+       "total_cents": 32598,
+       "seat_request": "14B",
+       "checked_bags": 0
+      }
+     ],
+     "payer_split": [
+      {
+       "payer": "traveler_a",
+       "amount_cents": 32598
+      },
+      {
+       "payer": "traveler_b",
+       "amount_cents": 32598
+      }
+     ],
+     "note": "Nonstop, lands 16:25, seats 14A and 14B together.",
+     "status": "executed",
+     "responses": [],
+     "order_ids": [
+      "ord_5521"
+     ],
+     "content_digest": "sha256:5b7e09a1",
+     "created_at": "2027-02-20T18:04:00Z",
+     "expires_at": "2027-02-20T19:04:00Z"
+    },
+    "orders": [
+     {
+      "order_id": "ord_5521",
+      "version": 1,
+      "content_digest": "sha256:c40d3f12",
+      "booking_reference": "Q7XK2M",
+      "status": "ticketed",
+      "cancellation_reason": null,
+      "proposal_id": "prop_31f0",
+      "split_from": null,
+      "created_by": "ota_agent",
+      "created_at": "2027-02-20T18:10:00Z",
+      "ticketed_at": "2027-02-20T18:10:00Z",
+      "passengers": [
+       {
+        "passenger_id": "pax_a",
+        "seat": "traveler_a",
+        "given_name": "Maya",
+        "family_name": "Chen",
+        "birth_date": "1994-05-17",
+        "loyalty": {
+         "program": "NovaMiles",
+         "tier": "gold"
+        }
+       },
+       {
+        "passenger_id": "pax_b",
+        "seat": "traveler_b",
+        "given_name": "Daniel",
+        "family_name": "Okafor",
+        "birth_date": "1991-11-02",
+        "loyalty": null
+       }
+      ],
+      "slices": [
+       {
+        "origin": "SFO",
+        "destination": "JFK",
+        "segments": [
+         {
+          "flight_id": "flt_NV212_20270312",
+          "carrier": "NV",
+          "flight_number": "NV212",
+          "origin": "SFO",
+          "destination": "JFK",
+          "departs_at": "2027-03-12T16:00:00Z",
+          "arrives_at": "2027-03-12T21:25:00Z",
+          "departs_local": "2027-03-12T08:00",
+          "arrives_local": "2027-03-12T16:25",
+          "arrival_day_offset": 0,
+          "distance_km": 4152,
+          "block_minutes": 325,
+          "aircraft": "A321"
+         }
+        ],
+        "stops": 0,
+        "duration_minutes": 325,
+        "layover_minutes": []
+       }
+      ],
+      "fare_brand": "standard",
+      "conditions": {
+       "changeable": true,
+       "change_fee_cents": 0,
+       "cancellable": true,
+       "cancel_fee_cents": 0,
+       "refund_to": "travel_credit",
+       "holdable": true,
+       "checked_bags_included": 0,
+       "seat_selection_included": true
+      },
+      "price_per_passenger": {
+       "base_cents": 28900,
+       "taxes_and_fees_cents": 3698,
+       "total_cents": 32598
+      },
+      "services_cents": 0,
+      "accounts": [
+       {
+        "passenger_id": "pax_a",
+        "fare_cents": 32598,
+        "services_cents": 0,
+        "change_fees_cents": 0
+       },
+       {
+        "passenger_id": "pax_b",
+        "fare_cents": 32598,
+        "services_cents": 0,
+        "change_fees_cents": 0
+       }
+      ],
+      "total_cents": 65196,
+      "paid_cents": 65196,
+      "refunded_cents": 0,
+      "payment_status": "paid",
+      "payments": [
+       {
+        "payment_id": "pay_1",
+        "kind": "charge",
+        "payer": "traveler_a",
+        "payment_method_id": "pm_a1",
+        "amount_cents": 32598,
+        "passenger_id": "pax_a",
+        "authorization_id": "auth_a_77",
+        "at": "2027-02-20T18:10:00Z",
+        "seq": 41
+       },
+       {
+        "payment_id": "pay_2",
+        "kind": "charge",
+        "payer": "traveler_b",
+        "payment_method_id": "pm_b1",
+        "amount_cents": 32598,
+        "passenger_id": "pax_b",
+        "authorization_id": "auth_b_12",
+        "at": "2027-02-20T18:10:00Z",
+        "seq": 41
+       }
+      ],
+      "hold": null,
+      "seat_assignments": [
+       {
+        "passenger_id": "pax_a",
+        "flight_id": "flt_NV212_20270312",
+        "seat": "14A"
+       },
+       {
+        "passenger_id": "pax_b",
+        "flight_id": "flt_NV212_20270312",
+        "seat": "14B"
+       }
+      ],
+      "bags": [],
+      "tickets": [
+       {
+        "ticket_number": "0492100000117",
+        "passenger_id": "pax_a"
+       },
+       {
+        "ticket_number": "0492100000118",
+        "passenger_id": "pax_b"
+       }
+      ],
+      "airline_changes": [],
+      "available_actions": [
+       "update_services",
+       "change",
+       "cancel",
+       "split"
+      ]
+     }
+    ]
+   },
+   "note": "Both authorizations are consumed in the same commit, seq 41. Each payer is charged exactly the agreed share."
+  },
+  "list_orders": {
+   "request": {},
+   "response": {
+    "orders": [
+     {
+      "order_id": "ord_0001",
+      "booking_reference": "VXLXYL",
+      "status": "ticketed",
+      "route": "SFO-JFK",
+      "departs_at": "2027-03-12T17:35:00Z",
+      "passenger_seats": [
+       "traveler_a"
+      ],
+      "total_cents": 32060,
+      "pending_airline_changes": 0
+     },
+     {
+      "order_id": "ord_0002",
+      "booking_reference": "WWN83Y",
+      "status": "ticketed",
+      "route": "SFO-JFK",
+      "departs_at": "2027-03-12T17:35:00Z",
+      "passenger_seats": [
+       "traveler_b"
+      ],
+      "total_cents": 32260,
+      "pending_airline_changes": 0
+     }
+    ]
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "finish": {
+   "request": {
+    "summary": "Both travellers ticketed on the same nonstop, seats together, each within budget."
+   },
+   "response": {
+    "acknowledged": true,
+    "observation_ends_at": "2027-03-01T19:00:00Z"
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "grant_authorization": {
+   "request": {
+    "subject": {
+     "type": "proposal",
+     "id": "prop_31f0"
+    },
+    "max_charge_cents": 33000,
+    "payment_method_id": "pm_a1",
+    "expires_in_minutes": 60
+   },
+   "response": {
+    "authorization": {
+     "authorization_id": "auth_a_77",
+     "grantor": "traveler_a",
+     "grantee": "ota_agent",
+     "subject": {
+      "type": "proposal",
+      "id": "prop_31f0",
+      "content_digest": "sha256:5b7e09a1"
+     },
+     "max_charge_cents": 33000,
+     "payment_method_id": "pm_a1",
+     "status": "active",
+     "created_at": "2027-02-20T18:07:00Z",
+     "expires_at": "2027-02-20T19:07:00Z",
+     "consumed_at_seq": null
+    }
+   },
+   "note": "The world fills in the digest of the proposal as it stands. A changed proposal no longer matches."
+  },
+  "get_order": {
+   "request": {
+    "order_id": "ord_5521"
+   },
+   "response": {
+    "order": {
+     "order_id": "ord_5521",
+     "version": 1,
+     "content_digest": "sha256:c40d3f12",
+     "booking_reference": "Q7XK2M",
+     "status": "ticketed",
+     "cancellation_reason": null,
+     "proposal_id": "prop_31f0",
+     "split_from": null,
+     "created_by": "ota_agent",
+     "created_at": "2027-02-20T18:10:00Z",
+     "ticketed_at": "2027-02-20T18:10:00Z",
+     "passengers": [
+      {
+       "passenger_id": "pax_a",
+       "seat": "traveler_a",
+       "given_name": "Maya",
+       "family_name": "Chen",
+       "birth_date": "1994-05-17",
+       "loyalty": {
+        "program": "NovaMiles",
+        "tier": "gold"
+       }
+      },
+      {
+       "passenger_id": "pax_b",
+       "seat": "traveler_b",
+       "given_name": "Daniel",
+       "family_name": "Okafor",
+       "birth_date": "1991-11-02",
+       "loyalty": null
+      }
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_NV212_20270312",
+         "carrier": "NV",
+         "flight_number": "NV212",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-12T16:00:00Z",
+         "arrives_at": "2027-03-12T21:25:00Z",
+         "departs_local": "2027-03-12T08:00",
+         "arrives_local": "2027-03-12T16:25",
+         "arrival_day_offset": 0,
+         "distance_km": 4152,
+         "block_minutes": 325,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 325,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "price_per_passenger": {
+      "base_cents": 28900,
+      "taxes_and_fees_cents": 3698,
+      "total_cents": 32598
+     },
+     "services_cents": 0,
+     "accounts": [
+      {
+       "passenger_id": "pax_a",
+       "fare_cents": 32598,
+       "services_cents": 0,
+       "change_fees_cents": 0
+      },
+      {
+       "passenger_id": "pax_b",
+       "fare_cents": 32598,
+       "services_cents": 0,
+       "change_fees_cents": 0
+      }
+     ],
+     "total_cents": 65196,
+     "paid_cents": 65196,
+     "refunded_cents": 0,
+     "payment_status": "paid",
+     "payments": [
+      {
+       "payment_id": "pay_1",
+       "kind": "charge",
+       "payer": "traveler_a",
+       "payment_method_id": "pm_a1",
+       "amount_cents": 32598,
+       "passenger_id": "pax_a",
+       "authorization_id": "auth_a_77",
+       "at": "2027-02-20T18:10:00Z",
+       "seq": 41
+      },
+      {
+       "payment_id": "pay_2",
+       "kind": "charge",
+       "payer": "traveler_b",
+       "payment_method_id": "pm_b1",
+       "amount_cents": 32598,
+       "passenger_id": "pax_b",
+       "authorization_id": "auth_b_12",
+       "at": "2027-02-20T18:10:00Z",
+       "seq": 41
+      }
+     ],
+     "hold": null,
+     "seat_assignments": [
+      {
+       "passenger_id": "pax_a",
+       "flight_id": "flt_NV212_20270312",
+       "seat": "14A"
+      },
+      {
+       "passenger_id": "pax_b",
+       "flight_id": "flt_NV212_20270312",
+       "seat": "14B"
+      }
+     ],
+     "bags": [],
+     "tickets": [
+      {
+       "ticket_number": "0492100000117",
+       "passenger_id": "pax_a"
+      },
+      {
+       "ticket_number": "0492100000118",
+       "passenger_id": "pax_b"
+      }
+     ],
+     "airline_changes": [],
+     "available_actions": [
+      "update_services",
+      "change",
+      "cancel",
+      "split"
+     ]
+    }
+   },
+   "note": ""
+  },
+  "search_policy": {
+   "request": {
+    "query": "flight cancelled rebook refund",
+    "limit": 2
+   },
+   "response": {
+    "passages": [
+     {
+      "document": "agency_handbook",
+      "section": "Airline changes: cancelled flights and broken connections",
+      "text": "When a flight of an order is cancelled, or a delay leaves less than the minimum connection time at the connecting airport, the travellers cannot fly as booked. They may rebook at no charge or take a full refund. If nobody responds by the deadline, the order is cancelled and everything paid for it is refunded to the original payment methods."
+     },
+     {
+      "document": "agency_handbook",
+      "section": "Free rebooking and refunds after an airline change",
+      "text": "The free rebooking is an itinerary of the same carrier between the same two metro areas, scheduled on the original date or up to 1 day later, on any flight with seats left. It costs nothing and keeps the fare brand, the fare paid and the bags. The refund after an airline change returns everything paid for the order, fees for seats, bags and changes included, to the original payment methods. Both must be asked for by naming the airline change: a change or a cancellation asked for without it follows the ordinary fare conditions, which can return much less."
+     }
+    ]
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "quote_cancellation": {
+   "request": {
+    "order_id": "ord_5521"
+   },
+   "response": {
+    "quote": {
+     "quote_id": "cq_9a02",
+     "order_id": "ord_5521",
+     "order_version": 1,
+     "airline_change_id": null,
+     "passenger_seats": [
+      "traveler_a",
+      "traveler_b"
+     ],
+     "refund_cents": 65196,
+     "penalty_cents": 0,
+     "non_refundable_cents": 0,
+     "refund_to": "original_payment",
+     "payer_refunds": [
+      {
+       "payer": "traveler_a",
+       "amount_cents": 32598
+      },
+      {
+       "payer": "traveler_b",
+       "amount_cents": 32598
+      }
+     ],
+     "rule_basis": "agency_24h_policy",
+     "content_digest": "sha256:e19b77c0",
+     "created_at": "2027-02-20T19:00:00Z",
+     "expires_at": "2027-02-20T19:20:00Z"
+    }
+   },
+   "note": "Fifty minutes after ticketing, three weeks before departure: the agency's own 24-hour policy applies, with a full refund to the original payment."
+  },
+  "split_order": {
+   "request": {
+    "order_id": "ord_0001",
+    "passenger_seats": [
+     "traveler_b"
+    ]
+   },
+   "response": {
+    "remaining": {
+     "order_id": "ord_0001",
+     "version": 3,
+     "content_digest": "sha256:2551ef6ae8bbe30e",
+     "booking_reference": "VXLXYL",
+     "status": "ticketed",
+     "cancellation_reason": null,
+     "proposal_id": "prop_0001",
+     "split_from": null,
+     "created_by": "ota_agent",
+     "created_at": "2027-03-11T11:39:20Z",
+     "ticketed_at": "2027-03-11T11:39:20Z",
+     "passengers": [
+      {
+       "passenger_id": "pax_a",
+       "seat": "traveler_a",
+       "given_name": "Maya",
+       "family_name": "Chen",
+       "birth_date": "1994-05-17",
+       "loyalty": {
+        "program": "NovaMiles",
+        "tier": "gold"
+       }
+      }
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_AJ360_20270312",
+         "carrier": "AJ",
+         "flight_number": "AJ360",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-12T17:35:00Z",
+         "arrives_at": "2027-03-12T23:13:00Z",
+         "departs_local": "2027-03-12T09:35",
+         "arrives_local": "2027-03-12T18:13",
+         "arrival_day_offset": 0,
+         "distance_km": 4152,
+         "block_minutes": 338,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 338,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "price_per_passenger": {
+      "base_cents": 40900,
+      "taxes_and_fees_cents": 4598,
+      "total_cents": 45498
+     },
+     "services_cents": 0,
+     "accounts": [
+      {
+       "passenger_id": "pax_a",
+       "fare_cents": 45498,
+       "services_cents": 0,
+       "change_fees_cents": 0
+      }
+     ],
+     "total_cents": 45498,
+     "paid_cents": 45498,
+     "refunded_cents": 0,
+     "payment_status": "paid",
+     "payments": [
+      {
+       "payment_id": "pay_0001",
+       "kind": "charge",
+       "payer": "traveler_a",
+       "payment_method_id": "pm_a1",
+       "amount_cents": 45498,
+       "passenger_id": "pax_a",
+       "authorization_id": "auth_0001",
+       "at": "2027-03-11T11:39:20Z",
+       "seq": 4
+      }
+     ],
+     "hold": null,
+     "seat_assignments": [
+      {
+       "passenger_id": "pax_a",
+       "flight_id": "flt_AJ360_20270312",
+       "seat": "10A"
+      }
+     ],
+     "bags": [],
+     "tickets": [
+      {
+       "ticket_number": "0490000000001",
+       "passenger_id": "pax_a"
+      }
+     ],
+     "airline_changes": [
+      {
+       "change_id": "ac_0001",
+       "order_id": "ord_0001",
+       "kind": "cancellation",
+       "flight_id": "flt_AJ360_20270312",
+       "cause": "carrier",
+       "old_departs_at": "2027-03-12T17:35:00Z",
+       "old_arrives_at": "2027-03-12T23:13:00Z",
+       "new_departs_at": null,
+       "new_arrives_at": null,
+       "breaks_connection": false,
+       "significant": true,
+       "options": [
+        "rebook",
+        "refund"
+       ],
+       "respond_by": "2027-03-12T17:35:00Z",
+       "status": "pending",
+       "resolved_by": null,
+       "content_digest": "sha256:9e88bbae29c7c317",
+       "announced_at": "2027-03-11T12:35:00Z"
+      }
+     ],
+     "available_actions": [
+      "update_services",
+      "change"
+     ]
+    },
+    "separated": {
+     "order_id": "ord_0002",
+     "version": 1,
+     "content_digest": "sha256:b588a913f595f394",
+     "booking_reference": "WWN83Y",
+     "status": "ticketed",
+     "cancellation_reason": null,
+     "proposal_id": "prop_0001",
+     "split_from": "ord_0001",
+     "created_by": "ota_agent",
+     "created_at": "2027-03-11T12:40:40Z",
+     "ticketed_at": "2027-03-11T11:39:20Z",
+     "passengers": [
+      {
+       "passenger_id": "pax_b",
+       "seat": "traveler_b",
+       "given_name": "Daniel",
+       "family_name": "Okafor",
+       "birth_date": "1991-11-02",
+       "loyalty": null
+      }
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_AJ360_20270312",
+         "carrier": "AJ",
+         "flight_number": "AJ360",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-12T17:35:00Z",
+         "arrives_at": "2027-03-12T23:13:00Z",
+         "departs_local": "2027-03-12T09:35",
+         "arrives_local": "2027-03-12T18:13",
+         "arrival_day_offset": 0,
+         "distance_km": 4152,
+         "block_minutes": 338,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 338,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "price_per_passenger": {
+      "base_cents": 40900,
+      "taxes_and_fees_cents": 4598,
+      "total_cents": 45498
+     },
+     "services_cents": 4500,
+     "accounts": [
+      {
+       "passenger_id": "pax_b",
+       "fare_cents": 45498,
+       "services_cents": 4500,
+       "change_fees_cents": 0
+      }
+     ],
+     "total_cents": 49998,
+     "paid_cents": 49998,
+     "refunded_cents": 0,
+     "payment_status": "paid",
+     "payments": [
+      {
+       "payment_id": "pay_0002",
+       "kind": "charge",
+       "payer": "traveler_b",
+       "payment_method_id": "pm_b1",
+       "amount_cents": 49998,
+       "passenger_id": "pax_b",
+       "authorization_id": "auth_0002",
+       "at": "2027-03-11T11:39:20Z",
+       "seq": 4
+      }
+     ],
+     "hold": null,
+     "seat_assignments": [
+      {
+       "passenger_id": "pax_b",
+       "flight_id": "flt_AJ360_20270312",
+       "seat": "10B"
+      }
+     ],
+     "bags": [
+      {
+       "passenger_id": "pax_b",
+       "checked_bags": 1
+      }
+     ],
+     "tickets": [
+      {
+       "ticket_number": "0490000000002",
+       "passenger_id": "pax_b"
+      }
+     ],
+     "airline_changes": [
+      {
+       "change_id": "ac_0002",
+       "order_id": "ord_0002",
+       "kind": "cancellation",
+       "flight_id": "flt_AJ360_20270312",
+       "cause": "carrier",
+       "old_departs_at": "2027-03-12T17:35:00Z",
+       "old_arrives_at": "2027-03-12T23:13:00Z",
+       "new_departs_at": null,
+       "new_arrives_at": null,
+       "breaks_connection": false,
+       "significant": true,
+       "options": [
+        "rebook",
+        "refund"
+       ],
+       "respond_by": "2027-03-12T17:35:00Z",
+       "status": "pending",
+       "resolved_by": null,
+       "content_digest": "sha256:e3f656ab457afdf9",
+       "announced_at": "2027-03-11T12:35:00Z"
+      }
+     ],
+     "available_actions": [
+      "update_services",
+      "change"
+     ]
+    }
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "get_cancellation_quote": {
+   "request": {
+    "quote_id": "cq_0003"
+   },
+   "response": {
+    "quote": {
+     "quote_id": "cq_0003",
+     "order_id": "ord_0002",
+     "order_version": 1,
+     "airline_change_id": "ac_0002",
+     "passenger_seats": [
+      "traveler_b"
+     ],
+     "refund_cents": 49998,
+     "penalty_cents": 0,
+     "non_refundable_cents": 0,
+     "refund_to": "original_payment",
+     "payer_refunds": [
+      {
+       "payer": "traveler_b",
+       "amount_cents": 49998
+      }
+     ],
+     "rule_basis": "carrier_cancellation",
+     "content_digest": "sha256:20a8d90feca3488d",
+     "created_at": "2027-03-11T12:41:40Z",
+     "expires_at": "2027-03-11T13:01:40Z"
+    }
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "confirm_cancellation": {
+   "request": {
+    "quote_id": "cq_0003",
+    "authorization_ids": [
+     "auth_0004"
+    ]
+   },
+   "response": {
+    "order": {
+     "order_id": "ord_0002",
+     "version": 2,
+     "content_digest": "sha256:2cf1ea61fb40be75",
+     "booking_reference": "WWN83Y",
+     "status": "cancelled",
+     "cancellation_reason": "airline_change_refund",
+     "proposal_id": "prop_0001",
+     "split_from": "ord_0001",
+     "created_by": "ota_agent",
+     "created_at": "2027-03-11T12:40:40Z",
+     "ticketed_at": "2027-03-11T11:39:20Z",
+     "passengers": [
+      {
+       "passenger_id": "pax_b",
+       "seat": "traveler_b",
+       "given_name": "Daniel",
+       "family_name": "Okafor",
+       "birth_date": "1991-11-02",
+       "loyalty": null
+      }
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_AJ360_20270312",
+         "carrier": "AJ",
+         "flight_number": "AJ360",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-12T17:35:00Z",
+         "arrives_at": "2027-03-12T23:13:00Z",
+         "departs_local": "2027-03-12T09:35",
+         "arrives_local": "2027-03-12T18:13",
+         "arrival_day_offset": 0,
+         "distance_km": 4152,
+         "block_minutes": 338,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 338,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "price_per_passenger": {
+      "base_cents": 40900,
+      "taxes_and_fees_cents": 4598,
+      "total_cents": 45498
+     },
+     "services_cents": 4500,
+     "accounts": [
+      {
+       "passenger_id": "pax_b",
+       "fare_cents": 45498,
+       "services_cents": 4500,
+       "change_fees_cents": 0
+      }
+     ],
+     "total_cents": 49998,
+     "paid_cents": 49998,
+     "refunded_cents": 49998,
+     "payment_status": "refunded",
+     "payments": [
+      {
+       "payment_id": "pay_0002",
+       "kind": "charge",
+       "payer": "traveler_b",
+       "payment_method_id": "pm_b1",
+       "amount_cents": 49998,
+       "passenger_id": "pax_b",
+       "authorization_id": "auth_0002",
+       "at": "2027-03-11T11:39:20Z",
+       "seq": 4
+      },
+      {
+       "payment_id": "pay_0003",
+       "kind": "refund",
+       "payer": "traveler_b",
+       "payment_method_id": "pm_b1",
+       "amount_cents": 49998,
+       "passenger_id": "pax_b",
+       "authorization_id": null,
+       "at": "2027-03-11T12:43:50Z",
+       "seq": 12
+      }
+     ],
+     "hold": null,
+     "seat_assignments": [],
+     "bags": [
+      {
+       "passenger_id": "pax_b",
+       "checked_bags": 1
+      }
+     ],
+     "tickets": [
+      {
+       "ticket_number": "0490000000002",
+       "passenger_id": "pax_b"
+      }
+     ],
+     "airline_changes": [
+      {
+       "change_id": "ac_0002",
+       "order_id": "ord_0002",
+       "kind": "cancellation",
+       "flight_id": "flt_AJ360_20270312",
+       "cause": "carrier",
+       "old_departs_at": "2027-03-12T17:35:00Z",
+       "old_arrives_at": "2027-03-12T23:13:00Z",
+       "new_departs_at": null,
+       "new_arrives_at": null,
+       "breaks_connection": false,
+       "significant": true,
+       "options": [
+        "rebook",
+        "refund"
+       ],
+       "respond_by": "2027-03-12T17:35:00Z",
+       "status": "refunded",
+       "resolved_by": "agent",
+       "content_digest": "sha256:e3f656ab457afdf9",
+       "announced_at": "2027-03-11T12:35:00Z"
+      }
+     ],
+     "available_actions": []
+    },
+    "refunds": [
+     {
+      "payment_id": "pay_0003",
+      "kind": "refund",
+      "payer": "traveler_b",
+      "payment_method_id": "pm_b1",
+      "amount_cents": 49998,
+      "passenger_id": "pax_b",
+      "authorization_id": null,
+      "at": "2027-03-11T12:43:50Z",
+      "seq": 12
+     }
+    ]
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "search_change_options": {
+   "request": {
+    "order_id": "ord_0001",
+    "airline_change_id": "ac_0001"
+   },
+   "response": {
+    "change_offers": [
+     {
+      "change_offer_id": "chg_0001",
+      "order_id": "ord_0001",
+      "order_version": 3,
+      "airline_change_id": "ac_0001",
+      "passenger_seats": [
+       "traveler_a"
+      ],
+      "slices": [
+       {
+        "origin": "SFO",
+        "destination": "JFK",
+        "segments": [
+         {
+          "flight_id": "flt_AJ583_20270312",
+          "carrier": "AJ",
+          "flight_number": "AJ583",
+          "origin": "SFO",
+          "destination": "MSP",
+          "departs_at": "2027-03-12T17:25:00Z",
+          "arrives_at": "2027-03-12T21:11:00Z",
+          "departs_local": "2027-03-12T09:25",
+          "arrives_local": "2027-03-12T15:11",
+          "arrival_day_offset": 0,
+          "distance_km": 2551,
+          "block_minutes": 226,
+          "aircraft": "B738"
+         },
+         {
+          "flight_id": "flt_AJ327_20270312",
+          "carrier": "AJ",
+          "flight_number": "AJ327",
+          "origin": "MSP",
+          "destination": "JFK",
+          "departs_at": "2027-03-12T23:20:00Z",
+          "arrives_at": "2027-03-13T02:01:00Z",
+          "departs_local": "2027-03-12T17:20",
+          "arrives_local": "2027-03-12T21:01",
+          "arrival_day_offset": 0,
+          "distance_km": 1651,
+          "block_minutes": 161,
+          "aircraft": "B738"
+         }
+        ],
+        "stops": 1,
+        "duration_minutes": 516,
+        "layover_minutes": [
+         129
+        ]
+       }
+      ],
+      "fare_brand": "standard",
+      "price_per_passenger": {
+       "base_cents": 40900,
+       "taxes_and_fees_cents": 4598,
+       "total_cents": 45498
+      },
+      "seats_left": 9,
+      "penalty_cents": 0,
+      "fare_difference_cents": 0,
+      "total_due_cents": 0,
+      "refund_to": "travel_credit",
+      "content_digest": "sha256:4330c026bf9d2c01",
+      "created_at": "2027-03-11T12:44:50Z",
+      "expires_at": "2027-03-11T13:04:50Z"
+     },
+     {
+      "change_offer_id": "chg_0002",
+      "order_id": "ord_0001",
+      "order_version": 3,
+      "airline_change_id": "ac_0001",
+      "passenger_seats": [
+       "traveler_a"
+      ],
+      "slices": [
+       {
+        "origin": "SFO",
+        "destination": "EWR",
+        "segments": [
+         {
+          "flight_id": "flt_AJ583_20270312",
+          "carrier": "AJ",
+          "flight_number": "AJ583",
+          "origin": "SFO",
+          "destination": "MSP",
+          "departs_at": "2027-03-12T17:25:00Z",
+          "arrives_at": "2027-03-12T21:11:00Z",
+          "departs_local": "2027-03-12T09:25",
+          "arrives_local": "2027-03-12T15:11",
+          "arrival_day_offset": 0,
+          "distance_km": 2551,
+          "block_minutes": 226,
+          "aircraft": "B738"
+         },
+         {
+          "flight_id": "flt_AJ510_20270312",
+          "carrier": "AJ",
+          "flight_number": "AJ510",
+          "origin": "MSP",
+          "destination": "EWR",
+          "departs_at": "2027-03-12T23:05:00Z",
+          "arrives_at": "2027-03-13T01:44:00Z",
+          "departs_local": "2027-03-12T17:05",
+          "arrives_local": "2027-03-12T20:44",
+          "arrival_day_offset": 0,
+          "distance_km": 1619,
+          "block_minutes": 159,
+          "aircraft": "B738"
+         }
+        ],
+        "stops": 1,
+        "duration_minutes": 499,
+        "layover_minutes": [
+         114
+        ]
+       }
+      ],
+      "fare_brand": "standard",
+      "price_per_passenger": {
+       "base_cents": 40900,
+       "taxes_and_fees_cents": 4598,
+       "total_cents": 45498
+      },
+      "seats_left": 9,
+      "penalty_cents": 0,
+      "fare_difference_cents": 0,
+      "total_due_cents": 0,
+      "refund_to": "travel_credit",
+      "content_digest": "sha256:48b20509b7826b5b",
+      "created_at": "2027-03-11T12:44:50Z",
+      "expires_at": "2027-03-11T13:04:50Z"
+     }
+    ]
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "get_change_offer": {
+   "request": {
+    "change_offer_id": "chg_0007"
+   },
+   "response": {
+    "change_offer": {
+     "change_offer_id": "chg_0007",
+     "order_id": "ord_0001",
+     "order_version": 3,
+     "airline_change_id": "ac_0001",
+     "passenger_seats": [
+      "traveler_a"
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_AJ362_20270312",
+         "carrier": "AJ",
+         "flight_number": "AJ362",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-13T06:40:00Z",
+         "arrives_at": "2027-03-13T12:18:00Z",
+         "departs_local": "2027-03-12T22:40",
+         "arrives_local": "2027-03-13T07:18",
+         "arrival_day_offset": 1,
+         "distance_km": 4152,
+         "block_minutes": 338,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 338,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "price_per_passenger": {
+      "base_cents": 40900,
+      "taxes_and_fees_cents": 4598,
+      "total_cents": 45498
+     },
+     "seats_left": 9,
+     "penalty_cents": 0,
+     "fare_difference_cents": 0,
+     "total_due_cents": 0,
+     "refund_to": "travel_credit",
+     "content_digest": "sha256:90c67d3eb6921763",
+     "created_at": "2027-03-11T12:44:50Z",
+     "expires_at": "2027-03-11T13:04:50Z"
+    }
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "confirm_change": {
+   "request": {
+    "change_offer_id": "chg_0007",
+    "payments": [
+     {
+      "authorization_id": "auth_0005",
+      "amount_cents": 0
+     }
+    ]
+   },
+   "response": {
+    "order": {
+     "order_id": "ord_0001",
+     "version": 4,
+     "content_digest": "sha256:556a06bc5df09680",
+     "booking_reference": "VXLXYL",
+     "status": "ticketed",
+     "cancellation_reason": null,
+     "proposal_id": "prop_0001",
+     "split_from": null,
+     "created_by": "ota_agent",
+     "created_at": "2027-03-11T11:39:20Z",
+     "ticketed_at": "2027-03-11T11:39:20Z",
+     "passengers": [
+      {
+       "passenger_id": "pax_a",
+       "seat": "traveler_a",
+       "given_name": "Maya",
+       "family_name": "Chen",
+       "birth_date": "1994-05-17",
+       "loyalty": {
+        "program": "NovaMiles",
+        "tier": "gold"
+       }
+      }
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_AJ362_20270312",
+         "carrier": "AJ",
+         "flight_number": "AJ362",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-13T06:40:00Z",
+         "arrives_at": "2027-03-13T12:18:00Z",
+         "departs_local": "2027-03-12T22:40",
+         "arrives_local": "2027-03-13T07:18",
+         "arrival_day_offset": 1,
+         "distance_km": 4152,
+         "block_minutes": 338,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 338,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "price_per_passenger": {
+      "base_cents": 40900,
+      "taxes_and_fees_cents": 4598,
+      "total_cents": 45498
+     },
+     "services_cents": 0,
+     "accounts": [
+      {
+       "passenger_id": "pax_a",
+       "fare_cents": 45498,
+       "services_cents": 0,
+       "change_fees_cents": 0
+      }
+     ],
+     "total_cents": 45498,
+     "paid_cents": 45498,
+     "refunded_cents": 0,
+     "payment_status": "paid",
+     "payments": [
+      {
+       "payment_id": "pay_0001",
+       "kind": "charge",
+       "payer": "traveler_a",
+       "payment_method_id": "pm_a1",
+       "amount_cents": 45498,
+       "passenger_id": "pax_a",
+       "authorization_id": "auth_0001",
+       "at": "2027-03-11T11:39:20Z",
+       "seq": 4
+      }
+     ],
+     "hold": null,
+     "seat_assignments": [],
+     "bags": [],
+     "tickets": [
+      {
+       "ticket_number": "0490000000001",
+       "passenger_id": "pax_a"
+      }
+     ],
+     "airline_changes": [
+      {
+       "change_id": "ac_0001",
+       "order_id": "ord_0001",
+       "kind": "cancellation",
+       "flight_id": "flt_AJ360_20270312",
+       "cause": "carrier",
+       "old_departs_at": "2027-03-12T17:35:00Z",
+       "old_arrives_at": "2027-03-12T23:13:00Z",
+       "new_departs_at": null,
+       "new_arrives_at": null,
+       "breaks_connection": false,
+       "significant": true,
+       "options": [
+        "rebook",
+        "refund"
+       ],
+       "respond_by": "2027-03-12T17:35:00Z",
+       "status": "rebooked",
+       "resolved_by": "agent",
+       "content_digest": "sha256:9e88bbae29c7c317",
+       "announced_at": "2027-03-11T12:35:00Z"
+      }
+     ],
+     "available_actions": [
+      "update_services",
+      "change"
+     ]
+    },
+    "charged_cents": 0,
+    "refunds": []
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "update_order_services": {
+   "request": {
+    "order_id": "ord_0001",
+    "seat_assignments": [
+     {
+      "passenger_id": "pax_a",
+      "flight_id": "flt_AJ362_20270312",
+      "seat": "9A"
+     }
+    ]
+   },
+   "response": {
+    "order": {
+     "order_id": "ord_0001",
+     "version": 5,
+     "content_digest": "sha256:33114e365023d8ae",
+     "booking_reference": "VXLXYL",
+     "status": "ticketed",
+     "cancellation_reason": null,
+     "proposal_id": "prop_0001",
+     "split_from": null,
+     "created_by": "ota_agent",
+     "created_at": "2027-03-11T11:39:20Z",
+     "ticketed_at": "2027-03-11T11:39:20Z",
+     "passengers": [
+      {
+       "passenger_id": "pax_a",
+       "seat": "traveler_a",
+       "given_name": "Maya",
+       "family_name": "Chen",
+       "birth_date": "1994-05-17",
+       "loyalty": {
+        "program": "NovaMiles",
+        "tier": "gold"
+       }
+      }
+     ],
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_AJ362_20270312",
+         "carrier": "AJ",
+         "flight_number": "AJ362",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-13T06:40:00Z",
+         "arrives_at": "2027-03-13T12:18:00Z",
+         "departs_local": "2027-03-12T22:40",
+         "arrives_local": "2027-03-13T07:18",
+         "arrival_day_offset": 1,
+         "distance_km": 4152,
+         "block_minutes": 338,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 338,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "price_per_passenger": {
+      "base_cents": 40900,
+      "taxes_and_fees_cents": 4598,
+      "total_cents": 45498
+     },
+     "services_cents": 0,
+     "accounts": [
+      {
+       "passenger_id": "pax_a",
+       "fare_cents": 45498,
+       "services_cents": 0,
+       "change_fees_cents": 0
+      }
+     ],
+     "total_cents": 45498,
+     "paid_cents": 45498,
+     "refunded_cents": 0,
+     "payment_status": "paid",
+     "payments": [
+      {
+       "payment_id": "pay_0001",
+       "kind": "charge",
+       "payer": "traveler_a",
+       "payment_method_id": "pm_a1",
+       "amount_cents": 45498,
+       "passenger_id": "pax_a",
+       "authorization_id": "auth_0001",
+       "at": "2027-03-11T11:39:20Z",
+       "seq": 4
+      }
+     ],
+     "hold": null,
+     "seat_assignments": [
+      {
+       "passenger_id": "pax_a",
+       "flight_id": "flt_AJ362_20270312",
+       "seat": "9A"
+      }
+     ],
+     "bags": [],
+     "tickets": [
+      {
+       "ticket_number": "0490000000001",
+       "passenger_id": "pax_a"
+      }
+     ],
+     "airline_changes": [
+      {
+       "change_id": "ac_0001",
+       "order_id": "ord_0001",
+       "kind": "cancellation",
+       "flight_id": "flt_AJ360_20270312",
+       "cause": "carrier",
+       "old_departs_at": "2027-03-12T17:35:00Z",
+       "old_arrives_at": "2027-03-12T23:13:00Z",
+       "new_departs_at": null,
+       "new_arrives_at": null,
+       "breaks_connection": false,
+       "significant": true,
+       "options": [
+        "rebook",
+        "refund"
+       ],
+       "respond_by": "2027-03-12T17:35:00Z",
+       "status": "rebooked",
+       "resolved_by": "agent",
+       "content_digest": "sha256:9e88bbae29c7c317",
+       "announced_at": "2027-03-11T12:35:00Z"
+      }
+     ],
+     "available_actions": [
+      "update_services",
+      "change"
+     ]
+    },
+    "charged_cents": 0
+   },
+   "note": "Taken from a recorded session. Lists are cut to two items."
+  },
+  "list_airports": {
+   "request": {
+    "metro": "NYC"
+   },
+   "response": {
+    "airports": [
+     {
+      "code": "JFK",
+      "name": "John F. Kennedy International",
+      "city": "New York",
+      "metro": "NYC",
+      "country": "US",
+      "lat": 40.6413,
+      "lon": -73.7781,
+      "tz": "America/New_York",
+      "min_connection_minutes": 60,
+      "ground_minutes_to_center": 60
+     }
+    ]
+   },
+   "note": ""
+  },
+  "price_offer": {
+   "request": {
+    "offer_id": "off_8c1d42"
+   },
+   "response": {
+    "offer": {
+     "offer_id": "off_8c1d42",
+     "slices": [
+      {
+       "origin": "SFO",
+       "destination": "JFK",
+       "segments": [
+        {
+         "flight_id": "flt_NV212_20270312",
+         "carrier": "NV",
+         "flight_number": "NV212",
+         "origin": "SFO",
+         "destination": "JFK",
+         "departs_at": "2027-03-12T16:00:00Z",
+         "arrives_at": "2027-03-12T21:25:00Z",
+         "departs_local": "2027-03-12T08:00",
+         "arrives_local": "2027-03-12T16:25",
+         "arrival_day_offset": 0,
+         "distance_km": 4152,
+         "block_minutes": 325,
+         "aircraft": "A321"
+        }
+       ],
+       "stops": 0,
+       "duration_minutes": 325,
+       "layover_minutes": []
+      }
+     ],
+     "fare_brand": "standard",
+     "booking_class": "Q",
+     "passengers": 2,
+     "price_per_passenger": {
+      "base_cents": 28900,
+      "taxes_and_fees_cents": 3698,
+      "total_cents": 32598
+     },
+     "total_cents": 65196,
+     "seats_left": 4,
+     "conditions": {
+      "changeable": true,
+      "change_fee_cents": 0,
+      "cancellable": true,
+      "cancel_fee_cents": 0,
+      "refund_to": "travel_credit",
+      "holdable": true,
+      "checked_bags_included": 0,
+      "seat_selection_included": true
+     },
+     "single_ticket": true,
+     "created_at": "2027-02-20T18:00:00Z",
+     "expires_at": "2027-02-20T18:20:00Z"
+    },
+    "price_changed": false,
+    "previous_total_cents": 65196
    },
    "note": ""
   },
@@ -4875,403 +6662,13 @@
       {
        "payment_method_id": "pm_a2",
        "kind": "travel_credit",
-       "label": "NovaAir credit",
+       "label": "Travel credit",
        "available_cents": 7500
       }
      ]
     }
    },
    "note": ""
-  },
-  "grant_authorization": {
-   "request": {
-    "subject": {
-     "type": "proposal",
-     "id": "prop_31f0"
-    },
-    "max_charge_cents": 33000,
-    "payment_method_id": "pm_a1",
-    "expires_in_minutes": 60
-   },
-   "response": {
-    "authorization": {
-     "authorization_id": "auth_a_77",
-     "grantor": "traveler_a",
-     "grantee": "ota_agent",
-     "subject": {
-      "type": "proposal",
-      "id": "prop_31f0",
-      "content_digest": "sha256:5b7e09a1"
-     },
-     "max_charge_cents": 33000,
-     "payment_method_id": "pm_a1",
-     "status": "active",
-     "created_at": "2027-02-20T18:07:00Z",
-     "expires_at": "2027-02-20T19:07:00Z",
-     "consumed_at_seq": null
-    }
-   },
-   "note": "The world fills in the digest of the proposal as it stands. A changed proposal no longer matches."
-  },
-  "execute_proposal": {
-   "request": {
-    "proposal_id": "prop_31f0",
-    "payments": [
-     {
-      "authorization_id": "auth_a_77",
-      "amount_cents": 32598
-     },
-     {
-      "authorization_id": "auth_b_12",
-      "amount_cents": 32598
-     }
-    ]
-   },
-   "response": {
-    "proposal": {
-     "proposal_id": "prop_31f0",
-     "created_by": "ota_agent",
-     "items": [
-      {
-       "seat": "traveler_a",
-       "offer_id": "off_8c1d42",
-       "fare_brand": "standard",
-       "fare_cents": 32598,
-       "services_cents": 0,
-       "total_cents": 32598,
-       "seat_request": "14A",
-       "checked_bags": 0
-      },
-      {
-       "seat": "traveler_b",
-       "offer_id": "off_8c1d42",
-       "fare_brand": "standard",
-       "fare_cents": 32598,
-       "services_cents": 0,
-       "total_cents": 32598,
-       "seat_request": "14B",
-       "checked_bags": 0
-      }
-     ],
-     "payer_split": [
-      {
-       "payer": "traveler_a",
-       "amount_cents": 32598
-      },
-      {
-       "payer": "traveler_b",
-       "amount_cents": 32598
-      }
-     ],
-     "note": "Nonstop, lands 16:25, seats 14A and 14B together.",
-     "status": "executed",
-     "responses": [],
-     "order_ids": [
-      "ord_5521"
-     ],
-     "content_digest": "sha256:5b7e09a1",
-     "created_at": "2027-02-20T18:04:00Z",
-     "expires_at": "2027-02-20T19:04:00Z"
-    },
-    "orders": [
-     {
-      "order_id": "ord_5521",
-      "version": 1,
-      "content_digest": "sha256:c40d3f12",
-      "booking_reference": "Q7XK2M",
-      "status": "ticketed",
-      "cancellation_reason": null,
-      "proposal_id": "prop_31f0",
-      "created_by": "ota_agent",
-      "created_at": "2027-02-20T18:10:00Z",
-      "passengers": [
-       {
-        "passenger_id": "pax_a",
-        "seat": "traveler_a",
-        "given_name": "Maya",
-        "family_name": "Chen",
-        "birth_date": "1994-05-17",
-        "loyalty": {
-         "program": "NovaMiles",
-         "tier": "gold"
-        }
-       },
-       {
-        "passenger_id": "pax_b",
-        "seat": "traveler_b",
-        "given_name": "Daniel",
-        "family_name": "Okafor",
-        "birth_date": "1991-11-02",
-        "loyalty": null
-       }
-      ],
-      "slices": [
-       {
-        "origin": "SFO",
-        "destination": "JFK",
-        "segments": [
-         {
-          "flight_id": "flt_NV212_20270312",
-          "carrier": "NV",
-          "flight_number": "NV212",
-          "origin": "SFO",
-          "destination": "JFK",
-          "departs_at": "2027-03-12T16:00:00Z",
-          "arrives_at": "2027-03-12T21:25:00Z",
-          "departs_local": "2027-03-12T08:00",
-          "arrives_local": "2027-03-12T16:25",
-          "arrival_day_offset": 0,
-          "distance_km": 4152,
-          "block_minutes": 325,
-          "aircraft": "A321"
-         }
-        ],
-        "stops": 0,
-        "duration_minutes": 325,
-        "layover_minutes": []
-       }
-      ],
-      "fare_brand": "standard",
-      "conditions": {
-       "changeable": true,
-       "change_fee_cents": 0,
-       "cancellable": true,
-       "cancel_fee_cents": 0,
-       "refund_to": "travel_credit",
-       "holdable": true,
-       "checked_bags_included": 0,
-       "seat_selection_included": true
-      },
-      "price_per_passenger": {
-       "base_cents": 28900,
-       "taxes_and_fees_cents": 3698,
-       "total_cents": 32598
-      },
-      "services_cents": 0,
-      "total_cents": 65196,
-      "paid_cents": 65196,
-      "refunded_cents": 0,
-      "payment_status": "paid",
-      "payments": [
-       {
-        "payment_id": "pay_1",
-        "kind": "charge",
-        "payer": "traveler_a",
-        "payment_method_id": "pm_a1",
-        "amount_cents": 32598,
-        "authorization_id": "auth_a_77",
-        "at": "2027-02-20T18:10:00Z",
-        "seq": 41
-       },
-       {
-        "payment_id": "pay_2",
-        "kind": "charge",
-        "payer": "traveler_b",
-        "payment_method_id": "pm_b1",
-        "amount_cents": 32598,
-        "authorization_id": "auth_b_12",
-        "at": "2027-02-20T18:10:00Z",
-        "seq": 41
-       }
-      ],
-      "hold": null,
-      "seat_assignments": [
-       {
-        "passenger_id": "pax_a",
-        "flight_id": "flt_NV212_20270312",
-        "seat": "14A"
-       },
-       {
-        "passenger_id": "pax_b",
-        "flight_id": "flt_NV212_20270312",
-        "seat": "14B"
-       }
-      ],
-      "bags": [],
-      "tickets": [
-       {
-        "ticket_number": "0492100000117",
-        "passenger_id": "pax_a"
-       },
-       {
-        "ticket_number": "0492100000118",
-        "passenger_id": "pax_b"
-       }
-      ],
-      "airline_changes": [],
-      "available_actions": [
-       "update_services",
-       "change",
-       "cancel",
-       "split"
-      ]
-     }
-    ]
-   },
-   "note": "Both authorizations are consumed in the same commit, seq 41. Each payer is charged exactly the agreed share."
-  },
-  "get_order": {
-   "request": {
-    "order_id": "ord_5521"
-   },
-   "response": {
-    "order": {
-     "order_id": "ord_5521",
-     "version": 1,
-     "content_digest": "sha256:c40d3f12",
-     "booking_reference": "Q7XK2M",
-     "status": "ticketed",
-     "cancellation_reason": null,
-     "proposal_id": "prop_31f0",
-     "created_by": "ota_agent",
-     "created_at": "2027-02-20T18:10:00Z",
-     "passengers": [
-      {
-       "passenger_id": "pax_a",
-       "seat": "traveler_a",
-       "given_name": "Maya",
-       "family_name": "Chen",
-       "birth_date": "1994-05-17",
-       "loyalty": {
-        "program": "NovaMiles",
-        "tier": "gold"
-       }
-      },
-      {
-       "passenger_id": "pax_b",
-       "seat": "traveler_b",
-       "given_name": "Daniel",
-       "family_name": "Okafor",
-       "birth_date": "1991-11-02",
-       "loyalty": null
-      }
-     ],
-     "slices": [
-      {
-       "origin": "SFO",
-       "destination": "JFK",
-       "segments": [
-        {
-         "flight_id": "flt_NV212_20270312",
-         "carrier": "NV",
-         "flight_number": "NV212",
-         "origin": "SFO",
-         "destination": "JFK",
-         "departs_at": "2027-03-12T16:00:00Z",
-         "arrives_at": "2027-03-12T21:25:00Z",
-         "departs_local": "2027-03-12T08:00",
-         "arrives_local": "2027-03-12T16:25",
-         "arrival_day_offset": 0,
-         "distance_km": 4152,
-         "block_minutes": 325,
-         "aircraft": "A321"
-        }
-       ],
-       "stops": 0,
-       "duration_minutes": 325,
-       "layover_minutes": []
-      }
-     ],
-     "fare_brand": "standard",
-     "conditions": {
-      "changeable": true,
-      "change_fee_cents": 0,
-      "cancellable": true,
-      "cancel_fee_cents": 0,
-      "refund_to": "travel_credit",
-      "holdable": true,
-      "checked_bags_included": 0,
-      "seat_selection_included": true
-     },
-     "price_per_passenger": {
-      "base_cents": 28900,
-      "taxes_and_fees_cents": 3698,
-      "total_cents": 32598
-     },
-     "services_cents": 0,
-     "total_cents": 65196,
-     "paid_cents": 65196,
-     "refunded_cents": 0,
-     "payment_status": "paid",
-     "payments": [
-      {
-       "payment_id": "pay_1",
-       "kind": "charge",
-       "payer": "traveler_a",
-       "payment_method_id": "pm_a1",
-       "amount_cents": 32598,
-       "authorization_id": "auth_a_77",
-       "at": "2027-02-20T18:10:00Z",
-       "seq": 41
-      },
-      {
-       "payment_id": "pay_2",
-       "kind": "charge",
-       "payer": "traveler_b",
-       "payment_method_id": "pm_b1",
-       "amount_cents": 32598,
-       "authorization_id": "auth_b_12",
-       "at": "2027-02-20T18:10:00Z",
-       "seq": 41
-      }
-     ],
-     "hold": null,
-     "seat_assignments": [
-      {
-       "passenger_id": "pax_a",
-       "flight_id": "flt_NV212_20270312",
-       "seat": "14A"
-      },
-      {
-       "passenger_id": "pax_b",
-       "flight_id": "flt_NV212_20270312",
-       "seat": "14B"
-      }
-     ],
-     "bags": [],
-     "tickets": [
-      {
-       "ticket_number": "0492100000117",
-       "passenger_id": "pax_a"
-      },
-      {
-       "ticket_number": "0492100000118",
-       "passenger_id": "pax_b"
-      }
-     ],
-     "airline_changes": [],
-     "available_actions": [
-      "update_services",
-      "change",
-      "cancel",
-      "split"
-     ]
-    }
-   },
-   "note": ""
-  },
-  "quote_cancellation": {
-   "request": {
-    "order_id": "ord_5521"
-   },
-   "response": {
-    "quote": {
-     "quote_id": "cq_9a02",
-     "order_id": "ord_5521",
-     "order_version": 1,
-     "passenger_seats": [
-      "traveler_a",
-      "traveler_b"
-     ],
-     "refund_cents": 65196,
-     "penalty_cents": 0,
-     "refund_to": "original_payment",
-     "rule_basis": "agency_24h_policy",
-     "content_digest": "sha256:e19b77c0",
-     "expires_at": "2027-02-20T19:00:00Z"
-    }
-   },
-   "note": "Fifty minutes after booking, the agency's own 24-hour policy applies: full refund to the original payment."
   }
  }
 }

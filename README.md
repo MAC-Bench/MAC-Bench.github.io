@@ -13,3 +13,5 @@ python build.py --sync ../MAC-benchmark  # refresh data/ticketing.json from the 
 | `src/figs/` | Architecture figures as inline SVG |
 | `src/progress.json` | The progress list. Edit this file to tick an item or mark it accepted |
 | `data/ticketing.json` | The ticketing interface, exported by the code repository |
+| `data/ticketing_world.json` | The dev world and sample searches |
+| `data/ticketing_session.json`, `data/ticketing_after_session.json` | The two recorded sessions |
