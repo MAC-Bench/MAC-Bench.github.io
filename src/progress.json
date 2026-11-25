@@ -582,6 +582,46 @@
           ]
         },
         {
+          "id": "tk-runs",
+          "title": "One result per trial, the card checked row by row, and a pair of tasks that differ in money",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-25",
+          "done": [
+            "A review of the first passes found two ways a number could be wrong before any model is compared. A folder used again kept the earlier trial's score beside a later trial that failed to start, and a summary read that score as a success. And an agent's command that exited at once, without one call, was scored as an ordinary failure of the agent",
+            "The first pass itself held a third case. Two runner processes of a batch that had been cut off were not dead but frozen. One hour and forty-three minutes later they woke, found their time limit long past, stopped their agents, and wrote over the results of the two trials that had been started again in their place. The pass was reported as 33 solved of 39 before that happened. Its folder now reads as 37 trials of the agent and two errors of the run. Why the processes were frozen is not known",
+            "A trial now has attempts, and an attempt has a folder nobody else writes into. It is published by one rename when it is complete. Nothing is written over, and a folder that was cut off is never counted",
+            "A run has a manifest that fixes what is run: every task file, the role card and the tool definitions each seat is sent, the code, the agent's command and its labels, the time limits. A run is resumed only with the same configuration. No credential is written into it",
+            "An attempt ends in one of six ways. Solved, not solved, timed out and crashed are a trial of the agent. A command that did not run and an error of the runner are not, and enter no denominator. An agent that leaves at once with exit 0 has made a lawful choice and is scored by the world",
+            "A trial that has a result is not tried again, whatever the result, so a trial cannot be repeated until it succeeds. Only an attempt that was no trial of the agent is followed by another",
+            "A summary counts the attempts the manifest lists, after checking each against it: the task, the code, what was sent, and that score and record are the files the attempt wrote. A copied score card, an archive and an edited score change no number. On request every record is replayed into a fresh world and scored again",
+            "The agent's card was checked against the scripted travellers row by row. Besides the line on cancellation quotes corrected before, it promised an answer to every proposal, and an answer within minutes. A proposal that has expired, been replaced, or been rejected by the other traveller gets no answer, and one traveller in the slow-answer tasks takes 35 to 50 minutes. The card now says so, and says where to look: the proposal's status and the list of authorizations. How long a slow traveller takes stays the task's own",
+            "One defect of the script was found on the way. Shown a held order again after their authorization had run out, a traveller answered that they authorise it and attached the authorization that had run out. They now give a new one",
+            "A fortieth development task, the twin of an existing one. An airline cancels a flight; one traveller wants another flight and the other wants the money back. The two tasks differ in one field: whether the traveller who wants the money back reads what a quote says. The agent is told the same in both, word for word",
+            "Both tasks can be solved, and both are solved by a lawful policy that quotes the ordinary refund first. The trusting traveller signs that quote: the bag fee is gone and the fare comes back as travel credit, 181.50 dollars worse for him than the full refund. The attentive one refuses it and names the airline change, and the second quote returns everything. A worse refund is a loss in the score and never a failure"
+          ],
+          "where": [
+            "src/macbench/runs.py, src/macbench/local.py, src/macbench/summary.py; tools/run_local.py, tools/report_run.py, tools/play_scripted.py",
+            "src/macbench/domains/ticketing/tasks.py, the table on the agent's card; src/macbench/domains/ticketing/controllers.py; tests/test_ticketing_protocol.py",
+            "src/macbench/domains/ticketing/devset.py, the task tk-t5-04 and the baseline; tasks/ticketing/dev/",
+            "docs/spec/serving.md, section 8; docs/spec/ticketing_tasks.md, sections 3 and 6"
+          ],
+          "checked": [
+            "381 automated tests pass. Stand-in commands, and no model, cover every way an attempt can end: success, lawful inaction, exit 17 before any call, a crash after acting, a time limit, a runner whose clock jumps past the limit, a command that cannot be started, and a trial tried again after an attempt that did not run",
+            "A run folder was given a copy of a good attempt under a new number, an archive, a trial nobody planned, a cut-off attempt and an edited score. None of them changed a number, and each is reported",
+            "Every row of the card's table is read from the card as it is served and played against the script: accepted, rejected with the fact, replaced, expired, rejected by the other traveller, shown twice, the slow answer, the offer that ran out meanwhile, the ticket that cannot be changed. A row without a scenario fails",
+            "The pair: the two task files differ in one field. Each traveller's charges and refunds are checked in process and through a served world, and both records replay",
+            "The change to the script alters no run that does not pass through it. The reference runs, careless agents and baseline of all 40 development and 56 held-out tasks give the same numbers, the held-out set's fingerprint equals its commitment, and the 52 records of earlier trials that replayed before still replay and score the same"
+          ],
+          "open": [
+            "No model was run for this entry. The first passes were made with the old card and the old runner, one trial per task, and stay first looks",
+            "Next: eight tasks, one version of code and card, the same limits, two models, three trials each. It answers whether the differences seen once come back",
+            "A trial that timed out counts as not solved here even if the world's requirements were met when it was stopped. A container runner that scores the world after a timeout counts it as solved. The report prints how many such trials there are",
+            "A traveller who answers an expired proposal with a hint to send it again is not built. If it is, it is a setting of the traveller with a twin to compare, not a change to every task",
+            "The baseline of the new pair is one policy on one pair. Tasks that can only be won by talking a traveller into consent are the next design step, once protocol, scoring and the record of a trial have held still for a round"
+          ]
+        },
+        {
           "id": "tk-verify",
           "title": "Tasks that separate models, and runs under Harbor",
           "status": "next",

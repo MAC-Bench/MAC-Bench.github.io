@@ -169,7 +169,7 @@
    "meet_within_minutes": "The traveller wants to land within this many minutes of the other traveller.",
    "payment_method_id": "The wallet method the traveller wants charged.",
    "pays_only_own_ticket": "Whether the traveller pays for their own ticket and nothing else. True unless they state false.",
-   "request": "What the traveller asks the agent to do: book, cancel, change, rebook or refund. Sent with the order it concerns.",
+   "request": "What the traveller asks the agent to do: book, cancel, change, rebook or refund. A traveller sends it unasked, with the order it concerns, and again when shown that order. It is not stated in answer to a fact request.",
    "disruption_preference": "What the traveller wants when an airline change spoils the trip: rebook or refund.",
    "stop_penalty_cents": "What one connection costs the traveller, in cents, when comparing itineraries.",
    "alone_penalty_cents": "What not sitting next to the other traveller costs, in cents, when sitting together matters.",
