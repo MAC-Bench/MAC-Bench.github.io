@@ -547,35 +547,37 @@
         },
         {
           "id": "tk-devpass",
-          "title": "One pass over all 39 development tasks with a lighter model",
+          "title": "One pass over all 39 development tasks with a lighter model, and a wrong line on the card",
           "status": "done",
           "review": "awaiting",
           "date": "2026-11-25",
           "done": [
             "All 39 development tasks were played once by one lighter model as the booking agent, against scripted travellers, outside containers. 33 were solved. None ran out of time, and no trial holds an attempt to act without consent",
             "By family: together 5 of 5, meeting 4 of 5, scarcity 5 of 5, hold and deadline 3 of 5, airline change 7 of 7, change of plan 6 of 6, rule pressure 3 of 6",
-            "The six that were not solved were all things left undone. Nobody was charged for anything they had not agreed to",
-            "A ticket that cannot be changed, three tasks of three: the agent asked for change options on a basic fare, was refused, asked the traveller what to do next, and left the ticket as it was. Cancelling it and booking the new date, which the rules allow and the budget covers, was never proposed",
-            "A slow answer, two tasks of five: the proposal expired before the slow traveller read it. In one trial the agent waited to the end without looking at the proposal again. In the other it found out after two and a half hours, placed a hold, and the period ended before the traveller got to it",
-            "Landing together, one task of five: the agent reported that no pair of nonstop flights lands within the 90 minutes both travellers accept. One pair lands 76 minutes apart and fits both budgets",
-            "Of the 33 solved, 23 ended at the reference policy's loss. The other 10 cost the travellers between 5 and 71 dollars more",
+            "The six that were not solved were all things left undone. Nobody was charged for anything they had not agreed to. The six were then played once by the model of the earlier first looks",
+            "Three of the six failures were the card's fault. The tasks: a traveller asks to move a ticket whose fare cannot be changed, and the way the rules allow is to cancel it and book the new date. The agent's card said a traveller authorises a cancellation quote only if they asked to cancel or to be refunded. The script also authorises it for a traveller who asked for a move the fare does not allow",
+            "An agent that trusted its card had no reason to send the quote. Both models failed all three tasks. One of them fetched a quote and held it back for three hours. With the line on the card corrected, that model solved all three at the reference policy's loss. The lighter model has not played them since",
+            "A slow answer, two tasks of five, stands. The proposal expired before the slow traveller read it, and the lighter model waited. The other model placed a hold as soon as it had a proposal, sent the held order, and solved both",
+            "Landing together, one task of five, stands. The lighter model reported that no pair of nonstop flights lands within the 90 minutes both travellers accept. One pair lands 76 minutes apart and fits both budgets. The other model proposed that pair first",
+            "Of the 33 solved by the lighter model, 23 ended at the reference policy's loss. The other 10 cost the travellers between 5 and 71 dollars more",
             "A run can now be read as one table: a line per trial, the checks that failed for each trial not solved, the numbers by family, a task next to its twin",
-            "One thing about the interface, fixed. In a proposal item, seat names the traveller and seat_request the place in the aircraft. The agent put the aircraft seat in seat once in 15 of the 20 tasks that book. Both fields now say which is which"
+            "One thing about the interface, fixed. In a proposal item, seat names the traveller and seat_request the place in the aircraft. The lighter model put the aircraft seat in seat once in 15 of the 20 tasks that book. Both fields now say which is which"
           ],
           "where": [
+            "src/macbench/domains/ticketing/tasks.py, the table on the agent's card; src/macbench/domains/ticketing/controllers.py",
             "tools/report_run.py; src/macbench/domains/ticketing/interface.py, the proposal item",
             "docs/spec/serving.md, section 8"
           ],
           "checked": [
-            "340 automated tests pass, one of them on the run report",
-            "All 39 trials were scored, which the world does only from a record that replays",
-            "Each of the six trials not solved was read call by call. The pair of flights inside the window was recomputed from the search results the agent itself received",
-            "Every shell command in the 39 logs of the agent is the client; no file outside its folder was read"
+            "341 automated tests pass. One plays both cases of the card's line on cancellation quotes against the script, one covers the run report",
+            "All 48 trials were scored, which the world does only from a record that replays",
+            "Each trial not solved was read call by call. The pair of flights inside the window was recomputed from the search results the agent itself received",
+            "Every shell command in the logs of the agent is the client; no file outside its folder was read"
           ],
           "open": [
-            "Not results: one model, one trial per task, outside containers",
-            "Whether these three kinds of task separate models is not known yet. The model of the earlier first looks has not played them",
-            "Two of the failures lean on how a scripted traveller behaves. Asked what they want after a refusal, the script has nothing to add. A slow traveller who finds an expired proposal says nothing. A person would answer in both cases. Whether the scripts should is a design question",
+            "Not results: two models, one trial per task, outside containers",
+            "The card is the agent's only account of how the scripted travellers answer, and one wrong line cost three tasks for two models. The other lines have not been checked against the script one by one. Two gaps are known: a traveller who finds a proposal no longer open says nothing, where the card says they accept or reject; and the card says travellers take a few minutes to answer, which is not true of the slow one",
+            "Three tasks separated the two models, on one trial each. That is a first sign, not a measurement",
             "The three pairs of twins were solved on both sides, so the words of a traveller changed nothing here either"
           ]
         },
