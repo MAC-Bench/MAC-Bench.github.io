@@ -27,7 +27,8 @@
   }).join('');
 
   byId('t-gen-rows').innerHTML = T.generated.map(function (t) {
-    return '<tr><td>' + esc(shortId(t.task_id)) + '</td><td>' + esc(t.family) + '</td><td>' + esc(t.title) + '</td><td>' +
+    return '<tr><td>' + esc(shortId(t.task_id)) + '</td><td>' + esc(t.family) + '</td><td>' + esc(t.title) +
+      (t.paired_with ? '. Twin of ' + esc(shortId(t.paired_with)) : '') + '</td><td>' +
       usd(t.reference.loss_cents) + '</td><td>' + t.reference.calls + '</td><td>' +
       (t.leaving_succeeds ? 'succeeds: nothing needed doing' : 'fails') + '</td><td>' + careless(t.careless_agent) + '</td></tr>';
   }).join('');

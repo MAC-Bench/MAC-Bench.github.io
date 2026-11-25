@@ -431,12 +431,52 @@
             "52 rules of these layers were broken on purpose. Four slipped through at first: three got a test, and one was no breakage at all and was replaced. Each of the 52 now makes a test fail"
           ],
           "open": [
-            "Not reviewed",
             "No model has played a task. Nothing has been run under Docker or Harbor: the machine this is built on has neither",
             "83 of 84 generated tasks were admitted at the first attempt. Admission shows that a task can be solved and has its trap, not that it is hard",
             "Budgets follow the reference policy, which is greedy. Where it is far from the best outcome, a budget is loose",
             "In a shared Harbor verifier an agent with root can overwrite the reward file. The world keeps its own score and a sealed record, so this can be found, not prevented",
-            "Travellers are scripted. A model playing a traveller is not built"
+            "Travellers are scripted. A model playing a traveller is not built",
+            "Reviewed in the next entry; three labels claimed more than the tasks guaranteed and were fixed there"
+          ]
+        },
+        {
+          "id": "tk-codereview-r3",
+          "title": "Code review, round 3: what a label claims, and how results are published",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "The third review covered everything above the world: scoring, admission, serving, the Harbor folders. It found 14 issues. None was a wrong rule of the world. All 14 were reproduced, accepted and fixed",
+            "Who pays for what: a traveller now pays for their own ticket and nothing else, unless they state otherwise. Before, a scripted traveller accepted any share within its budget, so two budgets acted as one pooled budget, and every task about the last cheap seat could be solved with one fare for two",
+            "Meeting: a traveller who wanted to meet a companion is not served when the companion holds no ticket at the end. A task in which the companion will leave the trip is not admitted",
+            "Deadlines: three generated tasks had a deadline that cut off no flight. A deadline is now kept only if a nonstop on sale lands after it and one lands in time",
+            "Words: a task in which a traveller adds words is now the twin of the same task without them. No script reads words, so their effect is the difference between a model's results on the pair",
+            "Budgets come from the most a traveller had paid, net of refunds, at any moment of the reference run. A ticket cancelled for credit and bought again had been counted twice",
+            "Results: a record that does not replay is a fault of the world and is never scored. The record is taken once, when the episode closes; a call that arrives later is refused and counted, and is in neither record nor score",
+            "Any call that carries a request id is now carried out once. Before, a message sent again after a lost answer went out twice, and an inbox read again came back empty",
+            "What a runner averages: only numbers every trial has. Loss and regret exist only for a run that succeeded and stay on the score card. A summary tool averages them over the successful trials, with their count, and reports trials without a score as errors",
+            "Both task sets were generated again. Version 1 of the held-out set was withdrawn before any model had seen it; version 2 has a new fingerprint",
+            "Interface version 0.8: the typed fact about who pays, and idempotent calls of every kind"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/persona.py, scoring.py, controllers.py, generator.py and reference.py; src/macbench/kernel/engine.py; src/macbench/serve/session.py; src/macbench/harbor.py; src/macbench/summary.py",
+            "tasks/ticketing/dev/ and tasks/ticketing/heldout_v2.json",
+            "docs/spec/ticketing_tasks.md, ticketing_generator.md section 4, serving.md section 4, harbor.md section 3"
+          ],
+          "checked": [
+            "328 automated tests pass. 47 are new",
+            "Of the reviewer's 24 assertions, 22 failed before the fixes. 19 now pass as written. The other 5 assert that pooling two budgets must not succeed, and now stop at the traveller's refusal to authorise",
+            "A pooled purchase is played against every task about the last cheap seat and fails; it succeeds once the richer traveller states they would pay for both",
+            "Every task with a deadline is searched through the interface: a nonstop lands after the deadline and one in time",
+            "A twin equals its base in everything but the words, on file and when built from another seed",
+            "34 rules changed in this round were broken on purpose. A breakage now counts only if the test meant to notice it fails. Two did not at first: one test needed a case added, one breakage was itself malformed. All 34 are caught"
+          ],
+          "open": [
+            "The fixes of this round have not been reviewed again",
+            "No model has played a task, and nothing has run under Docker or Harbor",
+            "In a shared Harbor verifier the agent can rewrite the reward and the copies of score and record beside it. A runner outside the agent's reach that fetches them from the world itself is not built",
+            "Budgets follow the reference policy. Other sound plans have not been played against them",
+            "What words do to a model is not measured yet"
           ]
         },
         {
