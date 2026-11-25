@@ -146,7 +146,40 @@
       (s.itineraries_total > list.length ? ', the ' + list.length + ' cheapest shown' : '') +
       '. From ' + usd(cheapest) + ' per traveller, fastest ' + hm(fastest) + '. Prices include taxes and fees.';
     byId('w-itins').innerHTML = list.map(function (r) { return itinHtml(r, pax); }).join('');
+    byId('w-tasks').innerHTML = tasksOn(q);
   }
+
+  /* the hand-built tasks whose travellers want this route on this day */
+  var TASKS = (function () {
+    var node = document.getElementById('data-tasks');
+    return node ? JSON.parse(node.textContent).tasks : [];
+  })();
+  function taskLink(t) {
+    return '<a href="#tasks" data-task="' + esc(t.task_id) + '">' + esc(t.task_id.replace('tk-', '').toUpperCase()) + '</a>';
+  }
+  function tasksOn(q) {
+    var here = TASKS.filter(function (t) {
+      return (t.markets || []).some(function (m) { return m[0] === q.origin && m[1] === q.destination && m[2] === q.date; });
+    });
+    if (!here.length) return 'No hand-built task is set on this route and day.';
+    var same = here.filter(function (t) { return t.world_now === W.meta.now && t.world_seed === W.meta.seed; });
+    var later = here.filter(function (t) { return same.indexOf(t) < 0; });
+    var out = 'Tasks set on this route and day: ';
+    if (same.length) {
+      out += same.map(taskLink).join(', ') + ' open in this same world at this same moment, so this is what their agent finds when it searches' +
+        (later.length ? '. ' : '.');
+    }
+    if (later.length) {
+      out += later.map(taskLink).join(', ') + ' open days later, when fares and seats left have moved' + (same.length ? '' : ', so their agent finds other prices') + '.';
+    }
+    return out;
+  }
+  byId('w-tasks').addEventListener('click', function (ev) {
+    var a = ev.target.closest ? ev.target.closest('a[data-task]') : null;
+    if (!a) return;
+    ev.preventDefault();
+    document.dispatchEvent(new CustomEvent('mb-task', { detail: a.getAttribute('data-task') }));
+  });
   byId('w-sample').innerHTML = W.samples.map(function (s, i) {
     return '<option value="' + i + '">' + esc(s.label) + '</option>';
   }).join('');

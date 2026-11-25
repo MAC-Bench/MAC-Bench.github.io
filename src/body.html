@@ -205,7 +205,8 @@
           </select></label>
         </div>
         <p class="note" id="w-summary"></p>
-        <p class="note">These results were computed by the benchmark's own search code and stored with the page. Open a row for the flights, the fare breakdown and the seat map.</p>
+        <p class="note">A sample search is one stored answer of <code>search_flights</code> in the development world: what an agent gets back when it asks for flights. It is not a task. The answers were computed by the benchmark's own search code and stored with the page. Open a row for the flights, the fare breakdown and the seat map of every flight in it.</p>
+        <p class="note" id="w-tasks"></p>
         <div class="itins" id="w-itins"></div>
       </div>
 
@@ -274,7 +275,7 @@
     </div>
   </section>
 
-  <section class="sec">
+  <section class="sec" id="tasks">
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Tasks</p>
@@ -283,7 +284,7 @@
       </div>
       <h3 style="margin:0 0 10px">Eighteen tasks built by hand</h3>
       <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agent</th></tr></thead>
+        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agents</th></tr></thead>
         <tbody id="t-rows"></tbody>
       </table></div>
       <div class="seg" id="t-pick" role="group" aria-label="Task" style="margin-top:22px"></div>

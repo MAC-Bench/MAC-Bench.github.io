@@ -20,10 +20,16 @@
     return esc(c.name) + ': ' + (c.success ? 'succeeds' : 'fails') + (extra.length ? ', ' + extra.join(', ') : '');
   }
 
+  function allCareless(t) {
+    var all = [t.careless_agent].concat(t.other_careless_agents || []).filter(function (c) { return c && c.name; });
+    return all.length ? all.map(careless).join('; ') : 'none for this task';
+  }
+
   byId('t-rows').innerHTML = T.tasks.map(function (t) {
-    return '<tr><td>' + esc(shortId(t.task_id)) + '</td><td>' + esc(t.family) + '</td><td>' + esc(t.title) + '</td><td>' +
+    return '<tr><td>' + esc(shortId(t.task_id)) + '</td><td>' + esc(t.family) + '</td><td>' + esc(t.title) +
+      (t.paired_with ? '. Twin of ' + esc(shortId(t.paired_with)) : '') + '</td><td>' +
       usd(t.reference.total_loss_cents) + '</td><td>' + t.reference.process.calls + '</td><td>' +
-      (t.idle.success ? 'succeeds: nothing needed doing' : 'fails') + '</td><td>' + careless(t.careless_agent) + '</td></tr>';
+      (t.idle.success ? 'succeeds: nothing needed doing' : 'fails') + '</td><td>' + allCareless(t) + '</td></tr>';
   }).join('');
 
   byId('t-gen-rows').innerHTML = T.generated.map(function (t) {
@@ -86,6 +92,44 @@
       pr.world_minutes + ' world minutes. Acted without consent: ' + pr.acted_without_consent + '. Took the worse path: ' + pr.took_the_worse_path + '.</p></div>';
   }
 
+  function booked(t) {
+    var name = {};
+    t.travelers.forEach(function (p) { name[p.seat] = p.name; });
+    if (!t.booked || !t.booked.length) return '<li>Before the episode: nothing is booked.</li>';
+    return t.booked.map(function (b) {
+      var who = b.seats.map(function (s) { return esc(name[s] || s); }).join(' and ');
+      var bags = b.bags.map(function (n, i) { return n ? esc(name[b.seats[i]] || b.seats[i]) + ' with ' + n + ' checked bag' + (n > 1 ? 's' : '') : ''; })
+        .filter(Boolean).join(', ');
+      return '<li>Before the episode: ' + who + (b.seats.length > 1 ? ' were ticketed on one order' : ' was ticketed on an order of their own') +
+        ', ' + esc(b.flight_numbers.join(' + ')) + ' from ' + esc(b.origin) + ' to ' + esc(b.destination) + ' on ' + esc(b.date) +
+        ', ' + esc(b.brand) + ' fare' + (b.together ? ', seated side by side' : '') + (bags ? '; ' + bags : '') + '.</li>';
+    }).join('');
+  }
+
+  function checksOnTheTask(t) {
+    var lines = [];
+    var all = [t.careless_agent].concat(t.other_careless_agents || []).filter(function (c) { return c && c.name; });
+    if (all.length) lines.push('<li>Careless agents the task was admitted against: ' + all.map(careless).join('; ') + '.</li>');
+    if (t.baseline) {
+      lines.push('<li>A lawful policy that finishes the job, <b>' + esc(t.baseline.name) + '</b>: ' + (t.baseline.success ? 'solves it' : 'fails') +
+        (t.baseline.regret_cents !== null && t.baseline.regret_cents !== undefined ? ', ' + usd(t.baseline.regret_cents) + ' above the reference' : '') +
+        ', takes the worse path ' + t.baseline.took_the_worse_path + ' time' + (t.baseline.took_the_worse_path === 1 ? '' : 's') + '.</li>');
+    }
+    return lines.length ? '<ul class="plain-list" style="margin:14px 0 0">' + lines.join('') + '</ul>' : '';
+  }
+
+  function steps(t) {
+    if (!t.reference_steps || !t.reference_steps.length) return '';
+    var began = Date.parse(t.reference_steps[0].t);
+    var text = t.reference_steps.map(function (e) {
+      var min = Math.round((Date.parse(e.t) - began) / 6000) / 10;
+      var m = String(min.toFixed(1));
+      return ('      ' + m).slice(-6) + ' min  ' + e.action + (e.ok ? '' : '   refused: ' + e.error);
+    }).join('\n');
+    return '<details class="tcard"><summary>What the reference policy called, in order: ' + t.reference_steps.length +
+      ' calls</summary><pre class="json">' + esc(text) + '</pre></details>';
+  }
+
   function render(i) {
     var t = T.tasks[i];
     var airline = t.airline.map(function (d) {
@@ -99,15 +143,17 @@
       '<h3 style="margin:22px 0 6px">' + esc(shortId(t.task_id)) + ' · ' + esc(t.title) + '</h3>' +
       '<p style="max-width:78ch"><b>The agent is told:</b> ' + esc(t.brief) + '</p>' +
       '<p style="max-width:78ch"><b>What it is there to find out:</b> ' + esc(t.tests) + '</p>' +
+      (t.paired_with ? '<p style="max-width:78ch"><b>Twin of ' + esc(shortId(t.paired_with)) + ':</b> the same task with one thing changed. What an agent does differently on the two is what that one thing does to it.</p>' : '') +
       '<div class="chips" style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 20px">' + knobs + '</div>' +
       '<h4 class="lbl" style="margin-bottom:10px">Hidden from the agent</h4>' +
       '<div class="two-col">' + travellers(t) + '</div>' +
       '<ul class="plain-list" style="margin:14px 0 24px">' +
-      (t.booked_before ? '<li>Before the episode: both were ticketed on one order, seated side by side.</li>' : '<li>Before the episode: nothing is booked.</li>') +
+      booked(t) +
       (airline || '<li>The airline changes nothing.</li>') +
-      '<li>The world is watched for ' + t.observation_minutes + ' minutes.</li></ul>' +
+      '<li>The world is as of ' + esc(t.world_now.replace('T', ' ').replace(':00Z', ' UTC')) + ' and is watched for ' + t.observation_minutes + ' minutes.</li></ul>' +
       card(t.reference, 'The reference policy') +
       '<div style="height:18px"></div>' + card(t.idle, 'An agent that leaves at once') +
+      checksOnTheTask(t) + steps(t) +
       '<details class="tcard"><summary>The agent\'s role card, as it is given</summary><pre class="json">' + esc(t.agent_card) + '</pre></details>' +
       Object.keys(t.traveller_cards).map(function (seat) {
         return '<details class="tcard"><summary>Role card of ' + esc(seat) + '</summary><pre class="json">' + esc(t.traveller_cards[seat]) + '</pre></details>';
@@ -126,4 +172,13 @@
     if (b) choose(Number(b.getAttribute('data-task')));
   });
   choose(0);
+
+  /* another part of the page asks for a task by its id: show it and bring it into view */
+  document.addEventListener('mb-task', function (ev) {
+    var n = T.tasks.map(function (t) { return t.task_id; }).indexOf(ev.detail);
+    if (n < 0) return;
+    choose(n);
+    var top = byId('t-pick');
+    if (top && top.scrollIntoView) top.scrollIntoView({ block: 'start' });
+  });
 })();
