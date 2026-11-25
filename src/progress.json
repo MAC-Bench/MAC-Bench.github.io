@@ -622,6 +622,42 @@
           ]
         },
         {
+          "id": "tk-traps",
+          "title": "A retest on one version, and six tasks with two traps and time running against the agent",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-25",
+          "done": [
+            "Eight development tasks were played again by two models, two trials a task, on one commit with one card and the same limits. Each model has a run of its own, and the two manifests agree on everything but the model's label. All 32 attempts were trials of the agent, and every record replays to the score that was kept",
+            "Both models solved 13 of 16. The pair of flights the lighter model had missed in the first pass was found both times. The slow answer came back in direction: the lighter model failed two of six such trials, the other none",
+            "The ticket that cannot be changed turned round. With the corrected card the lighter model solved three of four, and the other model one of four after three of three earlier. In all four trials it fetched the cancellation quote within a minute of the request and then waited two to three hours before doing anything with it",
+            "Every one of the six failures was a failure of timing: waiting while a clock runs, calling finish six minutes in, before anything had happened, sleeping three hours through an expiry. None was a rule misread, and none an action without consent",
+            "Money separates the trials as well. Nine of the ten solved slow-answer trials cost the travellers between 2 and 77 dollars more than the reference run. One cost 8 dollars less: the reference policy is greedy, not optimal",
+            "Six new hand-built tasks, family T8, put two or three of the earlier difficulties in one episode and let time run against the agent inside it. No rule of the world was added. Each grows out of an earlier task, and the difference is computed from the two task files",
+            "Five of them have a door in the world: cancellations that close two hours after a traveller asks, a replacement flight that leaves within the hour of the airline's notice, a fare that cannot be held while the one who needs it takes 45 minutes to answer, a change offer that lives 20 minutes against an answer that takes 15. Nothing about a door is on the agent's card; it is in the rules the agent can search and on the ticket",
+            "The sixth has no door but the end of the episode. It was built on what the retest showed: two steps that each need a slow answer, and a traveller who accepts the new ticket only once the old one is cancelled",
+            "The reference policy has an eighth habit, acting when a wish is known. A careless agent with that habit off learns what is wanted, waits, and acts in the last forty minutes. It fails all six tasks and solves earlier tasks, where waiting costs nothing",
+            "A first look at the six, 14 trials. The five with a door did not stop the model whose waiting they were built around: where the ticket said the flight left that day, it waited fifty minutes and not three hours. The task with nothing urgent in it stopped that model in one trial of two: it waited three hours, showed quote and new ticket together, and left the traveller with no ticket at all. The lighter model failed one of the five by making proposals and not sending them"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/devset.py, the tasks tk-t8-01 to tk-t8-06; reference.py and foils.py, the eighth habit and the agent that acts late",
+            "tests/test_ticketing_compound.py; tools/build_tasks.py; tasks/ticketing/dev/",
+            "docs/spec/ticketing_tasks.md, section 6; docs/spec/serving.md, section 8"
+          ],
+          "checked": [
+            "434 automated tests pass. For each new task: the reference policy solves it, every careless agent named for it fails it, and the door is placed by starting the same right policy a little before it and a little after",
+            "The two runs of the retest were made under the same conditions: tasks, cards, tool definitions, code, limits and trials, compared from their manifests. All 46 records of the retest and the first look were replayed into fresh worlds and score as kept",
+            "Each trial not solved was read call by call",
+            "The earlier tasks' reference numbers and the held-out set's fingerprint are unchanged"
+          ],
+          "open": [
+            "Not results: outside containers, one or two trials a task",
+            "A failure of the stronger model has so far needed three things together: nothing that looks urgent, steps that depend on one another, and answers that take time. It then fails in some trials and not in others. How often is not known",
+            "The six tasks are hand-built and public. No recipe generates them, and the held-out set has none",
+            "All the travellers still tell the truth and never negotiate. A task that can only be won by finding out what a traveller would accept is not built"
+          ]
+        },
+        {
           "id": "tk-verify",
           "title": "Tasks that separate models, and runs under Harbor",
           "status": "next",
