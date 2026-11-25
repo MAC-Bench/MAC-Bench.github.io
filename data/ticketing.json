@@ -1,6 +1,6 @@
 {
  "domain": "ticketing",
- "version": "0.8",
+ "version": "0.9",
  "title": "Flight ticketing",
  "conventions": {
   "money": "Integer US cents. Field names end in `_cents`.",
@@ -3815,12 +3815,13 @@
      "type": "array"
     },
     "woke_by": {
-     "description": "`none`: the call did not wait. `message` or `event`: something arrived. `timeout`: the wait ran out.",
+     "description": "`none`: the call did not wait. `message` or `event`: something arrived. `timeout`: the wait ran out. `interrupted`: the wait ended early because something arrived for another seat that was waiting too; nothing is here for you yet.",
      "enum": [
       "none",
       "message",
       "event",
-      "timeout"
+      "timeout",
+      "interrupted"
      ],
      "title": "Woke By",
      "type": "string"

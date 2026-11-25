@@ -496,7 +496,7 @@
           "where": [
             "src/macbench/local.py, tools/run_local.py and tools/read_trial.py",
             "src/macbench/domains/ticketing/tasks.py, the role card; src/macbench/board/board.py; src/macbench/serve/session.py",
-            "docs/spec/serving.md, section 7"
+            "docs/spec/serving.md, section 8"
           ],
           "checked": [
             "330 automated tests pass",
@@ -507,6 +507,39 @@
             "These runs are not results. They were not isolated: the agent ran as the same user, next to the task files. Its log shows no shell command at all, but nothing prevented one",
             "Four tasks, one trial each, one model. Nothing can be said yet about which tasks separate models",
             "Results that can be reported need the exported Harbor folders on a machine with Docker"
+          ]
+        },
+        {
+          "id": "tk-liveseat",
+          "title": "A traveller played by a model",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-25",
+          "done": [
+            "Until now nothing was said between agents: both travellers were scripts that react to typed attachments and never read a sentence",
+            "A traveller seat can now be played from outside. It has no script, a token of its own, and a card of its own: the traveller's facts and plans, how to authorise, what counts for them. Nothing about the other traveller is on it",
+            "One rule about waiting when several seats are live: the world's clock runs through a wait only when no live seat is in the middle of acting. A seat that waits while another acts is held outside the world, and no world time passes for it",
+            "A waiting call records which other live seats were waiting, so that a wait also ends when something arrives for one of them, and the record still replays to the same end",
+            "The same four tasks were played again with one traveller played by a model, next to the model that plays the agent. The traveller looked at each proposal and at the flight offered, accepted, authorised its own share and told the agent",
+            "Things were said that no script holds. After the other traveller cancelled, the model traveller wrote that sitting together still mattered to her and asked whether his seat had changed; the agent answered that he was no longer on the flight"
+          ],
+          "where": [
+            "src/macbench/kernel/engine.py, the wake_with rule; src/macbench/serve/session.py; src/macbench/domains/ticketing/tasks.py, traveller_seat_card; src/macbench/local.py",
+            "docs/spec/kernel.md, section 7; docs/spec/serving.md, section 7"
+          ],
+          "checked": [
+            "338 automated tests pass",
+            "The waiting rule is tested with two live seats in threads: a held wait records nothing and moves no clock; when both wait, the shorter wait goes first and is cut short when something arrives for the other",
+            "A whole trial is tested with a stand-in traveller played by a small program and the reference policy as the agent",
+            "A record made with a live traveller replays only with that seat live; a record that claims the seat was scripted does not verify",
+            "All four records of the runs with a model traveller replay"
+          ],
+          "open": [
+            "Not results: four tasks, one trial each, one model in both seats, outside containers",
+            "The model traveller was told to say the truth and had no interest against the agent's. It behaved like a more talkative script, and all four tasks were solved as before. The seat that presses or disagrees has not been played by a model yet",
+            "There is no scoring contract for a traveller's seat: how well a model looked after its traveller is not scored on its own",
+            "With two live seats the order of calls depends on real time. A record replays, but two runs of the same players need not give the same record",
+            "The Harbor folders still serve the agent's seat only"
           ]
         },
         {
