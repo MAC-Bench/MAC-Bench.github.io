@@ -3632,7 +3632,7 @@
    "additionalProperties": false,
    "properties": {
     "seat": {
-     "description": "Traveller seat.",
+     "description": "Who this ticket is for: the traveller's name in this world, such as traveler_a. Not a place in the aircraft; that goes in seat_request.",
      "examples": [
       "traveler_a"
      ],
@@ -3653,6 +3653,10 @@
       }
      ],
      "default": null,
+     "description": "The place in the aircraft to ask for, as the seat map names it.",
+     "examples": [
+      "12C"
+     ],
      "title": "Seat Request"
     },
     "checked_bags": {
