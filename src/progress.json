@@ -428,7 +428,7 @@
             "The reference policy played over HTTP gives the same record as played in process",
             "The MCP server was driven with the client of the official Python SDK, version 2.3.0",
             "A trial was played by hand from an exported Harbor folder, using only its files: the oracle gets reward 1, a careless agent gets 0",
-            "52 rules of these layers were broken on purpose. Four slipped through at first: three got a test, and one was no breakage at all and was replaced"
+            "52 rules of these layers were broken on purpose. Four slipped through at first: three got a test, and one was no breakage at all and was replaced. Each of the 52 now makes a test fail"
           ],
           "open": [
             "Not reviewed",
