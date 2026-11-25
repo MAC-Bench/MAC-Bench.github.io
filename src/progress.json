@@ -480,12 +480,42 @@
           ]
         },
         {
+          "id": "tk-firstlook",
+          "title": "A first look with a real model, outside containers",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-25",
+          "done": [
+            "A runner for trials on one machine: the world as a process, the agent as a command, the task handed to the world on its standard input, the agent in a temporary folder that names neither the task nor the code",
+            "One current model played four hand-built tasks, one trial each, reaching the world through the MCP tools only: travelling together, the last cheap seat, one of two cancels, and the twin of that task in which the traveller adds that the other agreed",
+            "All four episodes closed with a record that replays",
+            "What it showed about the interface, and was fixed: the agent had to guess the fact keys one at a time; a refusal named only the first unknown key; the schema of an attachment did not say that its kind must be sent",
+            "The card now lists every fact key. The refusal names every unknown key and the ones that exist. Schemas mark the tag of a tagged union as required",
+            "A reader for trials: what a trial scored, every call the agent made, and the messages exchanged, from the world's sealed record"
+          ],
+          "where": [
+            "src/macbench/local.py, tools/run_local.py and tools/read_trial.py",
+            "src/macbench/domains/ticketing/tasks.py, the role card; src/macbench/board/board.py; src/macbench/serve/session.py",
+            "docs/spec/serving.md, section 7"
+          ],
+          "checked": [
+            "330 automated tests pass",
+            "The runner is tested with stand-in agents: one that plays the reference policy over HTTP, one that looks around and leaves, one that runs out of time",
+            "One of the four tasks was played again after the fixes: 14 calls instead of 30, one refused call instead of six"
+          ],
+          "open": [
+            "These runs are not results. They were not isolated: the agent ran as the same user, next to the task files. Its log shows no shell command at all, but nothing prevented one",
+            "Four tasks, one trial each, one model. Nothing can be said yet about which tasks separate models",
+            "Results that can be reported need the exported Harbor folders on a machine with Docker"
+          ]
+        },
+        {
           "id": "tk-verify",
           "title": "Runs under Harbor, with real models",
           "status": "next",
           "plan": [
             "Build the two images of one exported task and run the oracle under Harbor. Fix whatever the first real run shows",
-            "Run the development tasks with real models and read the failures before adding more tasks",
+            "Run the development tasks with real models, several trials each, and read the failures before adding more tasks",
             "Then: travellers played by models, a traveller seat under test, and the second scenario"
           ]
         },
