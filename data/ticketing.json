@@ -1,6 +1,6 @@
 {
  "domain": "ticketing",
- "version": "0.6",
+ "version": "0.7",
  "title": "Flight ticketing",
  "conventions": {
   "money": "Integer US cents. Field names end in `_cents`.",
@@ -166,6 +166,7 @@
    "needs_refundable": "Whether the traveller needs a fare refundable to the original payment.",
    "checked_bags": "Number of checked bags.",
    "wants_adjacent_seat": "Whether sitting next to the other traveller matters.",
+   "meet_within_minutes": "The traveller wants to land within this many minutes of the other traveller.",
    "payment_method_id": "The wallet method the traveller wants charged.",
    "request": "What the traveller asks the agent to do: book, cancel, change, rebook or refund. Sent with the order it concerns.",
    "disruption_preference": "What the traveller wants when an airline change spoils the trip: rebook or refund.",

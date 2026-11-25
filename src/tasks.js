@@ -12,11 +12,35 @@
   function usd(c) { return (c < 0 ? '-' : '') + '$' + (Math.abs(c) / 100).toFixed(2); }
   function shortId(id) { return id.replace('tk-', '').toUpperCase(); }
 
+  function careless(c) {
+    if (!c || !c.name) return 'none for this task';
+    var extra = [];
+    if (c.acted_without_consent) extra.push('acts without consent ' + c.acted_without_consent + ' time' + (c.acted_without_consent > 1 ? 's' : ''));
+    if (c.took_the_worse_path) extra.push('takes the worse path ' + c.took_the_worse_path + ' time' + (c.took_the_worse_path > 1 ? 's' : ''));
+    return esc(c.name) + ': ' + (c.success ? 'succeeds' : 'fails') + (extra.length ? ', ' + extra.join(', ') : '');
+  }
+
   byId('t-rows').innerHTML = T.tasks.map(function (t) {
     return '<tr><td>' + esc(shortId(t.task_id)) + '</td><td>' + esc(t.family) + '</td><td>' + esc(t.title) + '</td><td>' +
       usd(t.reference.total_loss_cents) + '</td><td>' + t.reference.process.calls + '</td><td>' +
-      (t.idle.success ? 'succeeds: nothing needed doing' : 'fails') + '</td></tr>';
+      (t.idle.success ? 'succeeds: nothing needed doing' : 'fails') + '</td><td>' + careless(t.careless_agent) + '</td></tr>';
   }).join('');
+
+  byId('t-gen-rows').innerHTML = T.generated.map(function (t) {
+    return '<tr><td>' + esc(shortId(t.task_id)) + '</td><td>' + esc(t.family) + '</td><td>' + esc(t.title) + '</td><td>' +
+      usd(t.reference.loss_cents) + '</td><td>' + t.reference.calls + '</td><td>' +
+      (t.leaving_succeeds ? 'succeeds: nothing needed doing' : 'fails') + '</td><td>' + careless(t.careless_agent) + '</td></tr>';
+  }).join('');
+
+  byId('t-foil-rows').innerHTML = T.careless_agents.map(function (a) {
+    return '<tr><td>' + esc(a.name) + '</td><td>' + esc(a.lacks) + '</td><td>' + esc(a.families.join(', ')) + '</td></tr>';
+  }).join('');
+
+  var dropped = T.generated.reduce(function (n, t) { return n + t.dropped; }, 0);
+  byId('t-sets').innerHTML = T.generated.length + ' tasks from a public seed, ' + T.per_family + ' per family; ' + dropped +
+    ' candidates were dropped on the way. A held-out set of ' + T.heldout.count + ', ' + T.heldout.per_family +
+    ' per family, comes from a seed that is not published. Its fingerprint is <code>' + esc(T.heldout.set_digest.slice(0, 16)) +
+    '</code>&hellip; and is in the code repository, so the set can later be shown unchanged.';
 
   var PART = { cash_out: 'Money out', credit_received: 'Credit received, at their rate', stops: 'Connections', not_together: 'Not seated together' };
 
@@ -81,7 +105,7 @@
       (t.booked_before ? '<li>Before the episode: both were ticketed on one order, seated side by side.</li>' : '<li>Before the episode: nothing is booked.</li>') +
       (airline || '<li>The airline changes nothing.</li>') +
       '<li>The world is watched for ' + t.observation_minutes + ' minutes.</li></ul>' +
-      card(t.reference, 'Reference solution') +
+      card(t.reference, 'The reference policy') +
       '<div style="height:18px"></div>' + card(t.idle, 'An agent that leaves at once') +
       '<details class="tcard"><summary>The agent\'s role card, as it is given</summary><pre class="json">' + esc(t.agent_card) + '</pre></details>' +
       Object.keys(t.traveller_cards).map(function (seat) {

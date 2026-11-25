@@ -391,21 +391,62 @@
             "31 rules of the traveller script and the scorer were broken on purpose. Eight slipped through at first; each got a test, and now all 31 make a test fail"
           ],
           "open": [
-            "Not reviewed, and not yet run with a real model. The tasks have only been played by scripts",
-            "Families T2, meeting from different cities, and T7, a request the rules forbid, are not built",
-            "No held-out test set and no generator: eight hand-built tasks on two routes",
-            "The reference solutions are written per task. There is no general reference policy",
-            "A scripted traveller does not authorise a paid seat or bag after ticketing"
+            "A scripted traveller does not authorise a paid seat or bag after ticketing",
+            "What was open here about more families, a generator, a held-out set and a general reference policy is done in the next entry"
+          ]
+        },
+        {
+          "id": "tk-generator",
+          "title": "Task generator, held-out set, serving, and Harbor folders",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-24",
+          "done": [
+            "Two more families: meeting from different cities, and requests the rules do not allow. Eleven hand-built tasks in seven families",
+            "One general reference policy replaces the per-task solutions. It has seven habits, each a switch",
+            "Careless agents: the reference policy with one habit off. Each must fail the tasks of the family that tests that habit",
+            "A generator: a recipe per family reads a freshly drawn world for a place where the difficulty really occurs. Budgets are what a reference run paid, plus a margin",
+            "Admission: the reference policy solves the task, leaving at once fails it, and the careless agent of its family fails it",
+            "39 development tasks as files: 11 built by hand and 28 generated from a public seed. A held-out set of 56 from a seed that is not published, committed to by one fingerprint",
+            "A served episode: the world in a process of its own, over HTTP, with separate credentials for the agent, the runner and the reference policy. The score is computed in the world's process",
+            "A one-file client for the agent's container: command line, Python class and MCP server, standard library only",
+            "Every task exports to a Harbor task folder: instruction, two containers, verifier, oracle",
+            "The runner can stop an episode, and the stop is part of the record. The agent's card no longer carries the task's title, which gave away what would happen",
+            "Interface version 0.7: one more typed fact, for travellers who want to land within a stated time of each other"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/reference.py, foils.py and generator.py; src/macbench/serve/; src/macbench/client/mb.py; src/macbench/harbor.py",
+            "tasks/ticketing/dev/ and tasks/ticketing/heldout_v1.json",
+            "docs/IMPLEMENTATION.md, docs/spec/ticketing_generator.md, serving.md and harbor.md",
+            "Ticketing page: Tasks"
+          ],
+          "checked": [
+            "281 automated tests pass. 82 are new",
+            "All 39 development tasks and all 56 held-out tasks pass admission",
+            "Each careless agent fails the task of its family, and solves a task that does not need its habit at zero regret",
+            "A task built again in another process gives the same bytes. Read back from its file, it gives the same record",
+            "The reference policy played over HTTP gives the same record as played in process",
+            "The MCP server was driven with the client of the official Python SDK, version 2.3.0",
+            "A trial was played by hand from an exported Harbor folder, using only its files: the oracle gets reward 1, a careless agent gets 0",
+            "52 rules of these layers were broken on purpose. Four slipped through at first: three got a test, and one was no breakage at all and was replaced"
+          ],
+          "open": [
+            "Not reviewed",
+            "No model has played a task. Nothing has been run under Docker or Harbor: the machine this is built on has neither",
+            "83 of 84 generated tasks were admitted at the first attempt. Admission shows that a task can be solved and has its trap, not that it is hard",
+            "Budgets follow the reference policy, which is greedy. Where it is far from the best outcome, a budget is loose",
+            "In a shared Harbor verifier an agent with root can overwrite the reward file. The world keeps its own score and a sealed record, so this can be found, not prevented",
+            "Travellers are scripted. A model playing a traveller is not built"
           ]
         },
         {
           "id": "tk-verify",
-          "title": "Harbor export and runs with real models",
+          "title": "Runs under Harbor, with real models",
           "status": "next",
           "plan": [
-            "Export each task as a Harbor folder: instruction from the agent's role card, the world as a service, the scorer as the verifier",
-            "Run the eight tasks with real models and read the failures before adding more tasks",
-            "Then: more families, a generator, and a held-out set"
+            "Build the two images of one exported task and run the oracle under Harbor. Fix whatever the first real run shows",
+            "Run the development tasks with real models and read the failures before adding more tasks",
+            "Then: travellers played by models, a traveller seat under test, and the second scenario"
           ]
         },
         {

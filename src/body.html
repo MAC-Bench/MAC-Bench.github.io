@@ -88,7 +88,7 @@
         </div>
         <div class="point">
           <h3>Tasks are Harbor folders</h3>
-          <p>Tasks follow the Harbor task format used by Terminal-Bench. General tools come from the agent's own harness. The environment adds a domain service over MCP and REST, and a message board.</p>
+          <p>Tasks follow the Harbor task format used by Terminal-Bench. General tools come from the agent's own harness. The environment adds a domain service over MCP and REST, and a message board. Every ticketing task now exports to such a folder; none has been run under Harbor yet.</p>
         </div>
       </div>
     </div>
@@ -278,15 +278,31 @@
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Tasks</p>
-        <h2>Eight development tasks</h2>
-        <p>A task fixes a world, two scripted travellers with private facts and plans, and what the airline will do. The booking agent is the seat under test. An episode is judged on the world as it stands at the end: every traveller must have what they wanted within budget, and among such outcomes a lower loss for the travellers is better. Every task ships a reference solution that must succeed, and an agent that leaves at once must fail unless nothing needed doing.</p>
+        <h2>Thirty-nine development tasks and a held-out set</h2>
+        <p>A task fixes a world, two scripted travellers with private facts and plans, and what the airline will do. The booking agent is the seat under test. An episode is judged on the world as it stands at the end: every traveller must have what they wanted within budget, and among such outcomes a lower loss for the travellers is better. One reference policy solves every task. An agent that leaves at once must fail, unless nothing needed doing. No model has played a task yet.</p>
       </div>
+      <h3 style="margin:0 0 10px">Eleven tasks built by hand</h3>
       <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th></tr></thead>
+        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agent</th></tr></thead>
         <tbody id="t-rows"></tbody>
       </table></div>
       <div class="seg" id="t-pick" role="group" aria-label="Task" style="margin-top:22px"></div>
       <div id="t-detail"></div>
+
+      <h3 style="margin:44px 0 10px">Careless agents</h3>
+      <p style="max-width:78ch">The reference policy has seven habits, each a switch. Switching one off gives an agent that should fail the tasks that need that habit, and only those. A task is admitted to a set only if the careless agent of its family fails it. These agents are a check on the tasks. They are not baselines.</p>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Careless agent</th><th>The habit it lacks</th><th>Must fail</th></tr></thead>
+        <tbody id="t-foil-rows"></tbody>
+      </table></div>
+
+      <h3 style="margin:44px 0 10px">Tasks from a generator</h3>
+      <p style="max-width:78ch">A recipe per family draws a world and looks in it for a place where the difficulty really occurs: a flight with one seat left at its fare, two cities whose cheapest flights land hours apart, a flight with an earlier one by the same airline. It builds two travellers around that place. Budgets are what a reference run paid, plus a margin of 8 to 25 percent. A candidate becomes a task only if the reference policy solves it, leaving at once fails it, and the careless agent of its family fails it.</p>
+      <p class="note" id="t-sets" style="margin:10px 0 14px"></p>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agent</th></tr></thead>
+        <tbody id="t-gen-rows"></tbody>
+      </table></div>
     </div>
   </section>
 
