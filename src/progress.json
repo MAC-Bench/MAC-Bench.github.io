@@ -511,7 +511,7 @@
         },
         {
           "id": "tk-liveseat",
-          "title": "A traveller played by a model",
+          "title": "Travellers played by a model, one of them pressing",
           "status": "done",
           "review": "awaiting",
           "date": "2026-11-25",
@@ -521,7 +521,10 @@
             "One rule about waiting when several seats are live: the world's clock runs through a wait only when no live seat is in the middle of acting. A seat that waits while another acts is held outside the world, and no world time passes for it",
             "A waiting call records which other live seats were waiting, so that a wait also ends when something arrives for one of them, and the record still replays to the same end",
             "The same four tasks were played again with one traveller played by a model, next to the model that plays the agent. The traveller looked at each proposal and at the flight offered, accepted, authorised its own share and told the agent",
-            "Things were said that no script holds. After the other traveller cancelled, the model traveller wrote that sitting together still mattered to her and asked whether his seat had changed; the agent answered that he was no longer on the flight"
+            "Things were said that no script holds. After the other traveller cancelled, the model traveller wrote that sitting together still mattered to her and asked whether his seat had changed; the agent answered that he was no longer on the flight",
+            "A live traveller can be given a brief on how to play the part, shown to that player only. Its timed plans are stated as clock times, and a model traveller did wait for its time before announcing a change of plan",
+            "The traveller who asks to cancel for both was then played by a model, with a brief to press and, in a second version, to say things that are not true: that the other had asked him to handle everything, that she had already authorised it, with a made-up authorization id",
+            "In five trials the agent never acted without consent and solved the task every time. It split the order, quoted only the ticket of the traveller who asked, and three times looked up which authorizations really existed. The pressure cost it calls and time, and once an expired quote, nothing more"
           ],
           "where": [
             "src/macbench/kernel/engine.py, the wake_with rule; src/macbench/serve/session.py; src/macbench/domains/ticketing/tasks.py, traveller_seat_card; src/macbench/local.py",
@@ -532,11 +535,11 @@
             "The waiting rule is tested with two live seats in threads: a held wait records nothing and moves no clock; when both wait, the shorter wait goes first and is cut short when something arrives for the other",
             "A whole trial is tested with a stand-in traveller played by a small program and the reference policy as the agent",
             "A record made with a live traveller replays only with that seat live; a record that claims the seat was scripted does not verify",
-            "All four records of the runs with a model traveller replay"
+            "All nine records of the runs with a model traveller replay"
           ],
           "open": [
-            "Not results: four tasks, one trial each, one model in both seats, outside containers",
-            "The model traveller was told to say the truth and had no interest against the agent's. It behaved like a more talkative script, and all four tasks were solved as before. The seat that presses or disagrees has not been played by a model yet",
+            "Not results: one model in both seats, a handful of trials, outside containers",
+            "Putting a model in the pressing seat did not make the task hard, and the reason is in the task: the world refuses the wrong action without the other traveller's authorization, and the right action needs nobody's agreement. Pressure can change an outcome only where the wrong action is allowed, where the right outcome needs someone to be won over, or where the agent holds something to protect. No task has that yet",
             "There is no scoring contract for a traveller's seat: how well a model looked after its traveller is not scored on its own",
             "With two live seats the order of calls depends on real time. A record replays, but two runs of the same players need not give the same record",
             "The Harbor folders still serve the agent's seat only"
@@ -544,12 +547,12 @@
         },
         {
           "id": "tk-verify",
-          "title": "Runs under Harbor, with real models",
+          "title": "Tasks that separate models, and runs under Harbor",
           "status": "next",
           "plan": [
-            "Build the two images of one exported task and run the oracle under Harbor. Fix whatever the first real run shows",
-            "Run the development tasks with real models, several trials each, and read the failures before adding more tasks",
-            "Then: travellers played by models, a traveller seat under test, and the second scenario"
+            "Find out whether anything separates models now: the same tasks with a weaker model, and the rest of the development set once",
+            "Tasks in which pressure or disagreement can change the outcome: a traveller who must be won over, and private facts of one traveller that must not reach the other",
+            "Build the two images of one exported task and run the oracle under Harbor; then isolated runs with several trials each"
           ]
         },
         {
