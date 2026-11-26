@@ -1,8 +1,8 @@
 {
  "domain": "insurance",
- "interface_version": "0.4",
+ "interface_version": "0.5",
  "counterparts": "scripted-v1",
- "tests": 165,
+ "tests": 169,
  "seats": [
   {
    "seat": "driver_a",
@@ -503,7 +503,7 @@
    "name": "send_demand",
    "group": "Recovery",
    "summary": "Demand from the other insurer what was paid to one's own insured, deductible included.",
-   "description": "One demand is made for one accident, and nothing can be added to it later: send it when everything you will pay your insured has been paid. The documents sent with it go on the other insurer's file. Each item demanded needs a document that shows its amount: an appraisal, an estimate or a repair invoice for the vehicle, the rental invoice, the towing invoice.",
+   "description": "Send it when everything you will pay your insured has been paid. What you pay after it went out is asked for by sending another demand: a supplement, for what was paid and not demanded before. Once the first demand is settled, a supplement is made at the share settled on it and only its amounts are open. The documents sent with a demand go on the other insurer's file. Each item demanded needs a document that shows its amount: an appraisal, an estimate or a repair invoice for the vehicle, the rental invoice, the towing invoice.",
    "roles": [
     "adjuster"
    ],
@@ -519,7 +519,7 @@
    "name": "respond_to_demand",
    "group": "Recovery",
    "summary": "Accept what is on the table, counter with another share or other amounts, or deny.",
-   "description": "A counter names a share of fault and may name the amounts it accepts, by item, and the deductible. Accepting takes the share and the amounts of the other insurer's last turn.",
+   "description": "A counter names a share of fault and may name the amounts it accepts, by item, and the deductible. Accepting takes the share and the amounts of the other insurer's last turn. A supplement to a demand whose share was settled is countered on its amounts only, and denied only for want of coverage.",
    "roles": [
     "adjuster"
    ],
@@ -1072,17 +1072,17 @@
     },
     {
      "path": "src/macbench/domains/insurance/schema.py",
-     "lines": 328,
+     "lines": 332,
      "does": "The objects of the world: policy, claim, exposure, document, offer, payment, letter, demand, forum case."
     },
     {
      "path": "src/macbench/domains/insurance/interface.py",
-     "lines": 437,
+     "lines": 439,
      "does": "The actions of the two roles: request, response, errors, world-time cost and who may call each."
     },
     {
      "path": "src/macbench/domains/insurance/handbook.py",
-     "lines": 331,
+     "lines": 333,
      "does": "The rules as text a seat can search: seven documents, every number formatted from rules.py. It promises only what the world does."
     }
    ]
@@ -1107,7 +1107,7 @@
     },
     {
      "path": "tools/build_claims_tasks.py",
-     "lines": 69,
+     "lines": 78,
      "does": "Admits every task again and writes it as a file with a fingerprint."
     }
    ]
@@ -1127,7 +1127,7 @@
     },
     {
      "path": "src/macbench/domains/insurance/service.py",
-     "lines": 1044,
+     "lines": 1074,
      "does": "The handlers behind every action, what each seat may see, the world's own events (shop, appraiser, police desk, witness, rental company, forum), the claims index, and what the world refuses."
     }
    ]
@@ -1137,7 +1137,7 @@
    "items": [
     {
      "path": "src/macbench/domains/insurance/controllers.py",
-     "lines": 673,
+     "lines": 689,
      "does": "One routine per role, told nothing its seat cannot read. It plays a scripted counterpart or a live seat. An adjuster's routine has manners: by the book, or careless in one respect."
     },
     {
@@ -1187,7 +1187,7 @@
    "items": [
     {
      "path": "src/macbench/domains/insurance/scoring.py",
-     "lines": 701,
+     "lines": 774,
      "does": "What everyone owed whom on the evidence that can come to light, and a card per seat: requirements, loss, process."
     },
     {
@@ -3611,7 +3611,7 @@
       },
       {
        "name": "paid the other insurer what its insured owes on the demand",
-       "detail": "owed 334600, paid 0",
+       "detail": "owed 0 outside the forum, 334600 before it, paid 0; dmd_0001: before the forum it concedes 0, and 334600 is owed",
        "source": "rules",
        "kind": "outcome"
       },
@@ -3623,7 +3623,8 @@
       }
      ],
      "pending": [
-      "exp_0002 is not decided; 22.0 days since proof of claim"
+      "exp_0002 is not decided; 22.0 days since proof of claim",
+      "dmd_0001 is before the forum; 334600 is owed on it and the desk concedes 0"
      ]
     }
    },
@@ -4312,7 +4313,7 @@
       },
       {
        "name": "paid the other insurer what its insured owes on the demand",
-       "detail": "owed 334600, paid 0",
+       "detail": "owed 0 outside the forum, 334600 before it, paid 0; dmd_0001: before the forum it concedes 0, and 334600 is owed",
        "source": "rules",
        "kind": "outcome"
       },
@@ -4324,7 +4325,8 @@
       }
      ],
      "pending": [
-      "exp_0002 is not decided; 22.0 days since proof of claim"
+      "exp_0002 is not decided; 22.0 days since proof of claim",
+      "dmd_0001 is before the forum; 334600 is owed on it and the desk concedes 0"
      ]
     }
    },
@@ -6263,7 +6265,7 @@
       },
       {
        "name": "paid the other insurer what its insured owes on the demand",
-       "detail": "owed 343520, paid 0",
+       "detail": "owed 0 outside the forum, 343520 before it, paid 0; dmd_0001: before the forum it concedes 0, and 343520 is owed",
        "source": "rules",
        "kind": "outcome"
       },
@@ -6276,7 +6278,8 @@
      ],
      "pending": [
       "exp_0002 is not decided; 23.0 days since proof of claim",
-      "exp_0005 is not decided; 28.0 days since proof of claim"
+      "exp_0005 is not decided; 28.0 days since proof of claim",
+      "dmd_0001 is before the forum; 343520 is owed on it and the desk concedes 0"
      ]
     }
    },
@@ -8309,7 +8312,8 @@
       }
      ],
      "pending": [
-      "exp_0002 is not decided; 22.0 days since proof of claim"
+      "exp_0002 is not decided; 22.0 days since proof of claim",
+      "dmd_0001 is before the forum; 0 is owed on it and the desk concedes 0"
      ]
     }
    },
@@ -9455,10 +9459,10 @@
     "adjuster_a": {
      "success": false,
      "met_outcome": false,
-     "loss_cents": 1749000,
-     "regret_cents": 1749000,
+     "loss_cents": 2558000,
+     "regret_cents": 2558000,
      "loss_parts": {
-      "owed_but_not_paid": 1749000
+      "owed_but_not_paid": 2558000
      },
      "failed": [
       {
@@ -9493,7 +9497,7 @@
       },
       {
        "name": "paid the other insurer what its insured owes on the demand",
-       "detail": "owed 1487500, paid 0",
+       "detail": "owed 0 outside the forum, 1487500 before it, paid 0; dmd_0001: before the forum it concedes 0, and 2296500 is owed",
        "source": "rules",
        "kind": "outcome"
       },
@@ -9505,7 +9509,8 @@
       }
      ],
      "pending": [
-      "exp_0002 is not decided; 38.0 days since proof of claim"
+      "exp_0002 is not decided; 38.0 days since proof of claim",
+      "dmd_0001 is before the forum; 2296500 is owed on it and the desk concedes 0"
      ]
     }
    },

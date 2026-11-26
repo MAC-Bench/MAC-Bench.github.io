@@ -82,7 +82,7 @@
             <tr><td>Paying your own insured</td><td>the amount by item, and within 30 days</td><td></td></tr>
             <tr><td>Paying the other driver</td><td>the amount by item; an accepted offer within 30 days; no double payment of rental; an acceptance of their claim only on a determination of fault</td><td>whether a first offer was unreasonably low; whether the claimant was steered to their own policy</td></tr>
             <tr><td>The limit</td><td>the total, and no item above what is owed for it; the driver before their insurer; the excess notice</td><td>what the notice says</td></tr>
-            <tr><td>Recovery</td><td>the demand for what was lawfully paid, with the deductible; the recovery; the insured's share</td><td>when the demand was sent; the notice when there is nothing to recover</td></tr>
+            <tr><td>Recovery</td><td>the demands for what was lawfully paid, with the deductible, the first and its supplements together; the recovery; the insured's share</td><td>when a demand was sent and how many it took; the notice when there is nothing to recover</td></tr>
             <tr><td>Answering a demand</td><td>that it was answered, also by a desk that had left; the amount paid, item by item, on what was lawfully paid, and within 30 days</td><td>whether it was answered within 14 days</td></tr>
             <tr><td>Deadlines</td><td>15 days, 40 days with status letters that count, 30 days. A status letter that still waits for a statement after the driver's 12 days does not count</td><td>the 15 days to answer a claimant's question</td></tr>
           </tbody>
@@ -362,10 +362,10 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
         <ul>
           <li>How often a task is failed, and whether for the reason it is there for, is not known. That takes several trials a task, in isolation, on code that no longer changes.</li>
           <li>No practitioner has read the rules. The liability guide's percentages are invented. Until one has, nothing here may be presented as how claims are handled.</li>
-          <li>One demand is made for one accident, and a settled demand is not reopened on new evidence. Real insurers send supplemental demands. This rule was the commonest cause of failure in the first look, and whether it stays is not decided.</li>
+          <li>A demand can be followed by supplements since interface 0.5, for what was paid after it went out, at the share settled on the first demand. A settled demand is not reopened on new evidence about fault. Before, a single demand was the commonest cause of failure in the first look; no model has played the tasks since.</li>
           <li>Two readings of a card are kept: every requirement, and the outcome requirements alone. Which of them is reported first is not decided.</li>
           <li>The world keeps no index for rental as it does for the car. A rental paid twice is found by the score, not refused.</li>
-          <li>The forum takes about six weeks, longer than most watches. A case filed in a 45-day task is still open when the watch ends.</li>
+          <li>The forum takes about six weeks, longer than most watches. Only the task that goes to the forum by the book is watched until the award is paid. In the others a case can still be open at the end: its amounts are then set apart, and what each side stands for in it is judged.</li>
           <li>A scripted driver trusts what an offer names. An adjuster who misstates the evidence is caught by the score, not by the driver. A real claimant would argue.</li>
           <li>A driver's seat has two careless variants, doing nothing and stopping after the report, and no task where the insurers it faces depart from the manual.</li>
           <li>The manner <code>low first offer</code> exists and no task uses it.</li>

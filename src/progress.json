@@ -1060,6 +1060,30 @@
           ]
         },
         {
+          "id": "ins-supplements",
+          "title": "Supplements to a demand, and cases still before the forum",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "An insurer may follow its demand with supplements for what it paid after it went out. Once the first demand is settled, a supplement follows the share settled on it, and only its amounts are open",
+            "The by-the-book adjuster sends a supplement when it has paid more. The score adds an insurer's demands together and reports how many it sent",
+            "A task that goes to the forum by the book is watched until the award is paid. In any other task a case still open at the end is set apart, and what each side stands for in it is judged",
+            "Interface 0.5"
+          ],
+          "where": [
+            "tests/test_insurance_review.py, the section on supplements",
+            "docs/spec/insurance_claims.md, sections 7, 9 and 12"
+          ],
+          "checked": [
+            "The thirteen tasks and the numbers of their yardstick runs are unchanged",
+            "169 tests for the claims world pass"
+          ],
+          "open": [
+            "A first run of models on interface 0.5 is under way"
+          ]
+        },
+        {
           "id": "ins-expert",
           "title": "A practitioner's read of the rules",
           "status": "next",
