@@ -118,6 +118,45 @@
     return lines.length ? '<ul class="plain-list" style="margin:14px 0 0">' + lines.join('') + '</ul>' : '';
   }
 
+  function sheet(t) {
+    var s = t.sheet;
+    if (!s) return '';
+    var out = ['<p style="max-width:78ch">Made for review: what can be computed is computed from the task and from scripted play, and what is written by hand is checked against the world. Minutes count from the opening of the world.</p>'];
+    var min = function (m) { return m === null || m === undefined ? '' : String(Math.round(m * 10) / 10).replace(/\.0$/, ''); };
+    (s.grows_out_of || []).forEach(function (g) {
+      out.push('<p style="max-width:78ch">Grows out of <b>' + esc(shortId(g.task_id)) + '</b>. The two task files differ in: ' +
+        g.differs_in.map(function (d) { return '<code>' + esc(d) + '</code>'; }).join(', ') + '.</p>');
+    });
+    out.push('<p class="lbl" style="margin:16px 0 8px">Doors inside the watch</p><div class="tscroll"><table class="ft plain"><thead><tr><th>Minute</th><th>What closes</th><th>Where the rule is</th></tr></thead><tbody>' +
+      s.doors.map(function (d) { return '<tr><td>' + min(d.minute) + '</td><td>' + esc(d.what) + '</td><td>' + esc(d.rule) + '</td></tr>'; }).join('') +
+      '</tbody></table></div>');
+    if (s.design) {
+      out.push('<p class="lbl" style="margin:16px 0 8px">What solving it takes</p><ol class="plain-list" style="margin:0 0 6px">' + s.design.stages.map(function (st) {
+        var calls = st.calls.length ? ' The reference run: ' + st.calls.map(function (c) { return esc(c.call) + ' at minute ' + min(c.reference_minute); }).join(', ') + '.' : '';
+        return '<li><b>' + esc(st.name) + '.</b> Starts at minute ' + st.at_minutes + ', when ' + esc(st.starts) + '. Needs the authorization of: ' + esc(st.consent) +
+          '. Has to be done by minute ' + st.by_minutes + ': ' + esc(st.by) + '.' + (st.after ? ' First: ' + esc(st.after) + '.' : '') +
+          ' Steps: ' + st.steps.map(function (x, i) { return '(' + (i + 1) + ') ' + esc(x); }).join('; ') + '.' + calls + '</li>';
+      }).join('') + '</ol>');
+      out.push('<p class="lbl" style="margin:16px 0 8px">Traps</p><div class="tscroll"><table class="ft plain"><thead><tr><th>Trap</th><th>What goes wrong</th><th>Scripted agent that falls into it</th></tr></thead><tbody>' +
+        s.design.traps.map(function (x) { return '<tr><td>' + esc(x.name) + '</td><td>' + esc(x.wrong) + '</td><td>' + (x.shown_by ? esc(x.shown_by) : 'none') + '</td></tr>'; }).join('') +
+        '</tbody></table></div>');
+      out.push('<p class="lbl" style="margin:16px 0 8px">Where the agent can read what it needs</p><ul class="plain-list" style="margin:0">' +
+        s.design.sources.map(function (x) { return '<li>' + esc(x.needs) + ': ' + esc(x.where) + ', "' + esc(x.says) + '".</li>'; }).join('') + '</ul>');
+      out.push('<p class="lbl" style="margin:16px 0 8px">Not claimed</p><ul class="plain-list" style="margin:0">' +
+        s.design.not_claimed.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>');
+    }
+    var late = s.late;
+    out.push('<p style="max-width:78ch;margin-top:16px">The reference policy started late, tried every ' + late.step_minutes + ' minutes: ' +
+      (late.earliest_start_failed === null ? 'every start that was tried solves the task.' :
+        'it still solves the task when it starts at minute ' + late.latest_start_solved + ' and no longer at minute ' + late.earliest_start_failed + '.') +
+      (late.waiting_pays ? ' A later start ended better than starting at once.' : ' No later start ended better than starting at once.') +
+      (s.reference_done_at !== null ? ' Started at once, its last settling call is at minute ' + min(s.reference_done_at) + '.' : '') +
+      (s.worked ? ' A worked solution written by hand is done at minute ' + min(s.worked.done_at_minute) + '.' : '') +
+      ' ' + s.checks[0] + ' of ' + s.checks[1] + ' checks of the sheet pass.</p>');
+    return '<details class="tcard"><summary>Task sheet: doors' + (s.design ? ', stages, traps' : '') + ' and late starts</summary><div style="padding:6px 2px 2px">' +
+      out.join('') + '</div></details>';
+  }
+
   function steps(t) {
     if (!t.reference_steps || !t.reference_steps.length) return '';
     var began = Date.parse(t.reference_steps[0].t);
@@ -153,7 +192,7 @@
       '<li>The world is as of ' + esc(t.world_now.replace('T', ' ').replace(':00Z', ' UTC')) + ' and is watched for ' + t.observation_minutes + ' minutes.</li></ul>' +
       card(t.reference, 'The reference policy') +
       '<div style="height:18px"></div>' + card(t.idle, 'An agent that leaves at once') +
-      checksOnTheTask(t) + steps(t) +
+      checksOnTheTask(t) + sheet(t) + steps(t) +
       '<details class="tcard"><summary>The agent\'s role card, as it is given</summary><pre class="json">' + esc(t.agent_card) + '</pre></details>' +
       Object.keys(t.traveller_cards).map(function (seat) {
         return '<details class="tcard"><summary>Role card of ' + esc(seat) + '</summary><pre class="json">' + esc(t.traveller_cards[seat]) + '</pre></details>';

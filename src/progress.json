@@ -658,6 +658,43 @@
           ]
         },
         {
+          "id": "tk-harder",
+          "title": "Seven harder tasks, two more habits, and a sheet for every hand-built task",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-25",
+          "done": [
+            "Seven more hand-built tasks, 53 development tasks in all. They are built on what the first looks showed: what stopped a model was time, never a rule it did not know. No rule of the world was added and the scripted traveller is unchanged",
+            "Two in family T8. One puts both tickets on one booking and leaves a budget with room for exactly one fare on the new day, so that a wrong step costs a quarter of an hour of a slow traveller's time. The other is a twin of an earlier task with the request two hours later: the same steps with 20 idle minutes to spare instead of 140",
+            "Three in a new family, T9, with several matters in one watch. Six hours with a delay to leave alone, a ticket that cannot be moved and a cancelled flight. Two matters that overlap on the day of the flights, each with a door of its own. And two travellers who both have to be cancelled and booked again, each step behind an answer of a quarter of an hour, with 105 minutes left",
+            "Two in a new family, T10. One traveller cannot pay any fare that suits him, and the other would pay towards his ticket, which she says only when asked. The way through is a proposal with two payers. The scripted traveller and the scoring allowed this from the start; no task had used it",
+            "The reference policy has two more habits, ten in all: it lets a traveller who said so pay towards another's ticket, and it keeps watching after the last wish is served. A careless agent lacks each. The one that hands back as soon as nothing is asked of it does what a model did once in the first looks, six minutes into an episode",
+            "A first design was dropped. In it a traveller changed his mind twice, and an agent that waited through the first request did one piece of work instead of two and ended 170 dollars better than the reference policy. A task like that rewards the habit the tasks with a clock are there to catch. In the seven that were kept, nothing a later event asks for undoes what an earlier one asked for",
+            "Every hand-built task now has a task sheet, a page made to be checked by someone who did not build the task. What can be computed is computed from the task and from scripted play: the hidden facts, the doors, every scripted agent's result, and the reference policy started late every 15 minutes. What is written by hand, the stages, traps and where the agent can read what it needs, is checked against the world wherever it names a minute, a call, an agent, a passage or a sentence of the card",
+            "The sheets are shown here with each task"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/devset.py, the tasks tk-t8-07, tk-t8-08, tk-t9-01 to tk-t9-03, tk-t10-01, tk-t10-02 and three worked solutions; reference.py and foils.py",
+            "src/macbench/domains/ticketing/sheets.py; tools/task_sheet.py; docs/spec/task_sheet.md",
+            "docs/tasks/ticketing/, one page per task; tasks/ticketing/dev/sheets/, the data",
+            "tests/test_ticketing_harder.py; tests/test_ticketing_sheets.py; docs/spec/ticketing_tasks.md, section 6"
+          ],
+          "checked": [
+            "511 automated tests pass, and one is skipped where the MCP SDK is not installed",
+            "For each new task: the reference policy solves it, every careless agent named for it fails it, and the numbers its description quotes are pinned by a test",
+            "On all 25 hand-built tasks, starting the reference policy later never ends better than starting at once, and once a start is too late every later one is",
+            "The 46 earlier task files are unchanged byte for byte, their reference numbers are unchanged, and the held-out set admits with the same numbers and has the same fingerprint"
+          ],
+          "open": [
+            "No model has played the seven tasks. Whether they stop a model, and how often, is not known",
+            "One of them is built on an edge: taken in turn, its four steps leave the reference policy 27 minutes. A worked solution that takes them two at a time has 65",
+            "That a traveller accepts a new ticket only once the old one is cancelled is not on the agent's card. An agent learns it from the first rejection. Several tasks rest on that order",
+            "The check that waiting does not pay covers one kind of waiting: the whole policy started late",
+            "The 18 earlier hand-built tasks have sheets with the computed sections only. Their design notes are not written",
+            "No recipe generates tasks of families T8 to T10, and the held-out set has none"
+          ]
+        },
+        {
           "id": "tk-verify",
           "title": "Tasks that separate models, and runs under Harbor",
           "status": "next",
