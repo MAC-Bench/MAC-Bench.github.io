@@ -17,7 +17,7 @@
   <div class="hero">
     <div class="wrap hero-in">
       <div class="hero-copy">
-        <span class="chip s-next"><i></i>Design stage · ticketing under construction</span>
+        <span class="chip s-next"><i></i>Design stage · ticketing and claims under construction</span>
         <h1>Agents that act for different people have to <mark>coordinate</mark>. We measure whether they can.</h1>
         <p>MAC-Bench places language-model agents in three everyday service settings. Each agent holds private information and its own permissions. Every booking, payment and settlement goes through a simulated service, and a program scores the final state.</p>
         <div class="hero-cta">
@@ -45,12 +45,12 @@
             <p class="lbl">Auto-insurance claim</p>
             <p class="stub-title">Two cars, four parties</p>
             <dl>
-              <div><dt>Seats</dt><dd>2 drivers · 2 insurers</dd></div>
+              <div><dt>Seats</dt><dd>2 drivers · 2 adjusters</dd></div>
               <div><dt>Fault</dt><dd>80 / 20</dd></div>
-              <div><dt>Damage</dt><dd>$10,000 · $6,000</dd></div>
+              <div><dt>Tasks</dt><dd>13</dd></div>
             </dl>
           </div>
-          <div class="stub-side"><p class="lbl">Status</p><p class="state">Planned, after a rule review</p></div>
+          <div class="stub-side"><p class="lbl">Status</p><p class="state">Runs with scripts, first look with models</p></div>
         </a>
         <a class="stub" href="#shopping">
           <div class="stub-main">
@@ -112,7 +112,7 @@
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Scenarios</p>
-        <h2>Three settings, from mostly cooperative to mostly opposed</h2>
+        <h2>Three settings, from mostly cooperative to mixed motives</h2>
       </div>
       <div class="rows">
         <a class="row" href="#ticketing">
@@ -124,8 +124,8 @@
         <a class="row" href="#insurance">
           <span class="row-name">Insurance claims</span>
           <p>Two drivers, two insurers</p>
-          <p>Mostly opposed. Scored against liability rules and a claim ledger.</p>
-          <span class="chip s-planned"><i></i>Planned</span>
+          <p>Goals differ without being opposite. Scored against the policy, the claims rules and a liability guide.</p>
+          <span class="chip s-next"><i></i>In progress</span>
         </a>
         <a class="row" href="#shopping">
           <span class="row-name">Shopping</span>
@@ -360,24 +360,7 @@
 </div>
 
 <!-- ============================ insurance ============================ -->
-<div data-view="insurance" hidden>
-  <div class="wrap">
-    <div class="page-head">
-      <p class="lbl">Scenario</p>
-      <h1>Auto-insurance claims</h1>
-      <p>A two-car collision with four seats: each driver and each driver's insurer. Every driver is the insured of one company and a claimant against the other.</p>
-      <div class="chips"><span class="chip s-planned"><i></i>Planned</span></div>
-    </div>
-    <div class="plain" style="padding-bottom:72px">
-      <p>This scenario starts after ticketing runs end to end. Two things come first.</p>
-      <ul>
-        <li>One claim ledger for both routes, a claim on your own collision cover and a claim against the other insurer, so that the same loss cannot be paid twice and a policy limit cannot be used twice.</li>
-        <li>A review of the rules by someone who handles claims. The first rule set is California property damage, with the negligence regime as a switch.</li>
-      </ul>
-      <p>The worked example on the overview card: driver A is 80% at fault, damage is $10,000 to B's car and $6,000 to A's. Under pure comparative negligence B recovers $8,000 and A recovers $1,200.</p>
-    </div>
-  </div>
-</div>
+<!--VIEW_INSURANCE-->
 
 <!-- ============================ shopping ============================ -->
 <div data-view="shopping" hidden>

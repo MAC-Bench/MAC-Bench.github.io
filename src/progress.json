@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-25",
+  "updated": "2026-11-26",
   "groups": [
     {
       "id": "foundations",
@@ -838,6 +838,30 @@
           ]
         },
         {
+          "id": "site-claims",
+          "title": "The claims scenario on the Insurance page",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "Who the four seats are and which claims run between them, as a figure",
+            "The life of a claim stage by stage, and the path from a task file to a score card with every module on it",
+            "Every task with its accident, its policies, what the yardstick run ends with, the runs that have to fail it, the card of the seat under test, and the yardstick run day by day",
+            "Checks, clocks, the liability guide, actions and manners are read from the code's export. They are not typed into the page"
+          ],
+          "where": [
+            "src/insurance.html, src/claims.js, src/figs/fig_claims_parties.html and fig_claims_pipeline.html",
+            "data/insurance.json, written by tools/export_claims.py in the code repository"
+          ],
+          "checked": [
+            "The page's scripts were run for every task and every seat filter in a script engine without a browser"
+          ],
+          "open": [
+            "The layout has not been looked at in a browser where the site is built",
+            "Trials of models are not shown on the page"
+          ]
+        },
+        {
           "id": "site-live",
           "title": "The world running in the browser",
           "status": "planned",
@@ -853,12 +877,176 @@
       "title": "Insurance claims",
       "items": [
         {
-          "id": "ins-ledger",
-          "title": "Claim ledger and rule review",
+          "id": "ins-rules",
+          "title": "Rules, their sources, and a handbook a seat can search",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "Clocks, the liability guide and the arithmetic of coverages, liability, demands, limits and recoveries, as pure functions in one module",
+            "Seven handbook documents with every number formatted from that module: the policy form, the State's claims rules, the law on fault, the liability guide, the forum's rules, the insurer's claims manual and a guide for claimants",
+            "Each rule traced to a provision, with what was kept and what was made simpler. A rule with no source is marked as the benchmark's own"
+          ],
+          "where": [
+            "src/macbench/domains/insurance/rules.py and handbook.py",
+            "docs/insurance/README.md, section 5",
+            "docs/spec/insurance_claims.md"
+          ],
+          "checked": [
+            "The proportionate share of a recovery is tested on the regulator's own worked example",
+            "Eleven published figures with their sources, and a band around each that the task set is held inside"
+          ],
+          "open": [
+            "No practitioner has read the rules",
+            "The percentages of the liability guide and the order of its lines are the benchmark's own"
+          ]
+        },
+        {
+          "id": "ins-world",
+          "title": "The claims world: four seats, 38 actions, the world's own parties and a forum",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "Two drivers and two adjusters act through 34 actions of the scenario and the four of the message board",
+            "The world plays the repair shops, the appraisers, the police records desk, a witness, the rental company and the forum as timed events",
+            "A claims index says where a car is being settled, so one car cannot be paid for twice",
+            "Demands between the two insurers, with counters on the share of fault or on the amounts, and a forum that decides on the evidence filed"
+          ],
+          "where": [
+            "src/macbench/domains/insurance/service.py, schema.py and interface.py",
+            "docs/interface/insurance.md"
+          ],
+          "checked": [
+            "Two recorded sessions with four live seats: 1,980 calls, none refused. The action reference takes its examples from them",
+            "Every scripted episode conserves money: each payment shows once as paid and once as received"
+          ],
+          "open": [
+            "No total losses, no injury, no lawsuits, two vehicles only",
+            "One demand is made for one accident, and a settled demand is not reopened on new evidence"
+          ]
+        },
+        {
+          "id": "ins-scoring",
+          "title": "Scripted seats and the scoring contract",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "One routine per role, told nothing its seat cannot read, playable as a counterpart or on a live seat",
+            "An adjuster's routine has manners: by the book, or careless in one respect",
+            "A card per seat: requirements with their source, loss by part, process. Regret is loss above the same seat's loss in a yardstick run",
+            "Requirements say whether they are about the outcome or about the work, so a desk that paid every dollar right and skipped a step can be told from one that paid the wrong amount",
+            "Fault is judged on the evidence that can come to light, not on what nobody could obtain"
+          ],
+          "where": [
+            "src/macbench/domains/insurance/controllers.py and scoring.py",
+            "docs/spec/insurance_claims.md"
+          ],
+          "checked": [
+            "A seat played live by the routine ends at the loss of the yardstick run, in every task",
+            "A record that does not replay cannot be scored as a success"
+          ],
+          "open": [
+            "Whether the checks about the work count toward the headline number is not decided",
+            "A scripted driver trusts what an offer names. A real claimant would argue"
+          ]
+        },
+        {
+          "id": "ins-tasks",
+          "title": "Thirteen development tasks in five families",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "Clear fault, disputed fault, shared fault, a coverage that is missing, a limit that is too low",
+            "Every seat is under test somewhere. One task puts all four under test and has a joint result",
+            "Each task names the careless manner it is there to be failed by",
+            "Task files with fingerprints, written only after each task is admitted again"
+          ],
+          "where": [
+            "src/macbench/domains/insurance/devset.py and tasks.py",
+            "tools/build_claims_tasks.py, tasks/insurance/dev/",
+            "tests/test_insurance_tasks.py"
+          ],
+          "checked": [
+            "By the book every seat under test meets every requirement",
+            "With the seats under test doing nothing every task fails",
+            "The careless manner of each task fails it on the check the task is there for, and the tests pin what it costs"
+          ],
+          "open": [
+            "No generator and no held-out set",
+            "No task in which a driver faces insurers that depart from the manual",
+            "No task sheets"
+          ]
+        },
+        {
+          "id": "ins-review",
+          "title": "An outside review of the world: eleven findings closed",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "The review found ways to pass tasks without doing the work, ways to be paid twice, and a seat held to evidence nobody could obtain",
+            "Each finding was reproduced, closed and kept as a test",
+            "Choices made on the way: a car is settled one way, a short limit goes to the other driver first, fault is judged on evidence that can come to light"
+          ],
+          "where": [
+            "tests/test_insurance_review.py",
+            "docs/insurance/README.md, section 9"
+          ],
+          "checked": [
+            "The reviewer's counterexamples run as tests"
+          ],
+          "open": [
+            "A second review of the changes made since is requested",
+            "Paths that no test plays may hide the same kind of fault"
+          ]
+        },
+        {
+          "id": "ins-serve",
+          "title": "Served like ticketing, and a first look with two models",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "A claims task is served over HTTP and MCP by the server ticketing uses. Each seat under test gets a card, a credential and a folder of its own",
+            "Two models played all thirteen tasks once: 26 trials, every one counted",
+            "The runs found six faults of the pipeline that no script had found. All are fixed and kept as tests",
+            "A harness that fails by itself is no longer counted as a crash of the agent"
+          ],
+          "where": [
+            "src/macbench/served.py, serve/ and local.py",
+            "tools/run_local.py and tools/report_claims_run.py",
+            "docs/insurance/README.md, section 10"
+          ],
+          "checked": [
+            "Every record of the first pass replays",
+            "Ticketing's serving tests pass unchanged"
+          ],
+          "open": [
+            "One trial a task and not isolated: a first look, not a result",
+            "A second pass after the fixes was cut short after three trials",
+            "No Harbor export for these tasks"
+          ]
+        },
+        {
+          "id": "ins-expert",
+          "title": "A practitioner's read of the rules",
+          "status": "next",
+          "plan": [
+            "Cases to work through without this world's answers, then statements to confirm or correct. The questions are written",
+            "Until they are answered, nothing here is presented as how claims are handled"
+          ]
+        },
+        {
+          "id": "ins-isolated",
+          "title": "Isolated runs, Harbor folders and task sheets",
           "status": "planned",
           "plan": [
-            "One ledger for both claim routes, so the same loss cannot be paid twice and a policy limit cannot be used twice",
-            "California property-damage rules first, checked by someone who handles claims, before any task is generated"
+            "Claims tasks exported as Harbor folders, with a container for each seat under test",
+            "Several trials a task, on code that no longer changes",
+            "A sheet per task, as the hand-built ticketing tasks have"
           ]
         }
       ]

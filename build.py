@@ -4,8 +4,8 @@
     python build.py            # writes index.html (GitHub Pages) and preview/artifact.html
 
 index.html is one self-contained file: styles, script and data are inlined, so it opens
-from disk as well. data/ticketing.json is a copy of the code repository's
-build/interface/ticketing.json; refresh it with `python build.py --sync ../MAC-benchmark`.
+from disk as well. The files in data/ are copies of what the code repository's export tools
+write under build/; refresh them with `python build.py --sync ../MAC-benchmark`.
 """
 import json
 import pathlib
@@ -55,6 +55,7 @@ def main() -> None:
         shutil.copy(code / "demo" / "ticketing_session.json", HERE / "data" / "ticketing_session.json")
         shutil.copy(code / "demo" / "ticketing_after_session.json", HERE / "data" / "ticketing_after_session.json")
         shutil.copy(code / "tasks" / "ticketing_dev.json", HERE / "data" / "ticketing_tasks.json")
+        shutil.copy(code / "claims" / "insurance_dev.json", HERE / "data" / "insurance.json")
     ticketing = json.loads((HERE / "data" / "ticketing.json").read_text(encoding="utf-8"))
     world = json.loads((HERE / "data" / "ticketing_world.json").read_text(encoding="utf-8"))
     session = [json.loads((HERE / "data" / name).read_text(encoding="utf-8"))
@@ -66,8 +67,13 @@ def main() -> None:
     session_js = (SRC / "session.js").read_text(encoding="utf-8")
     tasks_js = (SRC / "tasks.js").read_text(encoding="utf-8")
     tasks = json.loads((HERE / "data" / "ticketing_tasks.json").read_text(encoding="utf-8"))
+    claims_js = (SRC / "claims.js").read_text(encoding="utf-8")
+    claims = json.loads((HERE / "data" / "insurance.json").read_text(encoding="utf-8"))
     body = (SRC / "body.html").read_text(encoding="utf-8")
-    for marker, name in (("<!--FIG_LAYERS-->", "fig_layers.html"), ("<!--FIG_RUNTIME-->", "fig_runtime.html")):
+    assert "<!--VIEW_INSURANCE-->" in body
+    body = body.replace("<!--VIEW_INSURANCE-->", (SRC / "insurance.html").read_text(encoding="utf-8").strip())
+    for marker, name in (("<!--FIG_LAYERS-->", "fig_layers.html"), ("<!--FIG_RUNTIME-->", "fig_runtime.html"),
+                         ("<!--FIG_CLAIMS_PARTIES-->", "fig_claims_parties.html"), ("<!--FIG_CLAIMS_PIPELINE-->", "fig_claims_pipeline.html")):
         fig = (SRC / "figs" / name).read_text(encoding="utf-8").strip()
         ET.fromstring(fig[fig.index("<svg"):fig.index("</svg>") + 6].replace("<svg ", "<svg xmlns='http://www.w3.org/2000/svg' ", 1))
         assert marker in body, marker
@@ -83,7 +89,9 @@ def main() -> None:
             f'<script type="application/json" id="data-world">{embed(world)}</script>\n'
             f'<script type="application/json" id="data-tasks">{embed(tasks)}</script>\n'
             f'<script type="application/json" id="data-session">{embed(session)}</script>\n'
-            f"<script>\n{js}\n</script>\n<script>\n{world_js}\n</script>\n<script>\n{session_js}\n</script>\n<script>\n{tasks_js}\n</script>\n")
+            f'<script type="application/json" id="data-claims">{embed(claims)}</script>\n'
+            f"<script>\n{js}\n</script>\n<script>\n{world_js}\n</script>\n<script>\n{session_js}\n</script>\n<script>\n{tasks_js}\n</script>\n"
+            f"<script>\n{claims_js}\n</script>\n")
     head_common = f'<link rel="stylesheet" href="{FONTS}">\n<style>\n{css}\n</style>\n'
 
     page = ("<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
@@ -100,7 +108,7 @@ def main() -> None:
     assert not check.errors and not check.stack, (check.errors[:3], check.stack)
     ids = re.findall(r'\sid="([^"{}+]+)"', body)
     assert len(ids) == len(set(ids)), [x for x in ids if ids.count(x) > 1]
-    for needed in re.findall(r"byId\('([^']+)'\)", js + world_js + session_js + tasks_js):
+    for needed in re.findall(r"byId\('([^']+)'\)", js + world_js + session_js + tasks_js + claims_js):
         assert needed in ids or needed.startswith(("tk-fill", "tk-form", "tk-out")), needed
 
     (HERE / "index.html").write_text(page, encoding="utf-8")
@@ -108,7 +116,8 @@ def main() -> None:
     (HERE / "preview" / "artifact.html").write_text(fragment, encoding="utf-8")
     done = sum(i["status"] == "done" for g in progress["groups"] for i in g["items"])
     print(f"index.html {len(page.encode('utf-8'))} bytes; {len(ticketing['actions'])} actions; "
-          f"{len(world['flights'])} flights; {done} of {len([i for g in progress['groups'] for i in g['items']])} items done")
+          f"{len(world['flights'])} flights; {len(claims['tasks'])} claims tasks; "
+          f"{done} of {len([i for g in progress['groups'] for i in g['items']])} items done")
 
 
 if __name__ == "__main__":

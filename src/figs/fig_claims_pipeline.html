@@ -1,0 +1,117 @@
+<figure class="fig" id="fig-claims-pipeline">
+<div class="figscroll">
+<svg viewBox="0 0 1000 640" role="img" aria-label="From a task to a score card. The development set holds thirteen tasks. Each is admitted and written as a task file. Starting a task builds the world: the kernel, the claims service, the message board, the handbook and the world's own parties. The seats under test act through the interface. The other seats are played by scripts. When the watch ends the record is sealed, replayed into a fresh world and scored. The card of each seat holds requirements, loss and process, and regret is the loss above the same seat's loss in the yardstick run, where every seat is scripted by the book. One module of rules supplies the numbers to all of these.">
+  <defs>
+    <marker id="ah-cl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+  </defs>
+
+  <rect class="b k-task" x="16" y="16" width="190" height="64" rx="4"/>
+  <text x="30" y="42" class="t-title">devset.py</text>
+  <text x="30" y="62" class="t-sub">thirteen hand-built tasks</text>
+  <line class="ln" x1="206" y1="48" x2="258" y2="48" marker-end="url(#ah-cl)"/>
+  <text x="232" y="40" text-anchor="middle" class="t-sub">admit</text>
+
+  <rect class="b k-file" x="258" y="16" width="350" height="64" rx="4"/>
+  <text x="272" y="42" class="t-title">task file  <tspan class="t-mono">ic-c1-01.json</tspan></text>
+  <text x="272" y="62" class="t-sub">accident · evidence · policies · cars · desks · watch</text>
+  <line class="ln" x1="433" y1="80" x2="433" y2="160" marker-end="url(#ah-cl)"/>
+  <text x="443" y="104" class="t-sub">start</text>
+
+  <rect class="k-frame" x="16" y="118" width="790" height="262" rx="8"/>
+  <text x="32" y="140" class="t-sub">One episode: the clock runs for the whole watch, 45 to 100 days</text>
+
+  <rect class="b k-agent k-focus" x="36" y="160" width="180" height="92" rx="4"/>
+  <text x="50" y="186" class="t-title">seats under test</text>
+  <text x="50" y="206" class="t-sub">a model and its harness,</text>
+  <text x="50" y="224" class="t-sub">or a routine in process</text>
+
+  <line class="ln" x1="126" y1="272" x2="126" y2="252" marker-end="url(#ah-cl)"/>
+  <rect class="b k-file" x="36" y="272" width="180" height="88" rx="4"/>
+  <text x="50" y="298" class="t-title">given to each seat</text>
+  <text x="50" y="318" class="t-sub">role card · credential</text>
+  <text x="50" y="338" class="t-sub"><tspan class="t-mono">mb</tspan>  client: CLI and MCP</text>
+
+  <line class="ln" x1="216" y1="206" x2="318" y2="206" marker-start="url(#ah-cl)" marker-end="url(#ah-cl)"/>
+  <text x="267" y="198" text-anchor="middle">actions</text>
+  <text x="267" y="224" text-anchor="middle" class="t-sub">MCP or HTTP</text>
+
+  <rect class="b k-task" x="318" y="160" width="230" height="200" rx="4"/>
+  <text x="332" y="186" class="t-title">the world</text>
+  <text x="332" y="208" class="t-sub">kernel: clock, events, log</text>
+  <text x="332" y="228" class="t-sub">service.py: every action,</text>
+  <text x="332" y="246" class="t-sub">who sees what, what is refused</text>
+  <text x="332" y="266" class="t-sub">board: messages, typed facts</text>
+  <text x="332" y="286" class="t-sub">handbook.py: rules to search</text>
+  <text x="332" y="306" class="t-sub">its own parties: shop, appraiser,</text>
+  <text x="332" y="324" class="t-sub">police desk, witness, rental,</text>
+  <text x="332" y="342" class="t-sub">forum</text>
+
+  <line class="ln" x1="548" y1="206" x2="616" y2="206" marker-start="url(#ah-cl)" marker-end="url(#ah-cl)"/>
+  <text x="582" y="198" text-anchor="middle">actions</text>
+
+  <rect class="b k-agent" x="616" y="160" width="170" height="200" rx="4"/>
+  <text x="630" y="186" class="t-title">scripted seats</text>
+  <text x="630" y="208" class="t-mono t-sub">controllers.py</text>
+  <text x="630" y="234" class="t-sub">driver: files, answers,</text>
+  <text x="630" y="252" class="t-sub">repairs, judges offers</text>
+  <text x="630" y="278" class="t-sub">adjuster: by the book,</text>
+  <text x="630" y="296" class="t-sub">or careless in one way</text>
+  <text x="630" y="322" class="t-sub">told nothing a seat</text>
+  <text x="630" y="340" class="t-sub">could not read</text>
+
+  <path class="ln" d="M433 360 V398 H126 V420" marker-end="url(#ah-cl)"/>
+  <text x="280" y="392" text-anchor="middle" class="t-sub">seal when the watch ends</text>
+
+  <rect class="b k-file" x="36" y="420" width="180" height="76" rx="4"/>
+  <text x="50" y="446" class="t-title">sealed record</text>
+  <text x="50" y="466" class="t-sub">hash-chained log,</text>
+  <text x="50" y="484" class="t-sub">final state</text>
+
+  <line class="ln" x1="216" y1="458" x2="318" y2="458" marker-end="url(#ah-cl)"/>
+  <text x="267" y="450" text-anchor="middle">replay</text>
+  <text x="267" y="476" text-anchor="middle" class="t-sub">fresh world</text>
+
+  <rect class="b k-eval" x="318" y="420" width="230" height="124" rx="4"/>
+  <text x="332" y="446" class="t-title">scoring.py</text>
+  <text x="332" y="468" class="t-sub">owed: who owed whom what,</text>
+  <text x="332" y="486" class="t-sub">on the evidence that can</text>
+  <text x="332" y="504" class="t-sub">come to light</text>
+  <text x="332" y="528" class="t-sub">checks: outcome and work</text>
+
+  <line class="ln" x1="548" y1="458" x2="616" y2="458" marker-end="url(#ah-cl)"/>
+  <text x="582" y="450" text-anchor="middle">judge</text>
+
+  <rect class="b k-eval k-focus" x="616" y="420" width="170" height="124" rx="4"/>
+  <text x="630" y="446" class="t-title">card of each seat</text>
+  <text x="630" y="468" class="t-sub">requirements, each</text>
+  <text x="630" y="486" class="t-sub">with its source</text>
+  <text x="630" y="508" class="t-sub">loss, by part</text>
+  <text x="630" y="528" class="t-sub">process · regret</text>
+
+  <rect class="b k-file" x="318" y="572" width="230" height="52" rx="4"/>
+  <text x="332" y="594" class="t-title">yardstick run</text>
+  <text x="332" y="612" class="t-sub">every seat scripted, by the book</text>
+  <path class="ln" d="M548 598 H701 V544" marker-end="url(#ah-cl)"/>
+  <text x="624" y="590" text-anchor="middle" class="t-sub">regret: loss above it</text>
+
+  <rect class="b k-task" x="826" y="118" width="158" height="426" rx="4"/>
+  <text x="840" y="146" class="t-title">rules.py</text>
+  <text x="840" y="168" class="t-sub">pure functions, read</text>
+  <text x="840" y="186" class="t-sub">by the world, the</text>
+  <text x="840" y="204" class="t-sub">handbook, the scripts</text>
+  <text x="840" y="222" class="t-sub">and the score</text>
+  <text x="840" y="262">clocks</text>
+  <text x="840" y="282" class="t-sub">15, 40 and 30 days</text>
+  <text x="840" y="322">liability guide</text>
+  <text x="840" y="342" class="t-sub">six kinds of accident,</text>
+  <text x="840" y="360" class="t-sub">a base split, facts</text>
+  <text x="840" y="378" class="t-sub">that shift it</text>
+  <text x="840" y="418">money</text>
+  <text x="840" y="438" class="t-sub">coverages, limits,</text>
+  <text x="840" y="456" class="t-sub">demands, recoveries</text>
+  <text x="840" y="496">evidence</text>
+  <text x="840" y="516" class="t-sub">what proves a fact</text>
+</svg>
+</div>
+<figcaption>One episode of one task. The seats under test act only through the interface. Everything else is the world or a script, and no model sits inside either. The score is computed from the sealed record after it has replayed.</figcaption>
+</figure>

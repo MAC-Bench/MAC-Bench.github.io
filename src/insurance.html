@@ -1,0 +1,432 @@
+<div data-view="insurance" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <p class="lbl">Scenario</p>
+      <h1>Auto-insurance claims</h1>
+      <p>One car accident, two drivers, and the two insurers they are insured with. Four seats take part. Each driver is the insured of one company and a claimant against the other. Each adjuster handles both claims on its company, and the two companies then settle between themselves what each paid for the other's share of the fault.</p>
+      <div class="chips">
+        <span class="chip s-done"><i></i>Interface v<span id="ic-version"></span> · <span id="ic-n-actions"></span> actions</span>
+        <span class="chip s-done"><i></i>World, scripted seats and scoring built</span>
+        <span class="chip s-done"><i></i><span id="ic-n-tasks"></span> development tasks with yardstick runs</span>
+        <span class="chip s-done"><i></i><span id="ic-n-tests"></span> tests</span>
+        <span class="chip s-done"><i></i>One outside review, findings closed</span>
+        <span class="chip s-next"><i></i>First look with two models, one trial a task</span>
+        <span class="chip s-planned"><i></i>Rules not read by a practitioner</span>
+        <span class="chip s-planned"><i></i>No isolated runs yet</span>
+      </div>
+      <ol class="steps" aria-label="Steps of the claims scenario">
+        <li class="done">Rules and sources</li>
+        <li class="done">World</li>
+        <li class="done">Scripted seats and scoring</li>
+        <li class="done">Thirteen tasks</li>
+        <li class="done">Outside review</li>
+        <li class="done">Served, first look with models</li>
+        <li class="now">Second review, a practitioner's read</li>
+        <li>Isolated runs</li>
+      </ol>
+      <p class="note" style="max-width:var(--measure)">Nothing on this page is a result. The numbers come from scripted runs of the tasks, made when the page was built. The rules are this world's own: they are modelled on California claims regulations and on the practice of inter-insurer arbitration, and nobody who handles claims for a living has checked them yet.</p>
+    </div>
+  </div>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Scenario</p>
+        <h2>Four seats, and two claims on each insurer</h2>
+        <p>A seat is played by a model under test or by a script. The world plays everyone else, and each of its parties does one fixed thing a fixed time after it is asked.</p>
+      </div>
+      <div class="figs">
+<!--FIG_CLAIMS_PARTIES-->
+      </div>
+      <div class="tscroll" style="margin-top:28px"><table class="ft plain mono1">
+        <thead><tr><th>Seat</th><th>Role</th><th>Who</th><th>Wants</th></tr></thead>
+        <tbody id="ic-seats"></tbody>
+      </table></div>
+      <h3 class="sub">Why this is a coordination problem and not four separate jobs</h3>
+      <div class="points">
+        <div class="point">
+          <h3>Evidence is split</h3>
+          <p>A driver holds a recording. The police report arrives days later. A witness answers only when asked. A desk that asks only its own insured, or decides before the report has come, decides wrongly.</p>
+        </div>
+        <div class="point">
+          <h3>One loss, two payers</h3>
+          <p>A driver's own collision coverage and the other driver's liability coverage both answer for the same car. What one pays, the other must not pay again. The insurer that paid first recovers from the other, the insured's deductible included, and only for what the accident cost.</p>
+        </div>
+        <div class="point">
+          <h3>Goals differ without being opposite</h3>
+          <p>An adjuster is not there to pay little. It is judged on paying what is owed, no more and no less, in time, and on how it got there. Two adjusters who read the same evidence the same way settle in a day. Two who do not go to the forum.</p>
+        </div>
+        <div class="point">
+          <h3>Order matters</h3>
+          <p>One demand is made for one accident. A desk that sends it before the rental is paid never recovers the rental. A desk that asks what the other policy covers before there is a bill gets an answer that is no longer true when the bill comes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">A claim</p>
+        <h2>The life of a claim, stage by stage</h2>
+        <p>Read a row from left to right for who does what at that stage. Both adjusters do the same work on their own file, so the two insurer columns describe one desk seen from its two sides. A whole episode, day by day, is under each task further down.</p>
+      </div>
+      <div class="tscroll"><table class="lanes">
+        <thead><tr><th>Stage</th><th>Driver</th><th>Adjuster, for its own insured</th><th>Adjuster, for the other driver's claim</th><th>The world</th></tr></thead>
+        <tbody>
+          <tr><th><b>1</b> Report</th>
+            <td>Reports the loss: to their own insurer, against the other driver's insurer, or both. Each coverage claimed becomes an exposure with its own decision, clock and payments.</td>
+            <td>Acknowledges in writing within 15 days and reads the policy. Was it in force? Was the coverage bought?</td>
+            <td>Acknowledges the claimant's notice in the same way.</td>
+            <td>Opens the claim and its exposures. A notice that claims nothing opens none.</td></tr>
+          <tr><th><b>2</b> Investigate</th>
+            <td>Gives a statement and hands over what they hold: photographs, a recording.</td>
+            <td colspan="2">Asks both drivers for a statement, orders the police report, contacts a witness who is named. The file now holds whatever each of them sent, and nothing else.</td>
+            <td>The police report can be had some days after the accident. A witness answers two days after being asked.</td></tr>
+          <tr><th><b>3</b> Damage</th>
+            <td>Asks their shop for an estimate, sends it and every later bill to each claim, has the car repaired and rents a car meanwhile.</td>
+            <td colspan="2">Has every estimate and supplement appraised before it pays for the car. The appraisal says for each line whether the damage comes from this accident.</td>
+            <td>The shop writes the estimate in a day, and a supplement when the car is taken apart. The appraiser reports a day after the order.</td></tr>
+          <tr><th><b>4</b> Fault</th>
+            <td></td>
+            <td colspan="2">Once what it ordered has come, records each driver's share of the fault, by the liability guide, on the documents in its file. Records it again when new evidence arrives. The two desks decide separately and need not agree.</td>
+            <td></td></tr>
+          <tr><th><b>5</b> Pay</th>
+            <td>Accepts or rejects an offer. Pays the shop and the rental company.</td>
+            <td>Pays its insured under the coverages: the appraised damage less the deductible, the rental within its daily and total limits.</td>
+            <td>Offers the other driver what its insured owes them, at the share on record, with the appraisal the amount rests on. Pays once the offer is accepted.</td>
+            <td>The claims index says where a car is being settled. A car is settled one way: under collision, or with the other insurer.</td></tr>
+          <tr><th><b>6</b> Recover</th>
+            <td></td>
+            <td>Demands back what it paid, at the other driver's share of the fault, with the insured's deductible and the documents that show the amounts. One demand for one accident.</td>
+            <td>Accepts, counters on the share or on the amounts, or denies. Pays what was agreed or awarded within 30 days.</td>
+            <td>A demand the two cannot settle goes to the forum, which decides on the evidence filed and on nothing else, about six weeks later.</td></tr>
+          <tr><th><b>7</b> Share</th>
+            <td>Gets back the part of the deductible that matches the recovery.</td>
+            <td>Passes on the insured's share of what it recovered.</td>
+            <td></td>
+            <td></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Pipeline</p>
+        <h2>From a task file to a score card</h2>
+        <p>The same path serves a scripted run, a model in one seat, and four models at once. Below the figure, the modules in the order a task passes through them.</p>
+      </div>
+      <div class="figs">
+<!--FIG_CLAIMS_PIPELINE-->
+      </div>
+      <ol class="flow">
+        <li><b>A task is data.</b> One accident with its true facts, the evidence and who holds it, two policies, two cars with their damage line by line, how each scripted desk behaves, which seats are under test, and how long the world is watched.</li>
+        <li><b>It is admitted before it is written.</b> By the book every seat under test must meet every requirement. With the seats under test doing nothing the task must fail. The file carries a fingerprint.</li>
+        <li><b>Starting it builds the world.</b> The kernel holds the clock, the event queue and the log. The claims service answers every action, decides what each seat may see, and plays the shop, the appraiser, the police desk, the witness, the rental company and the forum as timed events.</li>
+        <li><b>Seats act through the interface only.</b> A seat under test gets a role card, a credential and a client. A seat that is not under test is played by a routine that reads the same interface and is told nothing its seat could not read.</li>
+        <li><b>The record is sealed and replayed.</b> When the watch ends, the hash-chained log and the final state are sealed. Scoring first replays the log into a fresh world. A record that does not replay cannot count as a success.</li>
+        <li><b>The score asks what was owed.</b> From the policy, the appraised damage, the claims index and the shares of fault the guide gives on the evidence that can come to light, it works out what everyone owed whom. Each seat's payments, decisions and clocks are held against that.</li>
+        <li><b>Regret needs a yardstick.</b> The same task is run with every seat scripted and the seats under test by the book. A seat's regret is its loss above its own loss in that run. Losses of different seats are never added: one seat's payment is another's receipt.</li>
+      </ol>
+      <h3 class="sub">Three ways a seat is played</h3>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>How</th><th>What plays it</th><th>Where</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td>Scripted, inside the world</td><td>A routine of <code>controllers.py</code>, run as an event of the world a set number of hours after the seat is written to, and once a day. Its calls cost no world time.</td><td><code>tasks.start</code>, <code>tasks.reference</code>, <code>tasks.careless</code></td><td>Counterparts, the yardstick run, and the careless runs a task has to fail.</td></tr>
+          <tr><td>Live, in the same process</td><td>Any function that takes one turn through the interface. The routines are such functions too.</td><td><code>tasks.run</code>, <code>tasks.playing</code></td><td>Tests that play every task from a live seat without a model, and four live seats on one accident.</td></tr>
+          <tr><td>Live, served</td><td>A command for each seat under test, with that seat's card, credential and folder. The seats are equals: an attempt lasts until all their commands have returned.</td><td><code>python -m macbench.serve</code>, <code>mb</code>, <code>tools/run_local.py</code></td><td>Trials of models. Without containers this is a first look and not a result.</td></tr>
+        </tbody>
+      </table></div>
+      <h3 class="sub">Modules, in that order</h3>
+      <div class="tscroll"><table class="ft plain mods mono1">
+        <thead><tr><th>Module</th><th>Lines</th><th>What it is responsible for</th></tr></thead>
+        <tbody id="ic-modules"></tbody>
+      </table></div>
+      <p class="note" id="ic-modules-note" style="margin-top:10px"></p>
+      <details class="box" style="margin-top:18px"><summary>Run it yourself</summary><div>
+<pre class="json" style="white-space:pre">PYTHONPATH=src python -m pytest -q tests/test_insurance_*.py          # the tests of the claims world
+
+python - &lt;&lt;'EOF'
+from macbench.domains.insurance import devset, tasks
+
+task = devset.C2_01                                    # each says the light was green
+episode, yardstick = tasks.reference(task)             # every seat scripted, by the book
+print(yardstick.seats["adjuster_a"].checks)            # each check: name, met or not, detail, source
+
+episode, card = tasks.careless(task, "adjuster_a", "own word", yardstick)
+print(card.success, card.seats["adjuster_a"].regret_cents)
+
+print(tasks.card(task, "adjuster_a"))                  # what that seat is told
+EOF
+
+PYTHONPATH=src python tools/build_claims_tasks.py --check               # the task files are what the code gives
+PYTHONPATH=src python tools/run_local.py --tasks tasks/insurance/dev --only ic-c1-01 \
+    --out runs/first-look -- &lt;the agent's command&gt;                      # one trial, not isolated
+PYTHONPATH=src python tools/report_claims_run.py runs/first-look --trial ic-c1-01
+PYTHONPATH=src python tools/export_claims.py                            # the data behind this page</pre>
+      </div></details>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Tasks</p>
+        <h2>Thirteen tasks on three kinds of accident</h2>
+        <p>Five families: clear fault, disputed fault, shared fault, a coverage that is missing, and a limit that is too low. Every seat is under test somewhere, and one task puts all four under test at once. Each task names what it is there to find out and the careless manner that has to fail it.</p>
+      </div>
+      <div class="tscroll"><table class="ft plain mono1">
+        <thead><tr><th>Task</th><th>Under test</th><th>Title</th><th>Watch</th><th>Fault, A / B</th><th>By the book, the seat ends with a loss of</th><th>Careless manner that fails it, and its regret</th></tr></thead>
+        <tbody id="ic-task-rows"></tbody>
+      </table></div>
+      <p class="note" style="margin-top:10px;max-width:78ch">Fault is the share of each driver that the liability guide gives on all the evidence that can come to light. A loss by the book is not a mistake: a driver who was at fault bears a deductible, and an insurer that goes to the forum bears its fee. Regret is counted from there. The careless manners check the tasks. They are not baselines.</p>
+
+      <div class="seg" id="ic-pick" role="group" aria-label="Task" style="margin-top:26px"></div>
+      <div id="ic-detail" class="tdetail"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Scoring</p>
+        <h2>What a seat is judged on</h2>
+        <p>A seat is judged on the world as it stands when the watch ends, never on what was said. The yardstick is not who paid least. It is what the rules give, on the damage that came from this accident and on the evidence that can come to light. Three things are reported and kept apart.</p>
+      </div>
+      <div class="points three">
+        <div class="point">
+          <h3>Requirements</h3>
+          <p>A list of checks, each met or not. Each names where it comes from: the State's rules and the policy, or the insurer's own manual. Each says what it is about: the outcome, or the work that led to it.</p>
+        </div>
+        <div class="point">
+          <h3>Loss</h3>
+          <p>In cents, by part. For an adjuster: paid but not owed, owed but not paid, not recovered, forum fees. For a driver: out of pocket, and damage never repaired. Paying less than what is owed is as wrong as paying more.</p>
+        </div>
+        <div class="point">
+          <h3>Process</h3>
+          <p>Calls, refusals and messages. Reported, and not part of success.</p>
+        </div>
+      </div>
+      <div class="two-col" style="margin-top:34px">
+        <div class="stack">
+          <h4 class="lbl">An adjuster's requirements</h4>
+          <div class="tscroll"><table class="ft plain" style="min-width:420px">
+            <thead><tr><th>Check</th><th>About</th><th>From</th></tr></thead>
+            <tbody id="ic-checks-adjuster"></tbody>
+          </table></div>
+        </div>
+        <div class="stack">
+          <h4 class="lbl">A driver's requirements</h4>
+          <div class="tscroll"><table class="ft plain" style="min-width:420px">
+            <thead><tr><th>Check</th><th>About</th><th>From</th></tr></thead>
+            <tbody id="ic-checks-driver"></tbody>
+          </table></div>
+          <div class="plain" style="margin-top:14px">
+            <p><b>Outcome and work.</b> A card says whether every requirement holds, and separately whether the outcome requirements alone hold. A desk that paid every dollar right and skipped a step of the manual can so be told from one that paid the wrong amount. Which of the two is the headline number is not decided.</p>
+            <p><b>Which evidence counts.</b> The police report if it can be had within the watch, a witness who is named, both drivers' statements, and what a driver holds and does not keep back. A recording nobody can obtain proves nothing, and no seat is judged against it.</p>
+            <p><b>A joint task.</b> With several seats under test the result is theirs together: a driver who does not report, or an adjuster who does not pay, fails the others.</p>
+          </div>
+        </div>
+      </div>
+      <details class="box" style="margin-top:22px"><summary>What the claims manual asks, and whether the score looks at it</summary><div>
+        <table class="ft plain">
+          <thead><tr><th>The manual says</th><th>Scored</th><th>Not scored</th></tr></thead>
+          <tbody>
+            <tr><td>Opening the file</td><td>acknowledgment in time; denial for no coverage, with the reason</td><td>what the acknowledgment says</td></tr>
+            <tr><td>Investigating fault</td><td>a statement asked of both drivers; the police report and a named witness waited for before acting on fault</td><td>whether recordings and photographs were asked for</td></tr>
+            <tr><td>Deciding fault</td><td>a determination on record before acting on it, equal to the guide on the documents it names, naming all that speak to fault, and redone when the file changes</td><td>the wording of the note</td></tr>
+            <tr><td>What the damage costs</td><td>every estimate and supplement appraised before a payment for the car; the amounts paid</td><td></td></tr>
+            <tr><td>Paying your own insured</td><td>the amount by item, and within 30 days</td><td></td></tr>
+            <tr><td>Paying the other driver</td><td>the amount by item; an accepted offer within 30 days; no double payment of rental</td><td>whether a first offer was unreasonably low; whether the claimant was steered to their own policy</td></tr>
+            <tr><td>The limit</td><td>the total; the driver before their insurer; the excess notice</td><td>what the notice says</td></tr>
+            <tr><td>Recovery</td><td>the demand for what was lawfully paid, with the deductible; the recovery; the insured's share</td><td>when the demand was sent; the notice when there is nothing to recover</td></tr>
+            <tr><td>Answering a demand</td><td>that it was answered; the amount paid, on what was lawfully paid, and within 30 days</td><td>whether it was answered within 14 days</td></tr>
+            <tr><td>Deadlines</td><td>15 days, 40 days with status letters that count, 30 days</td><td>the 15 days to answer a claimant's question</td></tr>
+          </tbody>
+        </table>
+      </div></details>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Rules</p>
+        <h2>Clocks, fault and money</h2>
+        <p>Every number lives in one module of pure functions. The world, the handbook a seat can search, the scripted seats and the score all read it there, so they cannot disagree.</p>
+      </div>
+      <div class="two-col">
+        <div class="stack">
+          <h4 class="lbl">Clocks, in calendar days</h4>
+          <div class="tscroll"><table class="ft plain" style="min-width:420px">
+            <thead><tr><th>What</th><th>Days</th><th>Counted</th><th>In the score</th></tr></thead>
+            <tbody id="ic-clocks"></tbody>
+          </table></div>
+        </div>
+        <div class="stack plain">
+          <h4 class="lbl">Money</h4>
+          <ul>
+            <li><b>Collision</b> pays the appraised damage less the deductible. <b>Rental reimbursement</b> pays by the day up to a daily and a total limit, until one day after the repair is finished.</li>
+            <li><b>Liability</b> pays the other driver their loss at the insured's share of the fault, up to the policy's limit. Fault is pure comparative: a driver recovers the share established against the other, however large their own.</li>
+            <li><b>A demand</b> is for what was lawfully paid, with the insured's deductible, at the other driver's share. The answer may dispute the share, the amounts, or both.</li>
+            <li><b>A recovery</b> is shared with the insured in proportion to the deductible.</li>
+            <li><b>A short limit</b> goes to the other driver first, then to their insurer. The insured is told in writing that the rest may be claimed from them.</li>
+            <li id="ic-money"></li>
+          </ul>
+          <h4 class="lbl" style="margin-top:10px">One loss, two payers, in numbers</h4>
+          <p>In <code>ic-c1-04</code> the driver who was hit claims both ways. Their own insurer pays the appraised $2,826.00 less the $500.00 deductible, and $520.00 of a $585.00 rental bill. The other insurer owes the driver directly only the $65.00 their policy left open. It then pays the first insurer $3,346.00 on its demand: $2,326.00, $520.00 and the deductible, which goes back to the driver. An old scrape of $385.00 that the shop wrote into the estimate is paid by nobody.</p>
+        </div>
+      </div>
+
+      <h3 class="sub">The liability guide</h3>
+      <p style="max-width:78ch;margin-bottom:12px">Six kinds of two-car accident. Each has a base split and facts that shift it. The first line whose fact is established decides. The rule of the road behind each base split is real. <b>The percentages and the order of the lines are this benchmark's own</b>: no such table is published, and the handbook says so.</p>
+      <div class="tscroll"><table class="ft plain mono1">
+        <thead><tr><th>Kind</th><th>The two roles</th><th>Base split</th><th>Facts that shift it, in order</th></tr></thead>
+        <tbody id="ic-guide"></tbody>
+      </table></div>
+      <div class="plain" style="margin-top:16px;max-width:78ch">
+        <p><b>How a fact is established.</b> Independent evidence decides: a police report, a recording, a witness with no stake. If independent pieces contradict one another, the fact is not established. Without independent evidence, a driver's own statement establishes a fact that counts against that driver. Without either, a fact is established if both drivers say the same. A fact that is not established is read as not having happened.</p>
+      </div>
+
+      <h3 class="sub">The handbook a seat can search</h3>
+      <div class="tscroll"><table class="ft plain mono1" style="min-width:420px">
+        <thead><tr><th>Document</th><th>Passages</th><th>Who can read it</th></tr></thead>
+        <tbody id="ic-handbook"></tbody>
+      </table></div>
+
+      <details class="box" style="margin-top:22px"><summary>Where each rule comes from, and how close it is to its source</summary><div>
+        <table class="ft plain">
+          <thead><tr><th>Rule of the world</th><th>Modelled on</th><th>Kept</th><th>Made simpler, or the world's own</th></tr></thead>
+          <tbody>
+            <tr><td>Acknowledge within 15 days</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.5">10 CCR § 2695.5(e)</a></td><td>the count, the trigger, calendar days</td><td>the world asks for a letter; weekends and holidays are not modelled</td></tr>
+            <tr><td>Accept or deny within 40 days of proof of claim, with status letters every 30 days that name what is awaited</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.7">10 CCR § 2695.7(b), (c)(1)</a></td><td>counts and triggers</td><td>proof is narrowed to the first document that supports the amount; no partial decisions</td></tr>
+            <tr><td>Pay within 30 days of an acceptance</td><td>10 CCR § 2695.7(h)</td><td>the count</td><td>releases; payment to the shop</td></tr>
+            <tr><td>An offer below the shop's estimate comes with the appraisal it rests on</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.8">10 CCR § 2695.8(f)</a></td><td>the duty to give the claimant the insurer's estimate</td><td>what follows when the shop will not repair for that amount</td></tr>
+            <tr><td>A demand includes the deductible, and a recovery is shared in proportion</td><td>10 CCR § 2695.7(q), and the regulator's worked example</td><td>the rule and the arithmetic; a test replays the example</td><td>the exceptions</td></tr>
+            <tr><td>Pure comparative fault</td><td>Li v. Yellow Cab Co. (1975)</td><td>the principle</td><td></td></tr>
+            <tr><td>Word against word proves nothing</td><td>Arbitration Forums, Guide for Arbitrators</td><td>the burden and its consequence</td><td>a fixed procedure in place of a person's judgment</td></tr>
+            <tr><td>The liability guide</td><td>Vehicle Code §§ 21703, 21801, 22107, 21453, 22106 for the base rules</td><td>the rule of the road behind each base split</td><td><b>the percentages and the order of the lines</b></td></tr>
+            <tr><td>The forum: only the demanding insurer files, it decides on the evidence filed, amounts are reviewed only if disputed, the decision is final</td><td>Arbitration Forums agreement and rules</td><td>these, and the 30 days to answer and to pay</td><td>the decision 14 days after the answer was due; how a disputed amount is cut down</td></tr>
+            <tr><td>Filing costs 60 dollars</td><td>Arbitration Forums fee schedule for 2027</td><td>amount and payer</td><td>one fee whatever the case</td></tr>
+            <tr><td>The policy: liability, collision, rental reimbursement, duties after a loss</td><td>the structure of a standard personal auto policy</td><td>the order of the parts</td><td>own wording throughout; no total loss, no injury, no uninsured motorist cover</td></tr>
+            <tr><td>A car is settled one way</td><td>policy conditions that protect the insurer's right to recover</td><td>the idea</td><td><b>the claims index is this world's device</b></td></tr>
+            <tr><td>A short limit goes to the other driver first</td><td>the made-whole principle, loosely</td><td>nothing as law</td><td><b>this world's own rule</b></td></tr>
+            <tr><td>Least property damage liability of 15,000 dollars</td><td>California Bulletin 2023-1 on SB 1107</td><td>the amount</td><td></td></tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:10px">Left out altogether: bodily injury, total losses and salvage, diminished value, storage charges, non-original parts, direct repair programs, lienholders, premium surcharges, fraud referrals, lawsuits, and more than two vehicles.</p>
+      </div></details>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Interface</p>
+        <h2>What each seat can do</h2>
+        <p>Every action is declared with its roles, its effect, the world time it costs and the errors it can be refused with. Reads cost time too, so reading again and again cannot hold a deadline still.</p>
+      </div>
+      <div class="seg" id="ic-roles" role="group" aria-label="Role"></div>
+      <p class="role-note" id="ic-role-note"></p>
+      <div class="tscroll" style="margin-top:18px"><table class="ft plain acts mono1">
+        <thead><tr><th>Action</th><th>Effect</th><th>World time</th><th>What it does</th><th>Can be refused with</th></tr></thead>
+        <tbody id="ic-actions"></tbody>
+      </table></div>
+      <details class="box" style="margin-top:18px"><summary>Typed facts a seat can ask for or state in a message</summary><div><dl class="kv" id="ic-facts"></dl></div></details>
+
+      <h3 class="sub">Who plays the seats that are not under test</h3>
+      <div class="plain" style="max-width:78ch">
+        <p>A scripted seat reads its claims, its documents and its messages, and does what is due: a set number of hours after it is written to, and once a day. It does not react to the wording of a message. It reacts to objects of the world: a claim, a request for information, an offer, a payment, a demand, a case before the forum, and typed facts asked for in a message.</p>
+        <p>A scripted driver judges an offer on what it can read itself. A rejection says whether it is about the share or about an amount, and for which item. It does not say by how much, so an offer cannot be used to read what is owed off the answer.</p>
+        <p>A scripted adjuster has a manner. By the book it does what the manual says. Each other manner leaves out one thing. A manner is used in two ways: as the counterpart a seat under test has to deal with, and as the careless version of the seat under test that the task has to fail.</p>
+      </div>
+      <div class="tscroll" style="margin-top:14px"><table class="ft plain">
+        <thead><tr><th>Manner</th><th>What the adjuster does</th><th>Used in</th></tr></thead>
+        <tbody id="ic-manners"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Realism</p>
+        <h2>How the world is held against the real thing</h2>
+        <p>Five checks, in the order they can be done. The first three are done. The fourth is written and not answered. The fifth has had a first look.</p>
+      </div>
+      <ol class="flow">
+        <li><b>Traceability.</b> Each rule is traced to a provision, with what was kept and what was not. A rule with no source is marked as the benchmark's own.</li>
+        <li><b>Arithmetic against published examples.</b> The proportionate share of a recovery is tested on the regulator's own example. The conservation of money is tested on every scripted episode.</li>
+        <li><b>Calibration.</b> Amounts and times of the tasks are held inside a band around published figures. A test shows that an implausible task is caught. This checks orders of magnitude, not a distribution.</li>
+        <li><b>A practitioner's read.</b> Cases to work through without this world's answers, then statements to confirm or correct. Not answered.</li>
+        <li><b>Runs with models.</b> A task is ambiguous when capable models fail it for a reason it was not built for. One trial a task so far.</li>
+      </ol>
+      <div class="tscroll" style="margin-top:22px"><table class="ft plain">
+        <thead><tr><th>Quantity</th><th>Published</th><th>Source</th><th>Band the tasks may lie in</th><th>The task set</th></tr></thead>
+        <tbody id="ic-calibration"></tbody>
+      </table></div>
+      <p class="note" style="margin-top:10px;max-width:78ch">The ordinary repairs sit below the published mean. That is a choice of sample, and it is stated as one. The bands are the benchmark's own and are wide on purpose: a set of thirteen tasks on a handful of cars is not a sample of the market.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">First look</p>
+        <h2>What two models showed about the pipeline</h2>
+        <p>On 26 November 2026 two models played all thirteen tasks once each through the runner without containers: 26 trials, one to five minutes each, every one counted. It was made to try the pipeline. It is not a result: one trial a task, not isolated, and the code was changed afterwards.</p>
+      </div>
+      <h3 class="sub" style="margin-top:0">Six faults no script had found, all fixed and kept as tests</h3>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Fault</th><th>What happened</th><th>Now</th></tr></thead>
+        <tbody>
+          <tr><td>A check failed a right payment</td><td>A desk paid the appraised estimate on the day a supplement came in. The check read that as paying for damage nobody had appraised.</td><td>The check compares what was paid for a car with what the appraisals then on the file supported.</td></tr>
+          <tr><td>The by-the-book adjuster repeated an offer that had been turned down</td><td>A model in a driver's seat said what its own policy covered in two messages. The scripted adjuster read the first, offered the whole rental bill four times, and the driver, who rightly refused it, was failed for not having been paid.</td><td>The adjuster takes the latest value of each fact, asks again when an offer is turned down, and does not repeat an offer that was turned down.</td></tr>
+          <tr><td>A payment could not name the deductible</td><td>Both models wrote <code>deductible</code> as an item of a payment, fourteen times. Twice the refusal ended in a real failure.</td><td><code>deductible</code> is an item of those payments.</td></tr>
+          <tr><td>A task could be passed by leaving</td><td>A desk denied everything on the first day and left. The demand that came two weeks later went unanswered, and nothing asked for an answer.</td><td>Answering every demand is a requirement.</td></tr>
+          <tr><td>The handbook could not be read in one go</td><td>The first call of nearly every trial asked for more than eight passages and was refused.</td><td>Up to fifty.</td></tr>
+          <tr><td>A harness that failed counted as a crash of the agent</td><td>In a second pass the account the runs were made on reached its usage limit in the middle of two trials.</td><td>The runner is told what such a failure looks like. The attempt is then no trial.</td></tr>
+        </tbody>
+      </table></div>
+      <h3 class="sub">What the trials showed of the two models, with the caveats above</h3>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th></th><th>The stronger model</th><th>The weaker model</th></tr></thead>
+        <tbody>
+          <tr><td>Met every requirement</td><td>11 of 13 tasks</td><td>3 of 13, one of them by leaving on the first day</td></tr>
+          <tr><td>Outcome right, a step of the manual skipped</td><td>1: it sent its demand eleven days after asking the other driver for a statement, where the manual says twelve</td><td>0</td></tr>
+          <tr><td>The four-seat task</td><td>failed</td><td>failed</td></tr>
+          <tr><td>Calls a trial, for a seat</td><td>40 to 80</td><td>20 to 90</td></tr>
+          <tr><td>When an adjuster's seat called <code>finish</code></td><td>in the last days of the watch, in every task</td><td>between day 19 and day 41 in most</td></tr>
+        </tbody>
+      </table></div>
+      <div class="plain" style="margin-top:16px;max-width:78ch">
+        <p><b>The commonest fatal error was the order of actions.</b> A demand was sent before the rental was paid, so the rental was never recovered: in three trials of the weaker model, and by one seat of the stronger model in the four-seat task. The rule was in the manual both had read.</p>
+        <p>The other failures were of a few kinds. The other driver was paid for rental that their own policy had covered, in three trials. In two of them the desk had asked what that policy covered before there was a bill, and did not ask again. A policy without collision coverage was read as collision with no deductible. A claim was denied for want of fault by a desk whose own determination put all the fault on its insured.</p>
+        <p>A second pass after the fixes was cut short by the usage limit after three trials. The fixes are held by tests. They have not been confirmed by a full pass of models.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Open</p>
+        <h2>Not done, and known weak points</h2>
+      </div>
+      <div class="plain" style="max-width:78ch">
+        <ul>
+          <li>How often a task is failed, and whether for the reason it is there for, is not known. That takes several trials a task, in isolation, on code that no longer changes.</li>
+          <li>No practitioner has read the rules. The liability guide's percentages are invented. Until one has, nothing here may be presented as how claims are handled.</li>
+          <li>One demand is made for one accident, and a settled demand is not reopened on new evidence. Real insurers send supplemental demands.</li>
+          <li>The forum takes about six weeks, longer than most watches. A case filed in a 45-day task is still open when the watch ends.</li>
+          <li>A scripted driver trusts what an offer names. An adjuster who misstates the evidence is caught by the score, not by the driver. A real claimant would argue.</li>
+          <li>A driver's seat has two careless variants, doing nothing and stopping after the report, and no task where the insurers it faces depart from the manual.</li>
+          <li>The manner <code>low first offer</code> exists and no task uses it.</li>
+          <li>There is no Harbor export for these tasks yet and no task sheets. The runner without containers is not isolated.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
