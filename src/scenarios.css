@@ -1,0 +1,229 @@
+/* Scenario introductions and task diagrams. */
+.scenario-page {
+  --scene: var(--task);
+  --scene-tint: var(--task-tint);
+  --map-line: #5f8e82;
+  --map-bg: #133c35;
+  --map-panel: #204d43;
+  --map-accent: #9de6c8;
+  --map-text: #edf8f3;
+  --map-muted: #c1dcd1;
+  --scene-radius: 16px;
+}
+[data-view="insurance"].scenario-page {
+  --scene: var(--agent);
+  --scene-tint: var(--agent-tint);
+  --map-line: #597393;
+  --map-bg: #1d3049;
+  --map-panel: #293f5b;
+  --map-accent: #bdccff;
+  --map-text: #f1f4ff;
+  --map-muted: #ced8ef;
+}
+.scenario-hero { padding: 42px 0 0; }
+.scenario-hero-grid { display: grid; grid-template-columns: 1fr .98fr; align-items: center; gap: clamp(24px, 5vw, 72px); }
+.scenario-hero-copy { display: grid; justify-items: start; gap: 16px; }
+.scenario-hero-copy h1 {
+  font: 780 clamp(42px, 6.2vw, 72px)/.99 var(--display);
+  letter-spacing: -.055em; text-wrap: balance;
+}
+.scenario-hero-copy p { max-width: 47ch; color: var(--muted); font-size: clamp(16px, 1.7vw, 18px); line-height: 1.54; }
+.s-icon { flex: none; display: block; width: 22px; height: 22px; }
+.scenario-icon, .scenario-hero-icon {
+  display: inline-grid; place-items: center; width: 36px; height: 36px;
+  border-radius: 9px; background: var(--scene-tint); color: var(--scene);
+}
+.scenario-hero-icon { width: 44px; height: 44px; border-radius: 12px; }
+.scenario-hero-icon .s-icon { width: 25px; height: 25px; }
+.scenario-cta, .scenario-text-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px;
+  color: var(--ink); text-decoration: none; font: 600 15px/1.3 var(--sans);
+}
+.scenario-cta { margin-top: 2px; padding: 9px 14px; border-radius: 8px; background: var(--ink); color: var(--bg); }
+.scenario-cta:hover { background: var(--scene); color: var(--bg); }
+.scenario-cta .s-icon, .scenario-text-button .s-icon { width: 17px; height: 17px; }
+
+.role-map {
+  display: grid; gap: 0; min-width: 0; padding: 24px;
+  border-radius: var(--scene-radius); color: var(--map-text);
+  background-color: var(--map-bg);
+  background-image: linear-gradient(#fff1 1px, transparent 1px), linear-gradient(90deg, #fff1 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.role-map figcaption { margin-bottom: 17px; color: var(--map-muted); font-size: 13px; font-weight: 600; }
+.role-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.role-actor {
+  display: flex; align-items: center; gap: 10px; min-width: 0; padding: 11px 12px;
+  background: var(--map-panel); border: 1px solid var(--map-line); border-radius: 9px;
+}
+.role-actor .s-icon, .role-base .s-icon { color: var(--map-accent); }
+.role-actor strong, .role-actor small { display: block; line-height: 1.35; }
+.role-actor small { color: var(--map-muted); font-size: 12px; margin-top: 2px; }
+.role-center { width: min(100%, 220px); justify-self: center; }
+.role-join { display: grid; grid-template-columns: 1fr 1fr; align-items: end; margin-inline: 25%; height: 23px; }
+.role-join span { height: 12px; border-bottom: 1px solid var(--map-line); margin-bottom: 11px; }
+.role-join span:first-child { border-left: 1px solid var(--map-line); border-radius: 0 0 0 7px; }
+.role-join span:last-child { border-right: 1px solid var(--map-line); border-radius: 0 0 7px 0; position: relative; }
+.role-join span:last-child::after { content: ""; position: absolute; top: 12px; left: 0; height: 12px; border-left: 1px solid var(--map-line); }
+.role-connect span { display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 29px; color: var(--map-muted); font-size: 11px; }
+.role-connect .s-icon { width: 16px; height: 16px; color: var(--map-accent); }
+.role-base {
+  display: flex; gap: 8px; align-items: center; margin-top: 17px; padding-top: 11px;
+  border-top: 1px solid var(--map-line); font-size: 13px; color: var(--map-muted); line-height: 1.4;
+}
+.role-base .s-icon { width: 18px; height: 18px; }
+
+.scenario-facts {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 25px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+}
+.scenario-facts > div { display: flex; min-width: 0; gap: 11px; align-items: baseline; padding: 11px 17px; }
+.scenario-facts > div + div { border-inline-start: 1px solid var(--line); }
+.scenario-facts dd { order: -1; color: var(--scene); font: 700 23px/1.2 var(--display); font-variant-numeric: tabular-nums; }
+.scenario-facts dt { color: var(--muted); font-size: 13px; }
+
+.scenario-section { margin-top: 38px; }
+.scenario-section h2 {
+  font: 750 clamp(25px, 3.1vw, 36px)/1.13 var(--display);
+  letter-spacing: -.035em; text-wrap: balance;
+}
+.scenario-journey, .scenario-scoring {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-top: 16px;
+}
+.scenario-journey li { position: relative; }
+.journey-card, .score-card {
+  display: grid; align-content: start; gap: 6px; height: 100%;
+  padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+}
+.journey-card h3, .score-card h3 { font-size: 16px; line-height: 1.25; }
+.journey-card p, .score-card p, .case-node p { font-size: 14px; line-height: 1.42; color: var(--muted); }
+.scenario-journey li:not(:last-child)::after, .case-node:not(.case-branch)::after {
+  content: ""; position: absolute; z-index: 1; top: 50%; right: -12px;
+  width: 8px; height: 8px; color: var(--scene); border-top: 1.5px solid; border-right: 1.5px solid;
+  transform: translateY(-50%) rotate(45deg); pointer-events: none;
+}
+
+.scenario-cases, .scenario-accordion, #t-pick, #ic-pick { scroll-margin-top: 112px; }
+.cases-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.case-controls {
+  display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px;
+  border-radius: 10px; background: var(--tint);
+}
+.case-controls button {
+  min-height: 40px; padding: 7px 12px; border: 1px solid transparent; border-radius: 7px;
+  background: transparent; color: var(--muted); font: 600 14px/1.3 var(--sans); cursor: pointer;
+}
+.case-controls button:hover { color: var(--scene); }
+.case-controls button[aria-pressed="true"] { color: var(--scene); background: var(--surface); border-color: var(--line); }
+.case-panel {
+  margin-top: 12px; padding: clamp(15px, 2.8vw, 26px);
+  border: 1px solid var(--line); border-radius: var(--scene-radius); background: var(--surface);
+}
+.case-title { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+.case-title h3 { font: 740 clamp(22px, 2.7vw, 30px)/1.12 var(--display); letter-spacing: -.035em; }
+.case-title p { margin-top: 5px; color: var(--muted); line-height: 1.45; }
+.case-id {
+  flex: none; padding: 3px 7px; color: var(--scene); background: var(--scene-tint);
+  border-radius: 5px; font: 500 12px/1.3 var(--mono);
+}
+.case-flow {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr);
+  gap: 15px; align-items: center; margin: 19px 0 15px;
+}
+.case-node {
+  position: relative; display: grid; align-content: start; gap: 5px; min-width: 0; min-height: 133px;
+  padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+}
+.case-node .scenario-icon { width: 30px; height: 30px; border-radius: 7px; }
+.case-node .s-icon { width: 18px; height: 18px; }
+.case-node h4 { font-size: 15px; line-height: 1.24; }
+.case-branches { display: grid; gap: 8px; }
+.case-branch { background: var(--scene-tint); border-color: transparent; min-height: auto; }
+.case-branch::before {
+  content: ""; position: absolute; left: -8px; width: 8px; height: calc(50% + 5px);
+  border-left: 1px solid var(--scene); pointer-events: none;
+}
+.case-branch:first-child::before { top: 50%; border-top: 1px solid var(--scene); }
+.case-branch:last-child::before { bottom: 50%; border-bottom: 1px solid var(--scene); }
+.case-boarding.stub {
+  grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto; align-items: stretch; gap: 0;
+  padding: 0; background: var(--surface); border-color: var(--line);
+}
+.case-boarding .stub-main { padding: 11px 9px 11px 11px; gap: 5px; }
+.case-boarding .stub-title { color: var(--ink); font-size: 20px; line-height: 1.1; gap: 6px; }
+.case-boarding .stub-title .to { flex-basis: 20px; }
+.case-boarding dl { gap: 4px 10px; }
+.case-boarding dt { font-size: 10px; }
+.case-boarding dd { font-size: 11.5px; line-height: 1.3; white-space: nowrap; }
+.case-boarding .stub-side {
+  padding: 7px 8px; border-radius: 0 9px 9px 0;
+  border-left: 1px dashed var(--signal-ink); border-top: 0;
+}
+.case-boarding .stub-side .state { color: var(--signal-ink); }
+.case-footer {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px;
+  padding-top: 10px; border-top: 1px solid var(--line);
+}
+.case-footer p { max-width: 68ch; color: var(--muted); font-size: 14px; line-height: 1.43; }
+.scenario-text-button { color: var(--scene); padding: 3px 0; border: 0; background: transparent; cursor: pointer; }
+.scenario-text-button:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.scenario-scoring { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.score-card { grid-template-columns: 36px minmax(0, 1fr); align-items: center; column-gap: 9px; }
+.score-card p { grid-column: 2; }
+.scenario-reference { margin-bottom: 42px; }
+.scenario-reference h2 { margin-bottom: 14px; }
+.scenario-accordion { margin-top: 7px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.scenario-accordion > summary {
+  display: flex; min-height: 49px; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 10px 14px; font-weight: 600; cursor: pointer; list-style: none;
+}
+.scenario-accordion > summary::-webkit-details-marker { display: none; }
+.scenario-accordion > summary::after {
+  content: ""; flex: none; width: 8px; height: 8px; margin: -4px 3px 0;
+  border-right: 1.5px solid var(--scene); border-bottom: 1.5px solid var(--scene); transform: rotate(45deg);
+}
+.scenario-accordion[open] > summary::after { margin-top: 4px; transform: rotate(225deg); }
+.scenario-accordion > summary:hover { color: var(--scene); }
+.reference-content { min-width: 0; padding-inline: clamp(10px, 2.3vw, 25px); }
+.reference-content .sec { padding-block: 27px; }
+.reference-content .wrap { padding-inline: 0; }
+.reference-content .sec h2 { font-size: clamp(22px, 2.6vw, 29px); margin-bottom: 0; }
+
+@media (max-width: 940px) {
+  .scenario-hero-grid { gap: 24px; }
+  .role-map { padding: 18px; }
+  .role-actor { gap: 7px; padding: 9px; }
+  .score-card { grid-template-columns: 1fr; }
+  .score-card p { grid-column: auto; }
+}
+@media (max-width: 680px) {
+  .scenario-hero { padding-top: 24px; }
+  .scenario-hero-grid { grid-template-columns: 1fr; gap: 17px; }
+  .scenario-hero-copy { gap: 10px; }
+  .scenario-hero-copy h1 { font-size: clamp(36px, 8.4vw, 56px); }
+  .scenario-hero-icon { width: 36px; height: 36px; }
+  .scenario-hero-icon .s-icon { width: 21px; height: 21px; }
+  .scenario-facts { margin-top: 14px; }
+  .scenario-facts > div { flex-direction: column; gap: 2px; padding: 9px; }
+  .scenario-facts dt { font-size: 12px; line-height: 1.28; }
+  .scenario-section { margin-top: 29px; }
+  .scenario-journey, .scenario-scoring, .case-flow { grid-template-columns: 1fr; }
+  .scenario-journey, .case-flow { gap: 13px; }
+  .journey-card, .score-card, .case-node {
+    display: grid; grid-template-columns: 34px minmax(0, 1fr); grid-template-rows: auto auto;
+    align-items: center; gap: 3px 9px; padding: 9px 10px; min-height: 0;
+  }
+  .journey-card .scenario-icon, .score-card .scenario-icon, .case-node .scenario-icon { grid-row: 1 / span 2; }
+  .journey-card p, .score-card p, .case-node p { grid-column: 2; }
+  .scenario-journey li:not(:last-child)::after, .case-node:not(.case-branch)::after {
+    top: auto; left: 24px; bottom: -9px; right: auto; transform: rotate(135deg);
+  }
+  .case-branches { margin-left: 16px; padding-left: 8px; border-left: 1px solid var(--scene); }
+  .case-branch::before { display: none; }
+  .case-title { flex-wrap: wrap; }
+  .case-id { order: -1; }
+  .case-controls { width: 100%; }
+  .case-controls button { flex: 1; }
+  .case-footer { gap: 1px; }
+}

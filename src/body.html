@@ -152,34 +152,51 @@
 </div>
 
 <!-- ============================ ticketing ============================ -->
-<div data-view="ticketing" hidden>
-  <div class="wrap">
-    <div class="page-head">
-      <p class="lbl">Scenario</p>
-      <h1>Flight ticketing</h1>
-      <p>One booking agent serves two travellers. The agent can search and book, but cannot move money or cancel without consent. The travellers hold the preferences, the budget and the payment methods.</p>
-      <div class="chips">
-        <span class="chip s-done"><i></i>Interface v<span id="tk-version"></span> defined</span>
-        <span class="chip s-done"><i></i>World data generated</span>
-        <span class="chip s-done"><i></i><span id="tk-live"></span> of <span id="tk-total"></span> actions run in the kernel</span>
-        <span class="chip s-done"><i></i>Changes, refunds and airline changes built</span>
-        <span class="chip s-done"><i></i>8 development tasks with reference solutions</span>
-        <span class="chip s-planned"><i></i>Not yet run with real models</span>
+<div data-view="ticketing" class="scenario-page" hidden>
+<!--SCENARIO_TICKETING-->
+  <section class="scenario-section scenario-reference">
+    <div class="wrap">
+      <h2>Explore the details</h2>
+    <details class="scenario-accordion" id="ticketing-records">
+      <summary>Task catalogue and reference solutions</summary>
+      <div class="reference-content">
+  <section class="sec" id="tasks">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Tasks</p>
+        <h2>Fifty-three development tasks and a held-out set</h2>
+        <p>A task fixes a world, two scripted travellers with private facts and plans, and what the airline will do. The booking agent is the seat under test. An episode is judged on the world as it stands at the end: every traveller must have what they wanted within budget, and among such outcomes a lower loss for the travellers is better. One reference policy solves every task. An agent that leaves at once must fail, unless nothing needed doing. Models have played tasks only in first looks outside containers, one or two trials a task; there are no results yet.</p>
       </div>
-      <ol class="steps" aria-label="Steps towards a booking site people recognise">
-        <li class="done">Interface</li>
-        <li class="done">World data</li>
-        <li class="done">Kernel and search</li>
-        <li class="done">Booking</li>
-        <li class="done">Changes and disruptions</li>
-        <li class="done">Travellers, scoring, first tasks</li>
-        <li class="now">Runs with real models</li>
-        <li>Booking interface</li>
-      </ol>
+      <h3 style="margin:0 0 10px">Twenty-five tasks built by hand</h3>
+      <p style="max-width:78ch;margin:0 0 12px">Every one has a task sheet, made for review: the doors inside the watch, what solving it takes stage by stage with a limit for each stage, its traps and what shows each, other ways through that were played, and how late the reference policy can start. A trap that nothing shows is called a design assumption. Pick a task below the table and open its sheet. The seven newest, T8-07 to T10-02, put more traps or several matters into one episode; no model has played them.</p>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agents</th></tr></thead>
+        <tbody id="t-rows"></tbody>
+      </table></div>
+      <div class="seg" id="t-pick" role="group" aria-label="Task" style="margin-top:22px"></div>
+      <div id="t-detail"></div>
+
+      <h3 style="margin:44px 0 10px">Careless agents</h3>
+      <p style="max-width:78ch">The reference policy has ten habits, each a switch. Switching one off gives an agent that should fail the tasks that need that habit, and only those. A task is admitted to a set only if the careless agent of its family fails it; a task with several traps, only if every careless agent named for it does. These agents are a check on the tasks. They are not baselines.</p>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Careless agent</th><th>The habit it lacks</th><th>Must fail</th></tr></thead>
+        <tbody id="t-foil-rows"></tbody>
+      </table></div>
+
+      <h3 style="margin:44px 0 10px">Tasks from a generator</h3>
+      <p style="max-width:78ch">A recipe per family draws a world and looks in it for a place where the difficulty really occurs: a flight with one seat left at its fare, two cities whose cheapest flights land hours apart, a flight with an earlier one by the same airline. It builds two travellers around that place. Budgets are what a reference run paid, plus a margin of 8 to 25 percent. A candidate becomes a task only if the reference policy solves it, leaving at once fails it, the careless agent of its family fails it, and the pressure it is labelled with is really in it. Every traveller pays for their own ticket and nothing else, so two budgets cannot be pooled. A task in which a traveller adds words is the twin of the same task without them: what the words do to a model is the difference between its results on the two.</p>
+      <p class="note" id="t-sets" style="margin:10px 0 14px"></p>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agent</th></tr></thead>
+        <tbody id="t-gen-rows"></tbody>
+      </table></div>
     </div>
-
-  </div>
-
+  </section>
+      </div>
+    </details>
+    <details class="scenario-accordion" id="ticketing-world">
+      <summary>Flight inventory and fare rules</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -255,7 +272,11 @@
       </div>
     </div>
   </section>
-
+      </div>
+    </details>
+    <details class="scenario-accordion" id="ticketing-sessions">
+      <summary>Recorded booking and after-sales sessions</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -274,45 +295,17 @@
       <div class="sess" id="s-list"></div>
     </div>
   </section>
-
-  <section class="sec" id="tasks">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Tasks</p>
-        <h2>Fifty-three development tasks and a held-out set</h2>
-        <p>A task fixes a world, two scripted travellers with private facts and plans, and what the airline will do. The booking agent is the seat under test. An episode is judged on the world as it stands at the end: every traveller must have what they wanted within budget, and among such outcomes a lower loss for the travellers is better. One reference policy solves every task. An agent that leaves at once must fail, unless nothing needed doing. Models have played tasks only in first looks outside containers, one or two trials a task; there are no results yet.</p>
       </div>
-      <h3 style="margin:0 0 10px">Twenty-five tasks built by hand</h3>
-      <p style="max-width:78ch;margin:0 0 12px">Every one has a task sheet, made for review: the doors inside the watch, what solving it takes stage by stage with a limit for each stage, its traps and what shows each, other ways through that were played, and how late the reference policy can start. A trap that nothing shows is called a design assumption. Pick a task below the table and open its sheet. The seven newest, T8-07 to T10-02, put more traps or several matters into one episode; no model has played them.</p>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agents</th></tr></thead>
-        <tbody id="t-rows"></tbody>
-      </table></div>
-      <div class="seg" id="t-pick" role="group" aria-label="Task" style="margin-top:22px"></div>
-      <div id="t-detail"></div>
-
-      <h3 style="margin:44px 0 10px">Careless agents</h3>
-      <p style="max-width:78ch">The reference policy has ten habits, each a switch. Switching one off gives an agent that should fail the tasks that need that habit, and only those. A task is admitted to a set only if the careless agent of its family fails it; a task with several traps, only if every careless agent named for it does. These agents are a check on the tasks. They are not baselines.</p>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>Careless agent</th><th>The habit it lacks</th><th>Must fail</th></tr></thead>
-        <tbody id="t-foil-rows"></tbody>
-      </table></div>
-
-      <h3 style="margin:44px 0 10px">Tasks from a generator</h3>
-      <p style="max-width:78ch">A recipe per family draws a world and looks in it for a place where the difficulty really occurs: a flight with one seat left at its fare, two cities whose cheapest flights land hours apart, a flight with an earlier one by the same airline. It builds two travellers around that place. Budgets are what a reference run paid, plus a margin of 8 to 25 percent. A candidate becomes a task only if the reference policy solves it, leaving at once fails it, the careless agent of its family fails it, and the pressure it is labelled with is really in it. Every traveller pays for their own ticket and nothing else, so two budgets cannot be pooled. A task in which a traveller adds words is the twin of the same task without them: what the words do to a model is the difference between its results on the two.</p>
-      <p class="note" id="t-sets" style="margin:10px 0 14px"></p>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agent</th></tr></thead>
-        <tbody id="t-gen-rows"></tbody>
-      </table></div>
-    </div>
-  </section>
-
+    </details>
+    <details class="scenario-accordion" id="ticketing-api">
+      <summary>Tools, data model and error codes</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Interface</p>
         <h2>What each seat can do</h2>
+        <p class="note">Interface v<span id="tk-version"></span> · <span id="tk-live"></span> of <span id="tk-total"></span> actions implemented</p>
         <p>Every action is declared with its roles, effect, errors and world-time cost. A green dot marks the actions that already run in the kernel. This page does not run the world, so the forms build a call without sending it.</p>
       </div>
       <div class="seg" id="tk-roles" role="group" aria-label="Role"></div>
@@ -323,7 +316,6 @@
       </div>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -333,7 +325,6 @@
       <dl class="kv" id="tk-conventions"></dl>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -344,7 +335,6 @@
       <div class="stack" id="tk-entities"></div>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -355,6 +345,10 @@
         <details class="box"><summary>Typed facts a seat can ask for or state in a message</summary><div><dl class="kv" id="tk-facts"></dl></div></details>
         <details class="box"><summary>Error codes</summary><div><dl class="kv" id="tk-errors"></dl></div></details>
       </div>
+    </div>
+  </section>
+      </div>
+    </details>
     </div>
   </section>
 </div>

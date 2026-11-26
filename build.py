@@ -15,6 +15,8 @@ import sys
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
+from src.scenarios import render as render_scenario
+
 HERE = pathlib.Path(__file__).resolve().parent
 SRC = HERE / "src"
 FONTS = ("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800"
@@ -61,7 +63,7 @@ def main() -> None:
     session = [json.loads((HERE / "data" / name).read_text(encoding="utf-8"))
                for name in ("ticketing_session.json", "ticketing_after_session.json")]
     progress = json.loads((SRC / "progress.json").read_text(encoding="utf-8"))
-    css = (SRC / "styles.css").read_text(encoding="utf-8")
+    css = "\n".join((SRC / name).read_text(encoding="utf-8") for name in ("styles.css", "scenarios.css"))
     js = (SRC / "app.js").read_text(encoding="utf-8")
     world_js = (SRC / "world.js").read_text(encoding="utf-8")
     session_js = (SRC / "session.js").read_text(encoding="utf-8")
@@ -72,6 +74,11 @@ def main() -> None:
     body = (SRC / "body.html").read_text(encoding="utf-8")
     assert "<!--VIEW_INSURANCE-->" in body
     body = body.replace("<!--VIEW_INSURANCE-->", (SRC / "insurance.html").read_text(encoding="utf-8").strip())
+    for view, catalog, interface in (("ticketing", tasks, ticketing), ("insurance", claims, claims)):
+        marker = f"<!--SCENARIO_{view.upper()}-->"
+        assert marker in body, marker
+        recorded_tickets = session[1]["tickets"] if view == "ticketing" else ()
+        body = body.replace(marker, render_scenario(view, catalog, interface, recorded_tickets))
     for marker, name in (("<!--FIG_LAYERS-->", "fig_layers.html"), ("<!--FIG_RUNTIME-->", "fig_runtime.html"),
                          ("<!--FIG_CLAIMS_PARTIES-->", "fig_claims_parties.html"), ("<!--FIG_CLAIMS_PIPELINE-->", "fig_claims_pipeline.html")):
         fig = (SRC / "figs" / name).read_text(encoding="utf-8").strip()

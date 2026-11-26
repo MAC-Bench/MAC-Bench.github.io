@@ -1,180 +1,16 @@
-<div data-view="insurance" hidden>
-  <div class="wrap">
-    <div class="page-head">
-      <p class="lbl">Scenario</p>
-      <h1>Auto-insurance claims</h1>
-      <p>One car accident, two drivers, and the two insurers they are insured with. Four seats take part. Each driver is the insured of one company and a claimant against the other. Each adjuster handles both claims on its company, and the two companies then settle between themselves what each paid for the other's share of the fault.</p>
-      <div class="chips">
-        <span class="chip s-done"><i></i>Interface v<span id="ic-version"></span> · <span id="ic-n-actions"></span> actions</span>
-        <span class="chip s-done"><i></i>World, scripted seats and scoring built</span>
-        <span class="chip s-done"><i></i><span id="ic-n-tasks"></span> development tasks with yardstick runs</span>
-        <span class="chip s-done"><i></i><span id="ic-n-tests"></span> tests</span>
-        <span class="chip s-done"><i></i>One outside review, findings closed</span>
-        <span class="chip s-next"><i></i>First look with two models, one trial a task</span>
-        <span class="chip s-planned"><i></i>Rules not read by a practitioner</span>
-        <span class="chip s-planned"><i></i>No isolated runs yet</span>
-      </div>
-      <ol class="steps" aria-label="Steps of the claims scenario">
-        <li class="done">Rules and sources</li>
-        <li class="done">World</li>
-        <li class="done">Scripted seats and scoring</li>
-        <li class="done">Thirteen tasks</li>
-        <li class="done">Outside review</li>
-        <li class="done">Served, first look with models</li>
-        <li class="now">Second review, a practitioner's read</li>
-        <li>Isolated runs</li>
-      </ol>
-      <p class="note" style="max-width:var(--measure)">Nothing on this page is a result. The numbers come from scripted runs of the tasks, made when the page was built. The rules are this world's own: they are modelled on California claims regulations and on the practice of inter-insurer arbitration, and nobody who handles claims for a living has checked them yet.</p>
-    </div>
-  </div>
-
-  <section class="sec">
+<div data-view="insurance" class="scenario-page" hidden>
+<!--SCENARIO_INSURANCE-->
+  <section class="scenario-section scenario-reference">
     <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Scenario</p>
-        <h2>Four seats, and two claims on each insurer</h2>
-        <p>A seat is played by a model under test or by a script. The world plays everyone else, and each of its parties does one fixed thing a fixed time after it is asked.</p>
-      </div>
-      <div class="figs">
-<!--FIG_CLAIMS_PARTIES-->
-      </div>
-      <div class="tscroll" style="margin-top:28px"><table class="ft plain mono1">
-        <thead><tr><th>Seat</th><th>Role</th><th>Who</th><th>Wants</th></tr></thead>
-        <tbody id="ic-seats"></tbody>
-      </table></div>
-      <h3 class="sub">Why this is a coordination problem and not four separate jobs</h3>
-      <div class="points">
-        <div class="point">
-          <h3>Evidence is split</h3>
-          <p>A driver holds a recording. The police report arrives days later. A witness answers only when asked. A desk that asks only its own insured, or decides before the report has come, decides wrongly.</p>
-        </div>
-        <div class="point">
-          <h3>One loss, two payers</h3>
-          <p>A driver's own collision coverage and the other driver's liability coverage both answer for the same car. What one pays, the other must not pay again. The insurer that paid first recovers from the other, the insured's deductible included, and only for what the accident cost.</p>
-        </div>
-        <div class="point">
-          <h3>Goals differ without being opposite</h3>
-          <p>An adjuster is not there to pay little. It is judged on paying what is owed, no more and no less, in time, and on how it got there. Two adjusters who read the same evidence the same way settle in a day. Two who do not go to the forum.</p>
-        </div>
-        <div class="point">
-          <h3>Order matters</h3>
-          <p>One demand is made for one accident. A desk that sends it before the rental is paid never recovers the rental. A desk that asks what the other policy covers before there is a bill gets an answer that is no longer true when the bill comes.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">A claim</p>
-        <h2>The life of a claim, stage by stage</h2>
-        <p>Read a row from left to right for who does what at that stage. Both adjusters do the same work on their own file, so the two insurer columns describe one desk seen from its two sides. A whole episode, day by day, is under each task further down.</p>
-      </div>
-      <div class="tscroll"><table class="lanes">
-        <thead><tr><th>Stage</th><th>Driver</th><th>Adjuster, for its own insured</th><th>Adjuster, for the other driver's claim</th><th>The world</th></tr></thead>
-        <tbody>
-          <tr><th><b>1</b> Report</th>
-            <td>Reports the loss: to their own insurer, against the other driver's insurer, or both. Each coverage claimed becomes an exposure with its own decision, clock and payments.</td>
-            <td>Acknowledges in writing within 15 days and reads the policy. Was it in force? Was the coverage bought?</td>
-            <td>Acknowledges the claimant's notice in the same way.</td>
-            <td>Opens the claim and its exposures. A notice that claims nothing opens none.</td></tr>
-          <tr><th><b>2</b> Investigate</th>
-            <td>Gives a statement and hands over what they hold: photographs, a recording.</td>
-            <td colspan="2">Asks both drivers for a statement, orders the police report, contacts a witness who is named. The file now holds whatever each of them sent, and nothing else.</td>
-            <td>The police report can be had some days after the accident. A witness answers two days after being asked.</td></tr>
-          <tr><th><b>3</b> Damage</th>
-            <td>Asks their shop for an estimate, sends it and every later bill to each claim, has the car repaired and rents a car meanwhile.</td>
-            <td colspan="2">Has every estimate and supplement appraised before it pays for the car. The appraisal says for each line whether the damage comes from this accident.</td>
-            <td>The shop writes the estimate in a day, and a supplement when the car is taken apart. The appraiser reports a day after the order.</td></tr>
-          <tr><th><b>4</b> Fault</th>
-            <td></td>
-            <td colspan="2">Once what it ordered has come, records each driver's share of the fault, by the liability guide, on the documents in its file. Records it again when new evidence arrives. The two desks decide separately and need not agree.</td>
-            <td></td></tr>
-          <tr><th><b>5</b> Pay</th>
-            <td>Accepts or rejects an offer. Pays the shop and the rental company.</td>
-            <td>Pays its insured under the coverages: the appraised damage less the deductible, the rental within its daily and total limits.</td>
-            <td>Offers the other driver what its insured owes them, at the share on record, with the appraisal the amount rests on. Pays once the offer is accepted.</td>
-            <td>The claims index says where a car is being settled. A car is settled one way: under collision, or with the other insurer.</td></tr>
-          <tr><th><b>6</b> Recover</th>
-            <td></td>
-            <td>Demands back what it paid, at the other driver's share of the fault, with the insured's deductible and the documents that show the amounts. One demand for one accident.</td>
-            <td>Accepts, counters on the share or on the amounts, or denies. Pays what was agreed or awarded within 30 days.</td>
-            <td>A demand the two cannot settle goes to the forum, which decides on the evidence filed and on nothing else, about six weeks later.</td></tr>
-          <tr><th><b>7</b> Share</th>
-            <td>Gets back the part of the deductible that matches the recovery.</td>
-            <td>Passes on the insured's share of what it recovered.</td>
-            <td></td>
-            <td></td></tr>
-        </tbody>
-      </table></div>
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Pipeline</p>
-        <h2>From a task file to a score card</h2>
-        <p>The same path serves a scripted run, a model in one seat, and four models at once. Below the figure, the modules in the order a task passes through them.</p>
-      </div>
-      <div class="figs">
-<!--FIG_CLAIMS_PIPELINE-->
-      </div>
-      <ol class="flow">
-        <li><b>A task is data.</b> One accident with its true facts, the evidence and who holds it, two policies, two cars with their damage line by line, how each scripted desk behaves, which seats are under test, and how long the world is watched.</li>
-        <li><b>It is admitted before it is written.</b> By the book every seat under test must meet every requirement. With the seats under test doing nothing the task must fail. The file carries a fingerprint.</li>
-        <li><b>Starting it builds the world.</b> The kernel holds the clock, the event queue and the log. The claims service answers every action, decides what each seat may see, and plays the shop, the appraiser, the police desk, the witness, the rental company and the forum as timed events.</li>
-        <li><b>Seats act through the interface only.</b> A seat under test gets a role card, a credential and a client. A seat that is not under test is played by a routine that reads the same interface and is told nothing its seat could not read.</li>
-        <li><b>The record is sealed and replayed.</b> When the watch ends, the hash-chained log and the final state are sealed. Scoring first replays the log into a fresh world. A record that does not replay cannot count as a success.</li>
-        <li><b>The score asks what was owed.</b> From the policy, the appraised damage, the claims index and the shares of fault the guide gives on the evidence that can come to light, it works out what everyone owed whom. Each seat's payments, decisions and clocks are held against that.</li>
-        <li><b>Regret needs a yardstick.</b> The same task is run with every seat scripted and the seats under test by the book. A seat's regret is its loss above its own loss in that run. Losses of different seats are never added: one seat's payment is another's receipt.</li>
-      </ol>
-      <h3 class="sub">Three ways a seat is played</h3>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>How</th><th>What plays it</th><th>Where</th><th>Used for</th></tr></thead>
-        <tbody>
-          <tr><td>Scripted, inside the world</td><td>A routine of <code>controllers.py</code>, run as an event of the world a set number of hours after the seat is written to, and once a day. Its calls cost no world time.</td><td><code>tasks.start</code>, <code>tasks.reference</code>, <code>tasks.careless</code></td><td>Counterparts, the yardstick run, and the careless runs a task has to fail.</td></tr>
-          <tr><td>Live, in the same process</td><td>Any function that takes one turn through the interface. The routines are such functions too.</td><td><code>tasks.run</code>, <code>tasks.playing</code></td><td>Tests that play every task from a live seat without a model, and four live seats on one accident.</td></tr>
-          <tr><td>Live, served</td><td>A command for each seat under test, with that seat's card, credential and folder. The seats are equals: an attempt lasts until all their commands have returned.</td><td><code>python -m macbench.serve</code>, <code>mb</code>, <code>tools/run_local.py</code></td><td>Trials of models. Without containers this is a first look and not a result.</td></tr>
-        </tbody>
-      </table></div>
-      <h3 class="sub">Modules, in that order</h3>
-      <div class="tscroll"><table class="ft plain mods mono1">
-        <thead><tr><th>Module</th><th>Lines</th><th>What it is responsible for</th></tr></thead>
-        <tbody id="ic-modules"></tbody>
-      </table></div>
-      <p class="note" id="ic-modules-note" style="margin-top:10px"></p>
-      <details class="box" style="margin-top:18px"><summary>Run it yourself</summary><div>
-<pre class="json" style="white-space:pre">PYTHONPATH=src python -m pytest -q tests/test_insurance_*.py          # the tests of the claims world
-
-python - &lt;&lt;'EOF'
-from macbench.domains.insurance import devset, tasks
-
-task = devset.C2_01                                    # each says the light was green
-episode, yardstick = tasks.reference(task)             # every seat scripted, by the book
-print(yardstick.seats["adjuster_a"].checks)            # each check: name, met or not, detail, source
-
-episode, card = tasks.careless(task, "adjuster_a", "own word", yardstick)
-print(card.success, card.seats["adjuster_a"].regret_cents)
-
-print(tasks.card(task, "adjuster_a"))                  # what that seat is told
-EOF
-
-PYTHONPATH=src python tools/build_claims_tasks.py --check               # the task files are what the code gives
-PYTHONPATH=src python tools/run_local.py --tasks tasks/insurance/dev --only ic-c1-01 \
-    --out runs/first-look -- &lt;the agent's command&gt;                      # one trial, not isolated
-PYTHONPATH=src python tools/report_claims_run.py runs/first-look --trial ic-c1-01
-PYTHONPATH=src python tools/export_claims.py                            # the data behind this page</pre>
-      </div></details>
-    </div>
-  </section>
-
+      <h2>Explore the details</h2>
+    <details class="scenario-accordion" id="insurance-records">
+      <summary>Task catalogue and day-by-day records</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Tasks</p>
-        <h2>Thirteen tasks on three kinds of accident</h2>
+        <h2><span id="ic-n-tasks"></span> tasks across three kinds of accident</h2>
         <p>Five families: clear fault, disputed fault, shared fault, a coverage that is missing, and a limit that is too low. Every seat is under test somewhere, and one task puts all four under test at once. Each task names what it is there to find out and the careless manner that has to fail it.</p>
       </div>
       <div class="tscroll"><table class="ft plain mono1">
@@ -187,7 +23,11 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       <div id="ic-detail" class="tdetail"></div>
     </div>
   </section>
-
+      </div>
+    </details>
+    <details class="scenario-accordion" id="insurance-rules">
+      <summary>Coverage, liability and scoring</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -237,7 +77,7 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
             <tr><td>Opening the file</td><td>acknowledgment in time; denial for no coverage, with the reason</td><td>what the acknowledgment says</td></tr>
             <tr><td>Investigating fault</td><td>a statement asked of both drivers; the police report and a named witness waited for before acting on fault</td><td>whether recordings and photographs were asked for</td></tr>
             <tr><td>Deciding fault</td><td>a determination on record before acting on it, equal to the guide on the documents it names, naming all that speak to fault, and redone when the file changes</td><td>the wording of the note</td></tr>
-            <tr><td>What the damage costs</td><td>every estimate and supplement appraised before a payment for the car; the amounts paid</td><td></td></tr>
+            <tr><td>What the damage costs</td><td>a payment for the car stays within the appraised amount on file</td><td></td></tr>
             <tr><td>Paying your own insured</td><td>the amount by item, and within 30 days</td><td></td></tr>
             <tr><td>Paying the other driver</td><td>the amount by item; an accepted offer within 30 days; no double payment of rental</td><td>whether a first offer was unreasonably low; whether the claimant was steered to their own policy</td></tr>
             <tr><td>The limit</td><td>the total; the driver before their insurer; the excess notice</td><td>what the notice says</td></tr>
@@ -249,7 +89,6 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       </div></details>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -320,12 +159,82 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       </div></details>
     </div>
   </section>
+      </div>
+    </details>
+    <details class="scenario-accordion" id="insurance-api">
+      <summary>Seats, tools and implementation</summary>
+      <div class="reference-content">
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Scenario</p>
+        <h2>Four seats, and two claims on each insurer</h2>
+        <p>A seat is played by a model under test or by a script. The world plays everyone else, and each of its parties does one fixed thing a fixed time after it is asked.</p>
+      </div>
+      <div class="figs">
+<!--FIG_CLAIMS_PARTIES-->
+      </div>
+      <div class="tscroll" style="margin-top:28px"><table class="ft plain mono1">
+        <thead><tr><th>Seat</th><th>Role</th><th>Who</th><th>Wants</th></tr></thead>
+        <tbody id="ic-seats"></tbody>
+      </table></div>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Pipeline</p>
+        <h2>From a task file to a score card</h2>
+        <p>The same pipeline serves scripted runs, one live seat or all four seats.</p>
+      </div>
+      <div class="figs">
+<!--FIG_CLAIMS_PIPELINE-->
+      </div>
+      <h3 class="sub">Three ways a seat is played</h3>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>How</th><th>What plays it</th><th>Where</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td>Scripted, inside the world</td><td>A routine of <code>controllers.py</code>, run as an event of the world a set number of hours after the seat is written to, and once a day. Its calls cost no world time.</td><td><code>tasks.start</code>, <code>tasks.reference</code>, <code>tasks.careless</code></td><td>Counterparts, the yardstick run, and the careless runs a task has to fail.</td></tr>
+          <tr><td>Live, in the same process</td><td>Any function that takes one turn through the interface. The routines are such functions too.</td><td><code>tasks.run</code>, <code>tasks.playing</code></td><td>Tests that play every task from a live seat without a model, and four live seats on one accident.</td></tr>
+          <tr><td>Live, served</td><td>A command for each seat under test, with that seat's card, credential and folder. The seats are equals: an attempt lasts until all their commands have returned.</td><td><code>python -m macbench.serve</code>, <code>mb</code>, <code>tools/run_local.py</code></td><td>Trials of models. Without containers this is a first look and not a result.</td></tr>
+        </tbody>
+      </table></div>
+      <h3 class="sub">Modules, in that order</h3>
+      <div class="tscroll"><table class="ft plain mods mono1">
+        <thead><tr><th>Module</th><th>Lines</th><th>What it is responsible for</th></tr></thead>
+        <tbody id="ic-modules"></tbody>
+      </table></div>
+      <p class="note" id="ic-modules-note" style="margin-top:10px"></p>
+      <details class="box" style="margin-top:18px"><summary>Run it yourself</summary><div>
+<pre class="json" style="white-space:pre">PYTHONPATH=src python -m pytest -q tests/test_insurance_*.py          # the tests of the claims world
 
+python - &lt;&lt;'EOF'
+from macbench.domains.insurance import devset, tasks
+
+task = devset.C2_01                                    # each says the light was green
+episode, yardstick = tasks.reference(task)             # every seat scripted, by the book
+print(yardstick.seats["adjuster_a"].checks)            # each check: name, met or not, detail, source
+
+episode, card = tasks.careless(task, "adjuster_a", "own word", yardstick)
+print(card.success, card.seats["adjuster_a"].regret_cents)
+
+print(tasks.card(task, "adjuster_a"))                  # what that seat is told
+EOF
+
+PYTHONPATH=src python tools/build_claims_tasks.py --check               # the task files are what the code gives
+PYTHONPATH=src python tools/run_local.py --tasks tasks/insurance/dev --only ic-c1-01 \
+    --out runs/first-look -- &lt;the agent's command&gt;                      # one trial, not isolated
+PYTHONPATH=src python tools/report_claims_run.py runs/first-look --trial ic-c1-01
+PYTHONPATH=src python tools/export_claims.py                            # the data behind this page</pre>
+      </div></details>
+    </div>
+  </section>
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Interface</p>
         <h2>What each seat can do</h2>
+        <p class="note">Interface v<span id="ic-version"></span> · <span id="ic-n-actions"></span> actions · <span id="ic-n-tests"></span> tests in the exported snapshot</p>
         <p>Every action is declared with its roles, its effect, the world time it costs and the errors it can be refused with. Reads cost time too, so reading again and again cannot hold a deadline still.</p>
       </div>
       <div class="seg" id="ic-roles" role="group" aria-label="Role"></div>
@@ -348,7 +257,11 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       </table></div>
     </div>
   </section>
-
+      </div>
+    </details>
+    <details class="scenario-accordion" id="insurance-validation">
+      <summary>Calibration, pilot runs and limitations</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -370,7 +283,6 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       <p class="note" style="margin-top:10px;max-width:78ch">The ordinary repairs sit below the published mean. That is a choice of sample, and it is stated as one. The bands are the benchmark's own and are wide on purpose: a set of thirteen tasks on a handful of cars is not a sample of the market.</p>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -378,14 +290,14 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
         <h2>What two models showed about the pipeline</h2>
         <p>On 26 November 2026 two models played all thirteen tasks once each through the runner without containers: 26 trials, one to five minutes each, every one counted. It was made to try the pipeline. It is not a result: one trial a task, not isolated, and the code was changed afterwards.</p>
       </div>
-      <h3 class="sub" style="margin-top:0">Six faults no script had found, all fixed and kept as tests</h3>
+      <h3 class="sub" style="margin-top:0">Six issues identified in the first pilot</h3>
       <div class="tscroll"><table class="ft plain">
         <thead><tr><th>Fault</th><th>What happened</th><th>Now</th></tr></thead>
         <tbody>
           <tr><td>A check failed a right payment</td><td>A desk paid the appraised estimate on the day a supplement came in. The check read that as paying for damage nobody had appraised.</td><td>The check compares what was paid for a car with what the appraisals then on the file supported.</td></tr>
           <tr><td>The by-the-book adjuster repeated an offer that had been turned down</td><td>A model in a driver's seat said what its own policy covered in two messages. The scripted adjuster read the first, offered the whole rental bill four times, and the driver, who rightly refused it, was failed for not having been paid.</td><td>The adjuster takes the latest value of each fact, asks again when an offer is turned down, and does not repeat an offer that was turned down.</td></tr>
           <tr><td>A payment could not name the deductible</td><td>Both models wrote <code>deductible</code> as an item of a payment, fourteen times. Twice the refusal ended in a real failure.</td><td><code>deductible</code> is an item of those payments.</td></tr>
-          <tr><td>A task could be passed by leaving</td><td>A desk denied everything on the first day and left. The demand that came two weeks later went unanswered, and nothing asked for an answer.</td><td>Answering every demand is a requirement.</td></tr>
+          <tr><td>A task could be passed by leaving</td><td>A desk denied everything on the first day and left. The demand that came two weeks later went unanswered, and nothing asked for an answer.</td><td>The score requires a response to demands received at least 14 days before the watch ends.</td></tr>
           <tr><td>The handbook could not be read in one go</td><td>The first call of nearly every trial asked for more than eight passages and was refused.</td><td>Up to fifty.</td></tr>
           <tr><td>A harness that failed counted as a crash of the agent</td><td>In a second pass the account the runs were made on reached its usage limit in the middle of two trials.</td><td>The runner is told what such a failure looks like. The attempt is then no trial.</td></tr>
         </tbody>
@@ -408,7 +320,6 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       </div>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -427,6 +338,10 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
           <li>There is no Harbor export for these tasks yet and no task sheets. The runner without containers is not isolated.</li>
         </ul>
       </div>
+    </div>
+  </section>
+      </div>
+    </details>
     </div>
   </section>
 </div>

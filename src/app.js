@@ -15,13 +15,37 @@
 
   /* ---------- routing ---------- */
   function route() {
-    var h = (location.hash || '#overview').slice(1);
-    var view = VIEWS.indexOf(h) >= 0 ? h : 'overview';
+    var parts = (location.hash || '#overview').slice(1).split('/');
+    var view = VIEWS.indexOf(parts[0]) >= 0 ? parts[0] : 'overview';
     all('[data-view]').forEach(function (el) { el.hidden = el.getAttribute('data-view') !== view; });
-    all('.links a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-route') === view); });
-    window.scrollTo(0, 0);
+    all('.links a').forEach(function (a) {
+      var active = a.getAttribute('data-route') === view;
+      a.classList.toggle('on', active);
+      if (active) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    var target = parts[1] === 'cases' ? byId(view + '-cases') : null;
+    if (target) target.scrollIntoView({ block: 'start' });
+    else window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
+
+  all('.scenario-page').forEach(function (view) {
+    view.addEventListener('click', function (ev) {
+      var choice = ev.target.closest('button[data-case]');
+      if (choice) {
+        var id = choice.getAttribute('data-case');
+        all('button[data-case]', view).forEach(function (button) {
+          button.setAttribute('aria-pressed', String(button === choice));
+        });
+        all('[data-case-panel]', view).forEach(function (panel) {
+          panel.hidden = panel.getAttribute('data-case-panel') !== id;
+        });
+      }
+      var task = ev.target.closest('button[data-open-task]');
+      if (task) document.dispatchEvent(new CustomEvent('mb-task', { detail: task.getAttribute('data-open-task') }));
+    });
+  });
 
   /* ---------- progress ---------- */
   var STATUS_LABEL = { done: 'Done', next: 'Next up', planned: 'Planned' };

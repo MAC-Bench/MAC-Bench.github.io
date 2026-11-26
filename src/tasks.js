@@ -245,8 +245,10 @@
   document.addEventListener('mb-task', function (ev) {
     var n = T.tasks.map(function (t) { return t.task_id; }).indexOf(ev.detail);
     if (n < 0) return;
+    byId('ticketing-records').open = true;
     choose(n);
     var top = byId('t-pick');
-    if (top && top.scrollIntoView) top.scrollIntoView({ block: 'start' });
+    top.scrollIntoView({ block: 'start' });
+    top.querySelector('button[aria-pressed="true"]').focus({ preventScroll: true });
   });
 })();

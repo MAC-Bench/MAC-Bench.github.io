@@ -467,6 +467,236 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
   .sx-row.tl .act { grid-column: 2; }
 }
 
+/* Scenario introductions and task diagrams. */
+.scenario-page {
+  --scene: var(--task);
+  --scene-tint: var(--task-tint);
+  --map-line: #5f8e82;
+  --map-bg: #133c35;
+  --map-panel: #204d43;
+  --map-accent: #9de6c8;
+  --map-text: #edf8f3;
+  --map-muted: #c1dcd1;
+  --scene-radius: 16px;
+}
+[data-view="insurance"].scenario-page {
+  --scene: var(--agent);
+  --scene-tint: var(--agent-tint);
+  --map-line: #597393;
+  --map-bg: #1d3049;
+  --map-panel: #293f5b;
+  --map-accent: #bdccff;
+  --map-text: #f1f4ff;
+  --map-muted: #ced8ef;
+}
+.scenario-hero { padding: 42px 0 0; }
+.scenario-hero-grid { display: grid; grid-template-columns: 1fr .98fr; align-items: center; gap: clamp(24px, 5vw, 72px); }
+.scenario-hero-copy { display: grid; justify-items: start; gap: 16px; }
+.scenario-hero-copy h1 {
+  font: 780 clamp(42px, 6.2vw, 72px)/.99 var(--display);
+  letter-spacing: -.055em; text-wrap: balance;
+}
+.scenario-hero-copy p { max-width: 47ch; color: var(--muted); font-size: clamp(16px, 1.7vw, 18px); line-height: 1.54; }
+.s-icon { flex: none; display: block; width: 22px; height: 22px; }
+.scenario-icon, .scenario-hero-icon {
+  display: inline-grid; place-items: center; width: 36px; height: 36px;
+  border-radius: 9px; background: var(--scene-tint); color: var(--scene);
+}
+.scenario-hero-icon { width: 44px; height: 44px; border-radius: 12px; }
+.scenario-hero-icon .s-icon { width: 25px; height: 25px; }
+.scenario-cta, .scenario-text-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px;
+  color: var(--ink); text-decoration: none; font: 600 15px/1.3 var(--sans);
+}
+.scenario-cta { margin-top: 2px; padding: 9px 14px; border-radius: 8px; background: var(--ink); color: var(--bg); }
+.scenario-cta:hover { background: var(--scene); color: var(--bg); }
+.scenario-cta .s-icon, .scenario-text-button .s-icon { width: 17px; height: 17px; }
+
+.role-map {
+  display: grid; gap: 0; min-width: 0; padding: 24px;
+  border-radius: var(--scene-radius); color: var(--map-text);
+  background-color: var(--map-bg);
+  background-image: linear-gradient(#fff1 1px, transparent 1px), linear-gradient(90deg, #fff1 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.role-map figcaption { margin-bottom: 17px; color: var(--map-muted); font-size: 13px; font-weight: 600; }
+.role-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.role-actor {
+  display: flex; align-items: center; gap: 10px; min-width: 0; padding: 11px 12px;
+  background: var(--map-panel); border: 1px solid var(--map-line); border-radius: 9px;
+}
+.role-actor .s-icon, .role-base .s-icon { color: var(--map-accent); }
+.role-actor strong, .role-actor small { display: block; line-height: 1.35; }
+.role-actor small { color: var(--map-muted); font-size: 12px; margin-top: 2px; }
+.role-center { width: min(100%, 220px); justify-self: center; }
+.role-join { display: grid; grid-template-columns: 1fr 1fr; align-items: end; margin-inline: 25%; height: 23px; }
+.role-join span { height: 12px; border-bottom: 1px solid var(--map-line); margin-bottom: 11px; }
+.role-join span:first-child { border-left: 1px solid var(--map-line); border-radius: 0 0 0 7px; }
+.role-join span:last-child { border-right: 1px solid var(--map-line); border-radius: 0 0 7px 0; position: relative; }
+.role-join span:last-child::after { content: ""; position: absolute; top: 12px; left: 0; height: 12px; border-left: 1px solid var(--map-line); }
+.role-connect span { display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 29px; color: var(--map-muted); font-size: 11px; }
+.role-connect .s-icon { width: 16px; height: 16px; color: var(--map-accent); }
+.role-base {
+  display: flex; gap: 8px; align-items: center; margin-top: 17px; padding-top: 11px;
+  border-top: 1px solid var(--map-line); font-size: 13px; color: var(--map-muted); line-height: 1.4;
+}
+.role-base .s-icon { width: 18px; height: 18px; }
+
+.scenario-facts {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 25px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+}
+.scenario-facts > div { display: flex; min-width: 0; gap: 11px; align-items: baseline; padding: 11px 17px; }
+.scenario-facts > div + div { border-inline-start: 1px solid var(--line); }
+.scenario-facts dd { order: -1; color: var(--scene); font: 700 23px/1.2 var(--display); font-variant-numeric: tabular-nums; }
+.scenario-facts dt { color: var(--muted); font-size: 13px; }
+
+.scenario-section { margin-top: 38px; }
+.scenario-section h2 {
+  font: 750 clamp(25px, 3.1vw, 36px)/1.13 var(--display);
+  letter-spacing: -.035em; text-wrap: balance;
+}
+.scenario-journey, .scenario-scoring {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-top: 16px;
+}
+.scenario-journey li { position: relative; }
+.journey-card, .score-card {
+  display: grid; align-content: start; gap: 6px; height: 100%;
+  padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+}
+.journey-card h3, .score-card h3 { font-size: 16px; line-height: 1.25; }
+.journey-card p, .score-card p, .case-node p { font-size: 14px; line-height: 1.42; color: var(--muted); }
+.scenario-journey li:not(:last-child)::after, .case-node:not(.case-branch)::after {
+  content: ""; position: absolute; z-index: 1; top: 50%; right: -12px;
+  width: 8px; height: 8px; color: var(--scene); border-top: 1.5px solid; border-right: 1.5px solid;
+  transform: translateY(-50%) rotate(45deg); pointer-events: none;
+}
+
+.scenario-cases, .scenario-accordion, #t-pick, #ic-pick { scroll-margin-top: 112px; }
+.cases-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.case-controls {
+  display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px;
+  border-radius: 10px; background: var(--tint);
+}
+.case-controls button {
+  min-height: 40px; padding: 7px 12px; border: 1px solid transparent; border-radius: 7px;
+  background: transparent; color: var(--muted); font: 600 14px/1.3 var(--sans); cursor: pointer;
+}
+.case-controls button:hover { color: var(--scene); }
+.case-controls button[aria-pressed="true"] { color: var(--scene); background: var(--surface); border-color: var(--line); }
+.case-panel {
+  margin-top: 12px; padding: clamp(15px, 2.8vw, 26px);
+  border: 1px solid var(--line); border-radius: var(--scene-radius); background: var(--surface);
+}
+.case-title { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
+.case-title h3 { font: 740 clamp(22px, 2.7vw, 30px)/1.12 var(--display); letter-spacing: -.035em; }
+.case-title p { margin-top: 5px; color: var(--muted); line-height: 1.45; }
+.case-id {
+  flex: none; padding: 3px 7px; color: var(--scene); background: var(--scene-tint);
+  border-radius: 5px; font: 500 12px/1.3 var(--mono);
+}
+.case-flow {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr);
+  gap: 15px; align-items: center; margin: 19px 0 15px;
+}
+.case-node {
+  position: relative; display: grid; align-content: start; gap: 5px; min-width: 0; min-height: 133px;
+  padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+}
+.case-node .scenario-icon { width: 30px; height: 30px; border-radius: 7px; }
+.case-node .s-icon { width: 18px; height: 18px; }
+.case-node h4 { font-size: 15px; line-height: 1.24; }
+.case-branches { display: grid; gap: 8px; }
+.case-branch { background: var(--scene-tint); border-color: transparent; min-height: auto; }
+.case-branch::before {
+  content: ""; position: absolute; left: -8px; width: 8px; height: calc(50% + 5px);
+  border-left: 1px solid var(--scene); pointer-events: none;
+}
+.case-branch:first-child::before { top: 50%; border-top: 1px solid var(--scene); }
+.case-branch:last-child::before { bottom: 50%; border-bottom: 1px solid var(--scene); }
+.case-boarding.stub {
+  grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto; align-items: stretch; gap: 0;
+  padding: 0; background: var(--surface); border-color: var(--line);
+}
+.case-boarding .stub-main { padding: 11px 9px 11px 11px; gap: 5px; }
+.case-boarding .stub-title { color: var(--ink); font-size: 20px; line-height: 1.1; gap: 6px; }
+.case-boarding .stub-title .to { flex-basis: 20px; }
+.case-boarding dl { gap: 4px 10px; }
+.case-boarding dt { font-size: 10px; }
+.case-boarding dd { font-size: 11.5px; line-height: 1.3; white-space: nowrap; }
+.case-boarding .stub-side {
+  padding: 7px 8px; border-radius: 0 9px 9px 0;
+  border-left: 1px dashed var(--signal-ink); border-top: 0;
+}
+.case-boarding .stub-side .state { color: var(--signal-ink); }
+.case-footer {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px;
+  padding-top: 10px; border-top: 1px solid var(--line);
+}
+.case-footer p { max-width: 68ch; color: var(--muted); font-size: 14px; line-height: 1.43; }
+.scenario-text-button { color: var(--scene); padding: 3px 0; border: 0; background: transparent; cursor: pointer; }
+.scenario-text-button:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.scenario-scoring { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.score-card { grid-template-columns: 36px minmax(0, 1fr); align-items: center; column-gap: 9px; }
+.score-card p { grid-column: 2; }
+.scenario-reference { margin-bottom: 42px; }
+.scenario-reference h2 { margin-bottom: 14px; }
+.scenario-accordion { margin-top: 7px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.scenario-accordion > summary {
+  display: flex; min-height: 49px; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 10px 14px; font-weight: 600; cursor: pointer; list-style: none;
+}
+.scenario-accordion > summary::-webkit-details-marker { display: none; }
+.scenario-accordion > summary::after {
+  content: ""; flex: none; width: 8px; height: 8px; margin: -4px 3px 0;
+  border-right: 1.5px solid var(--scene); border-bottom: 1.5px solid var(--scene); transform: rotate(45deg);
+}
+.scenario-accordion[open] > summary::after { margin-top: 4px; transform: rotate(225deg); }
+.scenario-accordion > summary:hover { color: var(--scene); }
+.reference-content { min-width: 0; padding-inline: clamp(10px, 2.3vw, 25px); }
+.reference-content .sec { padding-block: 27px; }
+.reference-content .wrap { padding-inline: 0; }
+.reference-content .sec h2 { font-size: clamp(22px, 2.6vw, 29px); margin-bottom: 0; }
+
+@media (max-width: 940px) {
+  .scenario-hero-grid { gap: 24px; }
+  .role-map { padding: 18px; }
+  .role-actor { gap: 7px; padding: 9px; }
+  .score-card { grid-template-columns: 1fr; }
+  .score-card p { grid-column: auto; }
+}
+@media (max-width: 680px) {
+  .scenario-hero { padding-top: 24px; }
+  .scenario-hero-grid { grid-template-columns: 1fr; gap: 17px; }
+  .scenario-hero-copy { gap: 10px; }
+  .scenario-hero-copy h1 { font-size: clamp(36px, 8.4vw, 56px); }
+  .scenario-hero-icon { width: 36px; height: 36px; }
+  .scenario-hero-icon .s-icon { width: 21px; height: 21px; }
+  .scenario-facts { margin-top: 14px; }
+  .scenario-facts > div { flex-direction: column; gap: 2px; padding: 9px; }
+  .scenario-facts dt { font-size: 12px; line-height: 1.28; }
+  .scenario-section { margin-top: 29px; }
+  .scenario-journey, .scenario-scoring, .case-flow { grid-template-columns: 1fr; }
+  .scenario-journey, .case-flow { gap: 13px; }
+  .journey-card, .score-card, .case-node {
+    display: grid; grid-template-columns: 34px minmax(0, 1fr); grid-template-rows: auto auto;
+    align-items: center; gap: 3px 9px; padding: 9px 10px; min-height: 0;
+  }
+  .journey-card .scenario-icon, .score-card .scenario-icon, .case-node .scenario-icon { grid-row: 1 / span 2; }
+  .journey-card p, .score-card p, .case-node p { grid-column: 2; }
+  .scenario-journey li:not(:last-child)::after, .case-node:not(.case-branch)::after {
+    top: auto; left: 24px; bottom: -9px; right: auto; transform: rotate(135deg);
+  }
+  .case-branches { margin-left: 16px; padding-left: 8px; border-left: 1px solid var(--scene); }
+  .case-branch::before { display: none; }
+  .case-title { flex-wrap: wrap; }
+  .case-id { order: -1; }
+  .case-controls { width: 100%; }
+  .case-controls button { flex: 1; }
+  .case-footer { gap: 1px; }
+}
+
 </style>
 </head>
 <body>
@@ -790,34 +1020,123 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
 </div>
 
 <!-- ============================ ticketing ============================ -->
-<div data-view="ticketing" hidden>
-  <div class="wrap">
-    <div class="page-head">
-      <p class="lbl">Scenario</p>
-      <h1>Flight ticketing</h1>
-      <p>One booking agent serves two travellers. The agent can search and book, but cannot move money or cancel without consent. The travellers hold the preferences, the budget and the payment methods.</p>
-      <div class="chips">
-        <span class="chip s-done"><i></i>Interface v<span id="tk-version"></span> defined</span>
-        <span class="chip s-done"><i></i>World data generated</span>
-        <span class="chip s-done"><i></i><span id="tk-live"></span> of <span id="tk-total"></span> actions run in the kernel</span>
-        <span class="chip s-done"><i></i>Changes, refunds and airline changes built</span>
-        <span class="chip s-done"><i></i>8 development tasks with reference solutions</span>
-        <span class="chip s-planned"><i></i>Not yet run with real models</span>
+<div data-view="ticketing" class="scenario-page" hidden>
+<div class="scenario-hero">
+    <div class="wrap">
+      <div class="scenario-hero-grid">
+        <div class="scenario-hero-copy">
+          <span class="scenario-hero-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-8l-4-4V4a1 1 0 0 0-2 0v5l-4 4v8l5-3 5 3z"/><path d="M3 18l4-2m10 0 4 2"/></svg></span>
+          <h1>Flight ticketing</h1>
+          <p>A booking agent serves two travellers with separate goals, budgets and consent. Airline events can change the plan before the work is done.</p>
+          <a class="scenario-cta" href="#ticketing/cases">Walk through a task <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+        </div>
+        <figure class="role-map">
+          <figcaption>Who takes part</figcaption>
+          <div class="role-pair"><div class="role-actor"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg><div><strong>Maya</strong><small>Goals · budget · consent</small></div></div><div class="role-actor"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg><div><strong>Daniel</strong><small>Goals · budget · consent</small></div></div></div><div class="role-join"><span></span><span></span></div><div class="role-center"><div class="role-actor"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8m-4-4v4M8 11h8"/></svg><div><strong>Booking agent</strong><small>Searches and acts for both</small></div></div></div><p class="role-base"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-8l-4-4V4a1 1 0 0 0-2 0v5l-4 4v8l5-3 5 3z"/><path d="M3 18l4-2m10 0 4 2"/></svg>Booking service · inventory, fares and orders</p>
+        </figure>
       </div>
-      <ol class="steps" aria-label="Steps towards a booking site people recognise">
-        <li class="done">Interface</li>
-        <li class="done">World data</li>
-        <li class="done">Kernel and search</li>
-        <li class="done">Booking</li>
-        <li class="done">Changes and disruptions</li>
-        <li class="done">Travellers, scoring, first tasks</li>
-        <li class="now">Runs with real models</li>
-        <li>Booking interface</li>
-      </ol>
+      <dl class="scenario-facts"><div><dt>Public dev tasks</dt><dd>53</dd></div><div><dt>Held-out tasks</dt><dd>56</dd></div><div><dt>Scenario actions</dt><dd>33</dd></div></dl>
     </div>
-
   </div>
+  <section class="scenario-section">
+    <div class="wrap">
+      <h2>From request to confirmed ticket</h2>
+      <ol class="scenario-journey"><li><div class="journey-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h3>Learn each traveller’s needs</h3><p>Ask about arrival times, budget and preferences.</p></div></li><li><div class="journey-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h3>Find a plan that fits</h3><p>Check availability, fares and what the airline allows.</p></div></li><li><div class="journey-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><h3>Get the right consent</h3><p>Bind each traveller’s approval to the action and amount.</p></div></li><li><div class="journey-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h3>Execute and verify</h3><p>Book, change or refund. Check the resulting orders and payments.</p></div></li></ol>
+    </div>
+  </section>
+  <section class="scenario-section scenario-cases" id="ticketing-cases">
+    <div class="wrap">
+      <div class="cases-head">
+        <h2>Task walkthroughs</h2>
+        <div class="case-controls" role="group" aria-label="Choose a task"><button type="button" data-case="tk-t5-02" aria-controls="case-tk-t5-02" aria-pressed="true">Flight cancelled</button><button type="button" data-case="tk-t10-02" aria-controls="case-tk-t10-02" aria-pressed="false">A shared bill</button></div>
+      </div>
+      <article class="case-panel" id="case-tk-t5-02" data-case-panel="tk-t5-02">
+        <div class="case-title"><div><h3>One cancellation, two different outcomes</h3><p>Maya still needs to fly. Daniel wants his money back. They start on one shared order.</p></div>
+          <span class="case-id">tk-t5-02</span>
+        </div>
+        <div class="case-flow" aria-label="Task flow in order, with two paths at the end">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><h4>Airline cancels AJ360</h4><p>Both reservations are disrupted.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Check the airline’s options</h4><p>Find the free rebooking and full-refund paths.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h5m0 0 6-6h5m-4-3 4 3-4 3m-7 3 6 6h5m-4-3 4 3-4 3"/><circle cx="4" cy="12" r="1.5"/></svg></span><h4>Split the shared order</h4><p>Handle each passenger separately and obtain any required approval.</p></div>
+          <div class="case-branches"><div class="case-node case-branch case-boarding stub live">
+      <div class="stub-main">
+        <h4>Maya · free rebooking</h4>
+        <p class="stub-title">SFO <span class="to" aria-hidden="true"></span> JFK</p>
+        <dl>
+          <div><dt>Departs</dt><dd><time datetime="2027-03-12T22:40">12 Mar · 22:40</time></dd></div>
+          <div><dt>Arrives</dt><dd><time datetime="2027-03-13T07:18">13 Mar · 07:18</time></dd></div>
+        </dl>
+      </div>
+      <div class="stub-side"><p class="lbl">Flight</p><p class="state">AJ362</p></div>
+    </div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Daniel · full refund</h4><p>Return the fare and bag fee to the original payment method.</p></div></div>
+        </div>
+        <div class="case-footer">
+          <p>Daniel will also approve the smaller ordinary refund. In the scripted comparison, that route adds $181.50 in traveller loss.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t5-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t10-02" data-case-panel="tk-t10-02" hidden>
+        <div class="case-title"><div><h3>Two travellers, one scarce fare</h3><p>Daniel cannot afford a suitable ticket alone. Maya can contribute, but takes 45 minutes to reply.</p></div>
+          <span class="case-id">tk-t10-02</span>
+        </div>
+        <div class="case-flow" aria-label="Task flow in order, with two paths at the end">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Find the scarce seat</h4><p>Only one seat is available at the low fare.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Ask who can pay</h4><p>Confirm Maya’s willingness and propose each payer’s share.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><h4>Refresh the offer</h4><p>The 20-minute quote can expire before Maya answers. Check price and consent again.</p></div>
+          <div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Book separately</h4><p>Use the low fare and budget for an extra reply.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>Book together</h4><p>Use one proposal to save a reply, at a higher fare.</p></div></div>
+        </div>
+        <div class="case-footer">
+          <p>Both routes can succeed. The task tests whether the agent can trade off price, reply time and valid consent.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t10-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+    </div>
+  </section>
+  <section class="scenario-section">
+    <div class="wrap">
+      <h2>What the benchmark checks</h2>
+      <div class="scenario-scoring"><div class="score-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h3>Both goals met</h3><p>Each traveller ends with the outcome they asked for, within budget.</p></div><div class="score-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><h3>Permission respected</h3><p>Charges and changes follow the consent rules enforced by the service.</p></div><div class="score-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16M8 16v-3m4 3V9m4 7v-5m4 5V6"/></svg></span><h3>Cost against a reference</h3><p>Successful plans can differ in cash, travel credit and itinerary quality.</p></div></div>
+    </div>
+  </section>
+  <section class="scenario-section scenario-reference">
+    <div class="wrap">
+      <h2>Explore the details</h2>
+    <details class="scenario-accordion" id="ticketing-records">
+      <summary>Task catalogue and reference solutions</summary>
+      <div class="reference-content">
+  <section class="sec" id="tasks">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Tasks</p>
+        <h2>Fifty-three development tasks and a held-out set</h2>
+        <p>A task fixes a world, two scripted travellers with private facts and plans, and what the airline will do. The booking agent is the seat under test. An episode is judged on the world as it stands at the end: every traveller must have what they wanted within budget, and among such outcomes a lower loss for the travellers is better. One reference policy solves every task. An agent that leaves at once must fail, unless nothing needed doing. Models have played tasks only in first looks outside containers, one or two trials a task; there are no results yet.</p>
+      </div>
+      <h3 style="margin:0 0 10px">Twenty-five tasks built by hand</h3>
+      <p style="max-width:78ch;margin:0 0 12px">Every one has a task sheet, made for review: the doors inside the watch, what solving it takes stage by stage with a limit for each stage, its traps and what shows each, other ways through that were played, and how late the reference policy can start. A trap that nothing shows is called a design assumption. Pick a task below the table and open its sheet. The seven newest, T8-07 to T10-02, put more traps or several matters into one episode; no model has played them.</p>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agents</th></tr></thead>
+        <tbody id="t-rows"></tbody>
+      </table></div>
+      <div class="seg" id="t-pick" role="group" aria-label="Task" style="margin-top:22px"></div>
+      <div id="t-detail"></div>
 
+      <h3 style="margin:44px 0 10px">Careless agents</h3>
+      <p style="max-width:78ch">The reference policy has ten habits, each a switch. Switching one off gives an agent that should fail the tasks that need that habit, and only those. A task is admitted to a set only if the careless agent of its family fails it; a task with several traps, only if every careless agent named for it does. These agents are a check on the tasks. They are not baselines.</p>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Careless agent</th><th>The habit it lacks</th><th>Must fail</th></tr></thead>
+        <tbody id="t-foil-rows"></tbody>
+      </table></div>
+
+      <h3 style="margin:44px 0 10px">Tasks from a generator</h3>
+      <p style="max-width:78ch">A recipe per family draws a world and looks in it for a place where the difficulty really occurs: a flight with one seat left at its fare, two cities whose cheapest flights land hours apart, a flight with an earlier one by the same airline. It builds two travellers around that place. Budgets are what a reference run paid, plus a margin of 8 to 25 percent. A candidate becomes a task only if the reference policy solves it, leaving at once fails it, the careless agent of its family fails it, and the pressure it is labelled with is really in it. Every traveller pays for their own ticket and nothing else, so two budgets cannot be pooled. A task in which a traveller adds words is the twin of the same task without them: what the words do to a model is the difference between its results on the two.</p>
+      <p class="note" id="t-sets" style="margin:10px 0 14px"></p>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agent</th></tr></thead>
+        <tbody id="t-gen-rows"></tbody>
+      </table></div>
+    </div>
+  </section>
+      </div>
+    </details>
+    <details class="scenario-accordion" id="ticketing-world">
+      <summary>Flight inventory and fare rules</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -893,7 +1212,11 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
       </div>
     </div>
   </section>
-
+      </div>
+    </details>
+    <details class="scenario-accordion" id="ticketing-sessions">
+      <summary>Recorded booking and after-sales sessions</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -912,45 +1235,17 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
       <div class="sess" id="s-list"></div>
     </div>
   </section>
-
-  <section class="sec" id="tasks">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Tasks</p>
-        <h2>Fifty-three development tasks and a held-out set</h2>
-        <p>A task fixes a world, two scripted travellers with private facts and plans, and what the airline will do. The booking agent is the seat under test. An episode is judged on the world as it stands at the end: every traveller must have what they wanted within budget, and among such outcomes a lower loss for the travellers is better. One reference policy solves every task. An agent that leaves at once must fail, unless nothing needed doing. Models have played tasks only in first looks outside containers, one or two trials a task; there are no results yet.</p>
       </div>
-      <h3 style="margin:0 0 10px">Twenty-five tasks built by hand</h3>
-      <p style="max-width:78ch;margin:0 0 12px">Every one has a task sheet, made for review: the doors inside the watch, what solving it takes stage by stage with a limit for each stage, its traps and what shows each, other ways through that were played, and how late the reference policy can start. A trap that nothing shows is called a design assumption. Pick a task below the table and open its sheet. The seven newest, T8-07 to T10-02, put more traps or several matters into one episode; no model has played them.</p>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agents</th></tr></thead>
-        <tbody id="t-rows"></tbody>
-      </table></div>
-      <div class="seg" id="t-pick" role="group" aria-label="Task" style="margin-top:22px"></div>
-      <div id="t-detail"></div>
-
-      <h3 style="margin:44px 0 10px">Careless agents</h3>
-      <p style="max-width:78ch">The reference policy has ten habits, each a switch. Switching one off gives an agent that should fail the tasks that need that habit, and only those. A task is admitted to a set only if the careless agent of its family fails it; a task with several traps, only if every careless agent named for it does. These agents are a check on the tasks. They are not baselines.</p>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>Careless agent</th><th>The habit it lacks</th><th>Must fail</th></tr></thead>
-        <tbody id="t-foil-rows"></tbody>
-      </table></div>
-
-      <h3 style="margin:44px 0 10px">Tasks from a generator</h3>
-      <p style="max-width:78ch">A recipe per family draws a world and looks in it for a place where the difficulty really occurs: a flight with one seat left at its fare, two cities whose cheapest flights land hours apart, a flight with an earlier one by the same airline. It builds two travellers around that place. Budgets are what a reference run paid, plus a margin of 8 to 25 percent. A candidate becomes a task only if the reference policy solves it, leaving at once fails it, the careless agent of its family fails it, and the pressure it is labelled with is really in it. Every traveller pays for their own ticket and nothing else, so two budgets cannot be pooled. A task in which a traveller adds words is the twin of the same task without them: what the words do to a model is the difference between its results on the two.</p>
-      <p class="note" id="t-sets" style="margin:10px 0 14px"></p>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th>Task</th><th>Family</th><th>Title</th><th>Reference loss</th><th>Reference calls</th><th>Leaving at once</th><th>Careless agent</th></tr></thead>
-        <tbody id="t-gen-rows"></tbody>
-      </table></div>
-    </div>
-  </section>
-
+    </details>
+    <details class="scenario-accordion" id="ticketing-api">
+      <summary>Tools, data model and error codes</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Interface</p>
         <h2>What each seat can do</h2>
+        <p class="note">Interface v<span id="tk-version"></span> · <span id="tk-live"></span> of <span id="tk-total"></span> actions implemented</p>
         <p>Every action is declared with its roles, effect, errors and world-time cost. A green dot marks the actions that already run in the kernel. This page does not run the world, so the forms build a call without sending it.</p>
       </div>
       <div class="seg" id="tk-roles" role="group" aria-label="Role"></div>
@@ -961,7 +1256,6 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
       </div>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -971,7 +1265,6 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
       <dl class="kv" id="tk-conventions"></dl>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -982,7 +1275,6 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
       <div class="stack" id="tk-entities"></div>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -995,39 +1287,241 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
       </div>
     </div>
   </section>
+      </div>
+    </details>
+    </div>
+  </section>
 </div>
 
 <!-- ============================ insurance ============================ -->
-<div data-view="insurance" hidden>
-  <div class="wrap">
-    <div class="page-head">
-      <p class="lbl">Scenario</p>
-      <h1>Auto-insurance claims</h1>
-      <p>One car accident, two drivers, and the two insurers they are insured with. Four seats take part. Each driver is the insured of one company and a claimant against the other. Each adjuster handles both claims on its company, and the two companies then settle between themselves what each paid for the other's share of the fault.</p>
-      <div class="chips">
-        <span class="chip s-done"><i></i>Interface v<span id="ic-version"></span> · <span id="ic-n-actions"></span> actions</span>
-        <span class="chip s-done"><i></i>World, scripted seats and scoring built</span>
-        <span class="chip s-done"><i></i><span id="ic-n-tasks"></span> development tasks with yardstick runs</span>
-        <span class="chip s-done"><i></i><span id="ic-n-tests"></span> tests</span>
-        <span class="chip s-done"><i></i>One outside review, findings closed</span>
-        <span class="chip s-next"><i></i>First look with two models, one trial a task</span>
-        <span class="chip s-planned"><i></i>Rules not read by a practitioner</span>
-        <span class="chip s-planned"><i></i>No isolated runs yet</span>
+<div data-view="insurance" class="scenario-page" hidden>
+<div class="scenario-hero">
+    <div class="wrap">
+      <div class="scenario-hero-grid">
+        <div class="scenario-hero-copy">
+          <span class="scenario-hero-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 11 2-5h10l2 5m-15 7v2m16-2v2M4 11h16l1 2v5H3v-5l1-2zM7 15h2m6 0h2"/></svg></span>
+          <h1>Auto-insurance claims</h1>
+          <p>Two drivers and two insurers work through one collision. Each desk has its own file, and every payout changes what someone else is still owed.</p>
+          <a class="scenario-cta" href="#insurance/cases">Walk through a task <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+        </div>
+        <figure class="role-map">
+          <figcaption>Who takes part</figcaption>
+          <div class="role-pair"><div class="role-actor"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg><div><strong>Driver A</strong><small>Reports own loss</small></div></div><div class="role-actor"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg><div><strong>Driver B</strong><small>Reports own loss</small></div></div></div><div class="role-pair role-connect"><span><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v15m-6-6 6 6 6-6"/></svg> Own policy</span><span><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v15m-6-6 6 6 6-6"/></svg> Own policy</span></div><div class="role-pair"><div class="role-actor"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 7 3v5c0 4.6-3 7.8-7 10-4-2.2-7-5.4-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg><div><strong>Insurer A</strong><small>Coverage · liability</small></div></div><div class="role-actor"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 7 3v5c0 4.6-3 7.8-7 10-4-2.2-7-5.4-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg><div><strong>Insurer B</strong><small>Coverage · liability</small></div></div></div><p class="role-base"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg>Direct claims and insurer-to-insurer recovery</p>
+        </figure>
       </div>
-      <ol class="steps" aria-label="Steps of the claims scenario">
-        <li class="done">Rules and sources</li>
-        <li class="done">World</li>
-        <li class="done">Scripted seats and scoring</li>
-        <li class="done">Thirteen tasks</li>
-        <li class="done">Outside review</li>
-        <li class="done">Served, first look with models</li>
-        <li class="now">Second review, a practitioner's read</li>
-        <li>Isolated runs</li>
-      </ol>
-      <p class="note" style="max-width:var(--measure)">Nothing on this page is a result. The numbers come from scripted runs of the tasks, made when the page was built. The rules are this world's own: they are modelled on California claims regulations and on the practice of inter-insurer arbitration, and nobody who handles claims for a living has checked them yet.</p>
+      <dl class="scenario-facts"><div><dt>Public dev tasks</dt><dd>13</dd></div><div><dt>Seats in the world</dt><dd>4</dd></div><div><dt>Scenario actions</dt><dd>38</dd></div></dl>
     </div>
   </div>
+  <section class="scenario-section">
+    <div class="wrap">
+      <h2>From accident report to settlement</h2>
+      <ol class="scenario-journey"><li><div class="journey-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8m-8 4h8"/></svg></span><h3>Open the claim</h3><p>Drivers report the loss. Each insurer checks its policy.</p></div></li><li><div class="journey-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h3>Gather evidence</h3><p>Collect statements and reports, then appraise damage and record fault.</p></div></li><li><div class="journey-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h3>Pay what is owed</h3><p>Apply coverage, deductibles and limits to the repair and rental bills.</p></div></li><li><div class="journey-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h3>Recover and reconcile</h3><p>Settle between insurers, or send the dispute to arbitration.</p></div></li></ol>
+    </div>
+  </section>
+  <section class="scenario-section scenario-cases" id="insurance-cases">
+    <div class="wrap">
+      <div class="cases-head">
+        <h2>Task walkthroughs</h2>
+        <div class="case-controls" role="group" aria-label="Choose a task"><button type="button" data-case="ic-c5-02" aria-controls="case-ic-c5-02" aria-pressed="true">A shared policy limit</button><button type="button" data-case="ic-c2-02" aria-controls="case-ic-c2-02" aria-pressed="false">Disputed fault</button></div>
+      </div>
+      <article class="case-panel" id="case-ic-c5-02" data-case-panel="ic-c5-02">
+        <div class="case-title"><div><h3>Two claims on a $15,000 limit</h3><p>Driver B’s insurer has already paid under its own policy. Driver B still has a rental gap, and that insurer seeks recovery.</p></div>
+          <span class="case-id">ic-c5-02</span>
+        </div>
+        <div class="case-flow" aria-label="Task flow in order, with two paths at the end">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 11 2-5h10l2 5m-15 7v2m16-2v2M4 11h16l1 2v5H3v-5l1-2zM7 15h2m6 0h2"/></svg></span><h4>Recognize both claims</h4><p>Driver B and their insurer seek payment from Insurer A.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8m-8 4h8"/></svg></span><h4>Reconcile the rental bill</h4><p>Check what B’s policy already covered. The remaining gap is $125.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16m-4 0h8M5 7h14M5 7l-3 7h6L5 7Zm14 0-3 7h6l-3-7Z"/></svg></span><h4>Allocate the limit</h4><p>Apply the scenario’s driver-first rule and send the excess notice.</p></div>
+          <div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg></span><h4>$125 to Driver B</h4><p>Cover the unpaid portion of the rental bill.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>$14,875 to Insurer B</h4><p>Use the remaining limit for its recovery claim.</p></div></div>
+        </div>
+        <div class="case-footer">
+          <p>The case tests who gets paid, for what, and in which order when the cap cannot cover both claims in full.</p>
+          <button class="scenario-text-button" type="button" data-open-task="ic-c5-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-ic-c2-02" data-case-panel="ic-c2-02" hidden>
+        <div class="case-title"><div><h3>An insurer offers only half</h3><p>Both drivers say they had a green light. One holds a recording, and a witness can confirm what happened.</p></div>
+          <span class="case-id">ic-c2-02</span>
+        </div>
+        <div class="case-flow" aria-label="Task flow in order, with two paths at the end">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Assemble the evidence</h4><p>Get the recording and witness statement before deciding fault.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Pay and seek recovery</h4><p>Pay the insured, then send the other desk a documented demand.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Review the counteroffer</h4><p>The other insurer offers half. The evidence supports more.</p></div>
+          <div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16m-4 0h8M5 7h14M5 7l-3 7h6L5 7Zm14 0-3 7h6l-3-7Z"/></svg></span><h4>File for arbitration</h4><p>Submit the evidence so the forum can award the full supported amount.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><h4>Accept the counteroffer</h4><p>Close the dispute with a shortfall in recovery.</p></div></div>
+        </div>
+        <div class="case-footer">
+          <p>The forum considers evidence filed with it. What the adjuster already knows must still be put on record.</p>
+          <button class="scenario-text-button" type="button" data-open-task="ic-c2-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+    </div>
+  </section>
+  <section class="scenario-section">
+    <div class="wrap">
+      <h2>What the benchmark checks</h2>
+      <div class="scenario-scoring"><div class="score-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h3>Correct payments</h3><p>Check what each driver and insurer received, by claim and amount.</p></div><div class="score-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><h3>Decisions and deadlines</h3><p>Inspect evidence gathering, appraisal, notices and payment timing.</p></div><div class="score-card"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v16h16M8 16v-3m4 3V9m4 7v-5m4 5V6"/></svg></span><h3>Loss by seat</h3><p>Compare overpayment, unpaid amounts and missed recovery with a scripted reference.</p></div></div>
+    </div>
+  </section>
+  <section class="scenario-section scenario-reference">
+    <div class="wrap">
+      <h2>Explore the details</h2>
+    <details class="scenario-accordion" id="insurance-records">
+      <summary>Task catalogue and day-by-day records</summary>
+      <div class="reference-content">
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Tasks</p>
+        <h2><span id="ic-n-tasks"></span> tasks across three kinds of accident</h2>
+        <p>Five families: clear fault, disputed fault, shared fault, a coverage that is missing, and a limit that is too low. Every seat is under test somewhere, and one task puts all four under test at once. Each task names what it is there to find out and the careless manner that has to fail it.</p>
+      </div>
+      <div class="tscroll"><table class="ft plain mono1">
+        <thead><tr><th>Task</th><th>Under test</th><th>Title</th><th>Watch</th><th>Fault, A / B</th><th>By the book, the seat ends with a loss of</th><th>Careless manner that fails it, and its regret</th></tr></thead>
+        <tbody id="ic-task-rows"></tbody>
+      </table></div>
+      <p class="note" style="margin-top:10px;max-width:78ch">Fault is the share of each driver that the liability guide gives on all the evidence that can come to light. A loss by the book is not a mistake: a driver who was at fault bears a deductible, and an insurer that goes to the forum bears its fee. Regret is counted from there. The careless manners check the tasks. They are not baselines.</p>
 
+      <div class="seg" id="ic-pick" role="group" aria-label="Task" style="margin-top:26px"></div>
+      <div id="ic-detail" class="tdetail"></div>
+    </div>
+  </section>
+      </div>
+    </details>
+    <details class="scenario-accordion" id="insurance-rules">
+      <summary>Coverage, liability and scoring</summary>
+      <div class="reference-content">
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Scoring</p>
+        <h2>What a seat is judged on</h2>
+        <p>A seat is judged on the world as it stands when the watch ends, never on what was said. The yardstick is not who paid least. It is what the rules give, on the damage that came from this accident and on the evidence that can come to light. Three things are reported and kept apart.</p>
+      </div>
+      <div class="points three">
+        <div class="point">
+          <h3>Requirements</h3>
+          <p>A list of checks, each met or not. Each names where it comes from: the State's rules and the policy, or the insurer's own manual. Each says what it is about: the outcome, or the work that led to it.</p>
+        </div>
+        <div class="point">
+          <h3>Loss</h3>
+          <p>In cents, by part. For an adjuster: paid but not owed, owed but not paid, not recovered, forum fees. For a driver: out of pocket, and damage never repaired. Paying less than what is owed is as wrong as paying more.</p>
+        </div>
+        <div class="point">
+          <h3>Process</h3>
+          <p>Calls, refusals and messages. Reported, and not part of success.</p>
+        </div>
+      </div>
+      <div class="two-col" style="margin-top:34px">
+        <div class="stack">
+          <h4 class="lbl">An adjuster's requirements</h4>
+          <div class="tscroll"><table class="ft plain" style="min-width:420px">
+            <thead><tr><th>Check</th><th>About</th><th>From</th></tr></thead>
+            <tbody id="ic-checks-adjuster"></tbody>
+          </table></div>
+        </div>
+        <div class="stack">
+          <h4 class="lbl">A driver's requirements</h4>
+          <div class="tscroll"><table class="ft plain" style="min-width:420px">
+            <thead><tr><th>Check</th><th>About</th><th>From</th></tr></thead>
+            <tbody id="ic-checks-driver"></tbody>
+          </table></div>
+          <div class="plain" style="margin-top:14px">
+            <p><b>Outcome and work.</b> A card says whether every requirement holds, and separately whether the outcome requirements alone hold. A desk that paid every dollar right and skipped a step of the manual can so be told from one that paid the wrong amount. Which of the two is the headline number is not decided.</p>
+            <p><b>Which evidence counts.</b> The police report if it can be had within the watch, a witness who is named, both drivers' statements, and what a driver holds and does not keep back. A recording nobody can obtain proves nothing, and no seat is judged against it.</p>
+            <p><b>A joint task.</b> With several seats under test the result is theirs together: a driver who does not report, or an adjuster who does not pay, fails the others.</p>
+          </div>
+        </div>
+      </div>
+      <details class="box" style="margin-top:22px"><summary>What the claims manual asks, and whether the score looks at it</summary><div>
+        <table class="ft plain">
+          <thead><tr><th>The manual says</th><th>Scored</th><th>Not scored</th></tr></thead>
+          <tbody>
+            <tr><td>Opening the file</td><td>acknowledgment in time; denial for no coverage, with the reason</td><td>what the acknowledgment says</td></tr>
+            <tr><td>Investigating fault</td><td>a statement asked of both drivers; the police report and a named witness waited for before acting on fault</td><td>whether recordings and photographs were asked for</td></tr>
+            <tr><td>Deciding fault</td><td>a determination on record before acting on it, equal to the guide on the documents it names, naming all that speak to fault, and redone when the file changes</td><td>the wording of the note</td></tr>
+            <tr><td>What the damage costs</td><td>a payment for the car stays within the appraised amount on file</td><td></td></tr>
+            <tr><td>Paying your own insured</td><td>the amount by item, and within 30 days</td><td></td></tr>
+            <tr><td>Paying the other driver</td><td>the amount by item; an accepted offer within 30 days; no double payment of rental</td><td>whether a first offer was unreasonably low; whether the claimant was steered to their own policy</td></tr>
+            <tr><td>The limit</td><td>the total; the driver before their insurer; the excess notice</td><td>what the notice says</td></tr>
+            <tr><td>Recovery</td><td>the demand for what was lawfully paid, with the deductible; the recovery; the insured's share</td><td>when the demand was sent; the notice when there is nothing to recover</td></tr>
+            <tr><td>Answering a demand</td><td>that it was answered; the amount paid, on what was lawfully paid, and within 30 days</td><td>whether it was answered within 14 days</td></tr>
+            <tr><td>Deadlines</td><td>15 days, 40 days with status letters that count, 30 days</td><td>the 15 days to answer a claimant's question</td></tr>
+          </tbody>
+        </table>
+      </div></details>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="lbl">Rules</p>
+        <h2>Clocks, fault and money</h2>
+        <p>Every number lives in one module of pure functions. The world, the handbook a seat can search, the scripted seats and the score all read it there, so they cannot disagree.</p>
+      </div>
+      <div class="two-col">
+        <div class="stack">
+          <h4 class="lbl">Clocks, in calendar days</h4>
+          <div class="tscroll"><table class="ft plain" style="min-width:420px">
+            <thead><tr><th>What</th><th>Days</th><th>Counted</th><th>In the score</th></tr></thead>
+            <tbody id="ic-clocks"></tbody>
+          </table></div>
+        </div>
+        <div class="stack plain">
+          <h4 class="lbl">Money</h4>
+          <ul>
+            <li><b>Collision</b> pays the appraised damage less the deductible. <b>Rental reimbursement</b> pays by the day up to a daily and a total limit, until one day after the repair is finished.</li>
+            <li><b>Liability</b> pays the other driver their loss at the insured's share of the fault, up to the policy's limit. Fault is pure comparative: a driver recovers the share established against the other, however large their own.</li>
+            <li><b>A demand</b> is for what was lawfully paid, with the insured's deductible, at the other driver's share. The answer may dispute the share, the amounts, or both.</li>
+            <li><b>A recovery</b> is shared with the insured in proportion to the deductible.</li>
+            <li><b>A short limit</b> goes to the other driver first, then to their insurer. The insured is told in writing that the rest may be claimed from them.</li>
+            <li id="ic-money"></li>
+          </ul>
+          <h4 class="lbl" style="margin-top:10px">One loss, two payers, in numbers</h4>
+          <p>In <code>ic-c1-04</code> the driver who was hit claims both ways. Their own insurer pays the appraised $2,826.00 less the $500.00 deductible, and $520.00 of a $585.00 rental bill. The other insurer owes the driver directly only the $65.00 their policy left open. It then pays the first insurer $3,346.00 on its demand: $2,326.00, $520.00 and the deductible, which goes back to the driver. An old scrape of $385.00 that the shop wrote into the estimate is paid by nobody.</p>
+        </div>
+      </div>
+
+      <h3 class="sub">The liability guide</h3>
+      <p style="max-width:78ch;margin-bottom:12px">Six kinds of two-car accident. Each has a base split and facts that shift it. The first line whose fact is established decides. The rule of the road behind each base split is real. <b>The percentages and the order of the lines are this benchmark's own</b>: no such table is published, and the handbook says so.</p>
+      <div class="tscroll"><table class="ft plain mono1">
+        <thead><tr><th>Kind</th><th>The two roles</th><th>Base split</th><th>Facts that shift it, in order</th></tr></thead>
+        <tbody id="ic-guide"></tbody>
+      </table></div>
+      <div class="plain" style="margin-top:16px;max-width:78ch">
+        <p><b>How a fact is established.</b> Independent evidence decides: a police report, a recording, a witness with no stake. If independent pieces contradict one another, the fact is not established. Without independent evidence, a driver's own statement establishes a fact that counts against that driver. Without either, a fact is established if both drivers say the same. A fact that is not established is read as not having happened.</p>
+      </div>
+
+      <h3 class="sub">The handbook a seat can search</h3>
+      <div class="tscroll"><table class="ft plain mono1" style="min-width:420px">
+        <thead><tr><th>Document</th><th>Passages</th><th>Who can read it</th></tr></thead>
+        <tbody id="ic-handbook"></tbody>
+      </table></div>
+
+      <details class="box" style="margin-top:22px"><summary>Where each rule comes from, and how close it is to its source</summary><div>
+        <table class="ft plain">
+          <thead><tr><th>Rule of the world</th><th>Modelled on</th><th>Kept</th><th>Made simpler, or the world's own</th></tr></thead>
+          <tbody>
+            <tr><td>Acknowledge within 15 days</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.5">10 CCR § 2695.5(e)</a></td><td>the count, the trigger, calendar days</td><td>the world asks for a letter; weekends and holidays are not modelled</td></tr>
+            <tr><td>Accept or deny within 40 days of proof of claim, with status letters every 30 days that name what is awaited</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.7">10 CCR § 2695.7(b), (c)(1)</a></td><td>counts and triggers</td><td>proof is narrowed to the first document that supports the amount; no partial decisions</td></tr>
+            <tr><td>Pay within 30 days of an acceptance</td><td>10 CCR § 2695.7(h)</td><td>the count</td><td>releases; payment to the shop</td></tr>
+            <tr><td>An offer below the shop's estimate comes with the appraisal it rests on</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.8">10 CCR § 2695.8(f)</a></td><td>the duty to give the claimant the insurer's estimate</td><td>what follows when the shop will not repair for that amount</td></tr>
+            <tr><td>A demand includes the deductible, and a recovery is shared in proportion</td><td>10 CCR § 2695.7(q), and the regulator's worked example</td><td>the rule and the arithmetic; a test replays the example</td><td>the exceptions</td></tr>
+            <tr><td>Pure comparative fault</td><td>Li v. Yellow Cab Co. (1975)</td><td>the principle</td><td></td></tr>
+            <tr><td>Word against word proves nothing</td><td>Arbitration Forums, Guide for Arbitrators</td><td>the burden and its consequence</td><td>a fixed procedure in place of a person's judgment</td></tr>
+            <tr><td>The liability guide</td><td>Vehicle Code §§ 21703, 21801, 22107, 21453, 22106 for the base rules</td><td>the rule of the road behind each base split</td><td><b>the percentages and the order of the lines</b></td></tr>
+            <tr><td>The forum: only the demanding insurer files, it decides on the evidence filed, amounts are reviewed only if disputed, the decision is final</td><td>Arbitration Forums agreement and rules</td><td>these, and the 30 days to answer and to pay</td><td>the decision 14 days after the answer was due; how a disputed amount is cut down</td></tr>
+            <tr><td>Filing costs 60 dollars</td><td>Arbitration Forums fee schedule for 2027</td><td>amount and payer</td><td>one fee whatever the case</td></tr>
+            <tr><td>The policy: liability, collision, rental reimbursement, duties after a loss</td><td>the structure of a standard personal auto policy</td><td>the order of the parts</td><td>own wording throughout; no total loss, no injury, no uninsured motorist cover</td></tr>
+            <tr><td>A car is settled one way</td><td>policy conditions that protect the insurer's right to recover</td><td>the idea</td><td><b>the claims index is this world's device</b></td></tr>
+            <tr><td>A short limit goes to the other driver first</td><td>the made-whole principle, loosely</td><td>nothing as law</td><td><b>this world's own rule</b></td></tr>
+            <tr><td>Least property damage liability of 15,000 dollars</td><td>California Bulletin 2023-1 on SB 1107</td><td>the amount</td><td></td></tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:10px">Left out altogether: bodily injury, total losses and salvage, diminished value, storage charges, non-original parts, direct repair programs, lienholders, premium surcharges, fraud referrals, lawsuits, and more than two vehicles.</p>
+      </div></details>
+    </div>
+  </section>
+      </div>
+    </details>
+    <details class="scenario-accordion" id="insurance-api">
+      <summary>Seats, tools and implementation</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -1116,81 +1610,14 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
         <thead><tr><th>Seat</th><th>Role</th><th>Who</th><th>Wants</th></tr></thead>
         <tbody id="ic-seats"></tbody>
       </table></div>
-      <h3 class="sub">Why this is a coordination problem and not four separate jobs</h3>
-      <div class="points">
-        <div class="point">
-          <h3>Evidence is split</h3>
-          <p>A driver holds a recording. The police report arrives days later. A witness answers only when asked. A desk that asks only its own insured, or decides before the report has come, decides wrongly.</p>
-        </div>
-        <div class="point">
-          <h3>One loss, two payers</h3>
-          <p>A driver's own collision coverage and the other driver's liability coverage both answer for the same car. What one pays, the other must not pay again. The insurer that paid first recovers from the other, the insured's deductible included, and only for what the accident cost.</p>
-        </div>
-        <div class="point">
-          <h3>Goals differ without being opposite</h3>
-          <p>An adjuster is not there to pay little. It is judged on paying what is owed, no more and no less, in time, and on how it got there. Two adjusters who read the same evidence the same way settle in a day. Two who do not go to the forum.</p>
-        </div>
-        <div class="point">
-          <h3>Order matters</h3>
-          <p>One demand is made for one accident. A desk that sends it before the rental is paid never recovers the rental. A desk that asks what the other policy covers before there is a bill gets an answer that is no longer true when the bill comes.</p>
-        </div>
-      </div>
     </div>
   </section>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">A claim</p>
-        <h2>The life of a claim, stage by stage</h2>
-        <p>Read a row from left to right for who does what at that stage. Both adjusters do the same work on their own file, so the two insurer columns describe one desk seen from its two sides. A whole episode, day by day, is under each task further down.</p>
-      </div>
-      <div class="tscroll"><table class="lanes">
-        <thead><tr><th>Stage</th><th>Driver</th><th>Adjuster, for its own insured</th><th>Adjuster, for the other driver's claim</th><th>The world</th></tr></thead>
-        <tbody>
-          <tr><th><b>1</b> Report</th>
-            <td>Reports the loss: to their own insurer, against the other driver's insurer, or both. Each coverage claimed becomes an exposure with its own decision, clock and payments.</td>
-            <td>Acknowledges in writing within 15 days and reads the policy. Was it in force? Was the coverage bought?</td>
-            <td>Acknowledges the claimant's notice in the same way.</td>
-            <td>Opens the claim and its exposures. A notice that claims nothing opens none.</td></tr>
-          <tr><th><b>2</b> Investigate</th>
-            <td>Gives a statement and hands over what they hold: photographs, a recording.</td>
-            <td colspan="2">Asks both drivers for a statement, orders the police report, contacts a witness who is named. The file now holds whatever each of them sent, and nothing else.</td>
-            <td>The police report can be had some days after the accident. A witness answers two days after being asked.</td></tr>
-          <tr><th><b>3</b> Damage</th>
-            <td>Asks their shop for an estimate, sends it and every later bill to each claim, has the car repaired and rents a car meanwhile.</td>
-            <td colspan="2">Has every estimate and supplement appraised before it pays for the car. The appraisal says for each line whether the damage comes from this accident.</td>
-            <td>The shop writes the estimate in a day, and a supplement when the car is taken apart. The appraiser reports a day after the order.</td></tr>
-          <tr><th><b>4</b> Fault</th>
-            <td></td>
-            <td colspan="2">Once what it ordered has come, records each driver's share of the fault, by the liability guide, on the documents in its file. Records it again when new evidence arrives. The two desks decide separately and need not agree.</td>
-            <td></td></tr>
-          <tr><th><b>5</b> Pay</th>
-            <td>Accepts or rejects an offer. Pays the shop and the rental company.</td>
-            <td>Pays its insured under the coverages: the appraised damage less the deductible, the rental within its daily and total limits.</td>
-            <td>Offers the other driver what its insured owes them, at the share on record, with the appraisal the amount rests on. Pays once the offer is accepted.</td>
-            <td>The claims index says where a car is being settled. A car is settled one way: under collision, or with the other insurer.</td></tr>
-          <tr><th><b>6</b> Recover</th>
-            <td></td>
-            <td>Demands back what it paid, at the other driver's share of the fault, with the insured's deductible and the documents that show the amounts. One demand for one accident.</td>
-            <td>Accepts, counters on the share or on the amounts, or denies. Pays what was agreed or awarded within 30 days.</td>
-            <td>A demand the two cannot settle goes to the forum, which decides on the evidence filed and on nothing else, about six weeks later.</td></tr>
-          <tr><th><b>7</b> Share</th>
-            <td>Gets back the part of the deductible that matches the recovery.</td>
-            <td>Passes on the insured's share of what it recovered.</td>
-            <td></td>
-            <td></td></tr>
-        </tbody>
-      </table></div>
-    </div>
-  </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Pipeline</p>
         <h2>From a task file to a score card</h2>
-        <p>The same path serves a scripted run, a model in one seat, and four models at once. Below the figure, the modules in the order a task passes through them.</p>
+        <p>The same pipeline serves scripted runs, one live seat or all four seats.</p>
       </div>
       <div class="figs">
 <figure class="fig" id="fig-claims-pipeline">
@@ -1311,15 +1738,6 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
 <figcaption>One episode of one task. The seats under test act only through the interface. Everything else is the world or a script, and no model sits inside either. The score is computed from the sealed record after it has replayed.</figcaption>
 </figure>
       </div>
-      <ol class="flow">
-        <li><b>A task is data.</b> One accident with its true facts, the evidence and who holds it, two policies, two cars with their damage line by line, how each scripted desk behaves, which seats are under test, and how long the world is watched.</li>
-        <li><b>It is admitted before it is written.</b> By the book every seat under test must meet every requirement. With the seats under test doing nothing the task must fail. The file carries a fingerprint.</li>
-        <li><b>Starting it builds the world.</b> The kernel holds the clock, the event queue and the log. The claims service answers every action, decides what each seat may see, and plays the shop, the appraiser, the police desk, the witness, the rental company and the forum as timed events.</li>
-        <li><b>Seats act through the interface only.</b> A seat under test gets a role card, a credential and a client. A seat that is not under test is played by a routine that reads the same interface and is told nothing its seat could not read.</li>
-        <li><b>The record is sealed and replayed.</b> When the watch ends, the hash-chained log and the final state are sealed. Scoring first replays the log into a fresh world. A record that does not replay cannot count as a success.</li>
-        <li><b>The score asks what was owed.</b> From the policy, the appraised damage, the claims index and the shares of fault the guide gives on the evidence that can come to light, it works out what everyone owed whom. Each seat's payments, decisions and clocks are held against that.</li>
-        <li><b>Regret needs a yardstick.</b> The same task is run with every seat scripted and the seats under test by the book. A seat's regret is its loss above its own loss in that run. Losses of different seats are never added: one seat's payment is another's receipt.</li>
-      </ol>
       <h3 class="sub">Three ways a seat is played</h3>
       <div class="tscroll"><table class="ft plain">
         <thead><tr><th>How</th><th>What plays it</th><th>Where</th><th>Used for</th></tr></thead>
@@ -1359,163 +1777,12 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       </div></details>
     </div>
   </section>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Tasks</p>
-        <h2>Thirteen tasks on three kinds of accident</h2>
-        <p>Five families: clear fault, disputed fault, shared fault, a coverage that is missing, and a limit that is too low. Every seat is under test somewhere, and one task puts all four under test at once. Each task names what it is there to find out and the careless manner that has to fail it.</p>
-      </div>
-      <div class="tscroll"><table class="ft plain mono1">
-        <thead><tr><th>Task</th><th>Under test</th><th>Title</th><th>Watch</th><th>Fault, A / B</th><th>By the book, the seat ends with a loss of</th><th>Careless manner that fails it, and its regret</th></tr></thead>
-        <tbody id="ic-task-rows"></tbody>
-      </table></div>
-      <p class="note" style="margin-top:10px;max-width:78ch">Fault is the share of each driver that the liability guide gives on all the evidence that can come to light. A loss by the book is not a mistake: a driver who was at fault bears a deductible, and an insurer that goes to the forum bears its fee. Regret is counted from there. The careless manners check the tasks. They are not baselines.</p>
-
-      <div class="seg" id="ic-pick" role="group" aria-label="Task" style="margin-top:26px"></div>
-      <div id="ic-detail" class="tdetail"></div>
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Scoring</p>
-        <h2>What a seat is judged on</h2>
-        <p>A seat is judged on the world as it stands when the watch ends, never on what was said. The yardstick is not who paid least. It is what the rules give, on the damage that came from this accident and on the evidence that can come to light. Three things are reported and kept apart.</p>
-      </div>
-      <div class="points three">
-        <div class="point">
-          <h3>Requirements</h3>
-          <p>A list of checks, each met or not. Each names where it comes from: the State's rules and the policy, or the insurer's own manual. Each says what it is about: the outcome, or the work that led to it.</p>
-        </div>
-        <div class="point">
-          <h3>Loss</h3>
-          <p>In cents, by part. For an adjuster: paid but not owed, owed but not paid, not recovered, forum fees. For a driver: out of pocket, and damage never repaired. Paying less than what is owed is as wrong as paying more.</p>
-        </div>
-        <div class="point">
-          <h3>Process</h3>
-          <p>Calls, refusals and messages. Reported, and not part of success.</p>
-        </div>
-      </div>
-      <div class="two-col" style="margin-top:34px">
-        <div class="stack">
-          <h4 class="lbl">An adjuster's requirements</h4>
-          <div class="tscroll"><table class="ft plain" style="min-width:420px">
-            <thead><tr><th>Check</th><th>About</th><th>From</th></tr></thead>
-            <tbody id="ic-checks-adjuster"></tbody>
-          </table></div>
-        </div>
-        <div class="stack">
-          <h4 class="lbl">A driver's requirements</h4>
-          <div class="tscroll"><table class="ft plain" style="min-width:420px">
-            <thead><tr><th>Check</th><th>About</th><th>From</th></tr></thead>
-            <tbody id="ic-checks-driver"></tbody>
-          </table></div>
-          <div class="plain" style="margin-top:14px">
-            <p><b>Outcome and work.</b> A card says whether every requirement holds, and separately whether the outcome requirements alone hold. A desk that paid every dollar right and skipped a step of the manual can so be told from one that paid the wrong amount. Which of the two is the headline number is not decided.</p>
-            <p><b>Which evidence counts.</b> The police report if it can be had within the watch, a witness who is named, both drivers' statements, and what a driver holds and does not keep back. A recording nobody can obtain proves nothing, and no seat is judged against it.</p>
-            <p><b>A joint task.</b> With several seats under test the result is theirs together: a driver who does not report, or an adjuster who does not pay, fails the others.</p>
-          </div>
-        </div>
-      </div>
-      <details class="box" style="margin-top:22px"><summary>What the claims manual asks, and whether the score looks at it</summary><div>
-        <table class="ft plain">
-          <thead><tr><th>The manual says</th><th>Scored</th><th>Not scored</th></tr></thead>
-          <tbody>
-            <tr><td>Opening the file</td><td>acknowledgment in time; denial for no coverage, with the reason</td><td>what the acknowledgment says</td></tr>
-            <tr><td>Investigating fault</td><td>a statement asked of both drivers; the police report and a named witness waited for before acting on fault</td><td>whether recordings and photographs were asked for</td></tr>
-            <tr><td>Deciding fault</td><td>a determination on record before acting on it, equal to the guide on the documents it names, naming all that speak to fault, and redone when the file changes</td><td>the wording of the note</td></tr>
-            <tr><td>What the damage costs</td><td>every estimate and supplement appraised before a payment for the car; the amounts paid</td><td></td></tr>
-            <tr><td>Paying your own insured</td><td>the amount by item, and within 30 days</td><td></td></tr>
-            <tr><td>Paying the other driver</td><td>the amount by item; an accepted offer within 30 days; no double payment of rental</td><td>whether a first offer was unreasonably low; whether the claimant was steered to their own policy</td></tr>
-            <tr><td>The limit</td><td>the total; the driver before their insurer; the excess notice</td><td>what the notice says</td></tr>
-            <tr><td>Recovery</td><td>the demand for what was lawfully paid, with the deductible; the recovery; the insured's share</td><td>when the demand was sent; the notice when there is nothing to recover</td></tr>
-            <tr><td>Answering a demand</td><td>that it was answered; the amount paid, on what was lawfully paid, and within 30 days</td><td>whether it was answered within 14 days</td></tr>
-            <tr><td>Deadlines</td><td>15 days, 40 days with status letters that count, 30 days</td><td>the 15 days to answer a claimant's question</td></tr>
-          </tbody>
-        </table>
-      </div></details>
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Rules</p>
-        <h2>Clocks, fault and money</h2>
-        <p>Every number lives in one module of pure functions. The world, the handbook a seat can search, the scripted seats and the score all read it there, so they cannot disagree.</p>
-      </div>
-      <div class="two-col">
-        <div class="stack">
-          <h4 class="lbl">Clocks, in calendar days</h4>
-          <div class="tscroll"><table class="ft plain" style="min-width:420px">
-            <thead><tr><th>What</th><th>Days</th><th>Counted</th><th>In the score</th></tr></thead>
-            <tbody id="ic-clocks"></tbody>
-          </table></div>
-        </div>
-        <div class="stack plain">
-          <h4 class="lbl">Money</h4>
-          <ul>
-            <li><b>Collision</b> pays the appraised damage less the deductible. <b>Rental reimbursement</b> pays by the day up to a daily and a total limit, until one day after the repair is finished.</li>
-            <li><b>Liability</b> pays the other driver their loss at the insured's share of the fault, up to the policy's limit. Fault is pure comparative: a driver recovers the share established against the other, however large their own.</li>
-            <li><b>A demand</b> is for what was lawfully paid, with the insured's deductible, at the other driver's share. The answer may dispute the share, the amounts, or both.</li>
-            <li><b>A recovery</b> is shared with the insured in proportion to the deductible.</li>
-            <li><b>A short limit</b> goes to the other driver first, then to their insurer. The insured is told in writing that the rest may be claimed from them.</li>
-            <li id="ic-money"></li>
-          </ul>
-          <h4 class="lbl" style="margin-top:10px">One loss, two payers, in numbers</h4>
-          <p>In <code>ic-c1-04</code> the driver who was hit claims both ways. Their own insurer pays the appraised $2,826.00 less the $500.00 deductible, and $520.00 of a $585.00 rental bill. The other insurer owes the driver directly only the $65.00 their policy left open. It then pays the first insurer $3,346.00 on its demand: $2,326.00, $520.00 and the deductible, which goes back to the driver. An old scrape of $385.00 that the shop wrote into the estimate is paid by nobody.</p>
-        </div>
-      </div>
-
-      <h3 class="sub">The liability guide</h3>
-      <p style="max-width:78ch;margin-bottom:12px">Six kinds of two-car accident. Each has a base split and facts that shift it. The first line whose fact is established decides. The rule of the road behind each base split is real. <b>The percentages and the order of the lines are this benchmark's own</b>: no such table is published, and the handbook says so.</p>
-      <div class="tscroll"><table class="ft plain mono1">
-        <thead><tr><th>Kind</th><th>The two roles</th><th>Base split</th><th>Facts that shift it, in order</th></tr></thead>
-        <tbody id="ic-guide"></tbody>
-      </table></div>
-      <div class="plain" style="margin-top:16px;max-width:78ch">
-        <p><b>How a fact is established.</b> Independent evidence decides: a police report, a recording, a witness with no stake. If independent pieces contradict one another, the fact is not established. Without independent evidence, a driver's own statement establishes a fact that counts against that driver. Without either, a fact is established if both drivers say the same. A fact that is not established is read as not having happened.</p>
-      </div>
-
-      <h3 class="sub">The handbook a seat can search</h3>
-      <div class="tscroll"><table class="ft plain mono1" style="min-width:420px">
-        <thead><tr><th>Document</th><th>Passages</th><th>Who can read it</th></tr></thead>
-        <tbody id="ic-handbook"></tbody>
-      </table></div>
-
-      <details class="box" style="margin-top:22px"><summary>Where each rule comes from, and how close it is to its source</summary><div>
-        <table class="ft plain">
-          <thead><tr><th>Rule of the world</th><th>Modelled on</th><th>Kept</th><th>Made simpler, or the world's own</th></tr></thead>
-          <tbody>
-            <tr><td>Acknowledge within 15 days</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.5">10 CCR § 2695.5(e)</a></td><td>the count, the trigger, calendar days</td><td>the world asks for a letter; weekends and holidays are not modelled</td></tr>
-            <tr><td>Accept or deny within 40 days of proof of claim, with status letters every 30 days that name what is awaited</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.7">10 CCR § 2695.7(b), (c)(1)</a></td><td>counts and triggers</td><td>proof is narrowed to the first document that supports the amount; no partial decisions</td></tr>
-            <tr><td>Pay within 30 days of an acceptance</td><td>10 CCR § 2695.7(h)</td><td>the count</td><td>releases; payment to the shop</td></tr>
-            <tr><td>An offer below the shop's estimate comes with the appraisal it rests on</td><td><a href="https://www.law.cornell.edu/regulations/california/10-CCR-2695.8">10 CCR § 2695.8(f)</a></td><td>the duty to give the claimant the insurer's estimate</td><td>what follows when the shop will not repair for that amount</td></tr>
-            <tr><td>A demand includes the deductible, and a recovery is shared in proportion</td><td>10 CCR § 2695.7(q), and the regulator's worked example</td><td>the rule and the arithmetic; a test replays the example</td><td>the exceptions</td></tr>
-            <tr><td>Pure comparative fault</td><td>Li v. Yellow Cab Co. (1975)</td><td>the principle</td><td></td></tr>
-            <tr><td>Word against word proves nothing</td><td>Arbitration Forums, Guide for Arbitrators</td><td>the burden and its consequence</td><td>a fixed procedure in place of a person's judgment</td></tr>
-            <tr><td>The liability guide</td><td>Vehicle Code §§ 21703, 21801, 22107, 21453, 22106 for the base rules</td><td>the rule of the road behind each base split</td><td><b>the percentages and the order of the lines</b></td></tr>
-            <tr><td>The forum: only the demanding insurer files, it decides on the evidence filed, amounts are reviewed only if disputed, the decision is final</td><td>Arbitration Forums agreement and rules</td><td>these, and the 30 days to answer and to pay</td><td>the decision 14 days after the answer was due; how a disputed amount is cut down</td></tr>
-            <tr><td>Filing costs 60 dollars</td><td>Arbitration Forums fee schedule for 2027</td><td>amount and payer</td><td>one fee whatever the case</td></tr>
-            <tr><td>The policy: liability, collision, rental reimbursement, duties after a loss</td><td>the structure of a standard personal auto policy</td><td>the order of the parts</td><td>own wording throughout; no total loss, no injury, no uninsured motorist cover</td></tr>
-            <tr><td>A car is settled one way</td><td>policy conditions that protect the insurer's right to recover</td><td>the idea</td><td><b>the claims index is this world's device</b></td></tr>
-            <tr><td>A short limit goes to the other driver first</td><td>the made-whole principle, loosely</td><td>nothing as law</td><td><b>this world's own rule</b></td></tr>
-            <tr><td>Least property damage liability of 15,000 dollars</td><td>California Bulletin 2023-1 on SB 1107</td><td>the amount</td><td></td></tr>
-          </tbody>
-        </table>
-        <p class="note" style="margin-top:10px">Left out altogether: bodily injury, total losses and salvage, diminished value, storage charges, non-original parts, direct repair programs, lienholders, premium surcharges, fraud referrals, lawsuits, and more than two vehicles.</p>
-      </div></details>
-    </div>
-  </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">Interface</p>
         <h2>What each seat can do</h2>
+        <p class="note">Interface v<span id="ic-version"></span> · <span id="ic-n-actions"></span> actions · <span id="ic-n-tests"></span> tests in the exported snapshot</p>
         <p>Every action is declared with its roles, its effect, the world time it costs and the errors it can be refused with. Reads cost time too, so reading again and again cannot hold a deadline still.</p>
       </div>
       <div class="seg" id="ic-roles" role="group" aria-label="Role"></div>
@@ -1538,7 +1805,11 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       </table></div>
     </div>
   </section>
-
+      </div>
+    </details>
+    <details class="scenario-accordion" id="insurance-validation">
+      <summary>Calibration, pilot runs and limitations</summary>
+      <div class="reference-content">
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -1560,7 +1831,6 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       <p class="note" style="margin-top:10px;max-width:78ch">The ordinary repairs sit below the published mean. That is a choice of sample, and it is stated as one. The bands are the benchmark's own and are wide on purpose: a set of thirteen tasks on a handful of cars is not a sample of the market.</p>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -1568,14 +1838,14 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
         <h2>What two models showed about the pipeline</h2>
         <p>On 26 November 2026 two models played all thirteen tasks once each through the runner without containers: 26 trials, one to five minutes each, every one counted. It was made to try the pipeline. It is not a result: one trial a task, not isolated, and the code was changed afterwards.</p>
       </div>
-      <h3 class="sub" style="margin-top:0">Six faults no script had found, all fixed and kept as tests</h3>
+      <h3 class="sub" style="margin-top:0">Six issues identified in the first pilot</h3>
       <div class="tscroll"><table class="ft plain">
         <thead><tr><th>Fault</th><th>What happened</th><th>Now</th></tr></thead>
         <tbody>
           <tr><td>A check failed a right payment</td><td>A desk paid the appraised estimate on the day a supplement came in. The check read that as paying for damage nobody had appraised.</td><td>The check compares what was paid for a car with what the appraisals then on the file supported.</td></tr>
           <tr><td>The by-the-book adjuster repeated an offer that had been turned down</td><td>A model in a driver's seat said what its own policy covered in two messages. The scripted adjuster read the first, offered the whole rental bill four times, and the driver, who rightly refused it, was failed for not having been paid.</td><td>The adjuster takes the latest value of each fact, asks again when an offer is turned down, and does not repeat an offer that was turned down.</td></tr>
           <tr><td>A payment could not name the deductible</td><td>Both models wrote <code>deductible</code> as an item of a payment, fourteen times. Twice the refusal ended in a real failure.</td><td><code>deductible</code> is an item of those payments.</td></tr>
-          <tr><td>A task could be passed by leaving</td><td>A desk denied everything on the first day and left. The demand that came two weeks later went unanswered, and nothing asked for an answer.</td><td>Answering every demand is a requirement.</td></tr>
+          <tr><td>A task could be passed by leaving</td><td>A desk denied everything on the first day and left. The demand that came two weeks later went unanswered, and nothing asked for an answer.</td><td>The score requires a response to demands received at least 14 days before the watch ends.</td></tr>
           <tr><td>The handbook could not be read in one go</td><td>The first call of nearly every trial asked for more than eight passages and was refused.</td><td>Up to fifty.</td></tr>
           <tr><td>A harness that failed counted as a crash of the agent</td><td>In a second pass the account the runs were made on reached its usage limit in the middle of two trials.</td><td>The runner is told what such a failure looks like. The attempt is then no trial.</td></tr>
         </tbody>
@@ -1598,7 +1868,6 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
       </div>
     </div>
   </section>
-
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
@@ -1617,6 +1886,10 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
           <li>There is no Harbor export for these tasks yet and no task sheets. The runner without containers is not isolated.</li>
         </ul>
       </div>
+    </div>
+  </section>
+      </div>
+    </details>
     </div>
   </section>
 </div>
@@ -1687,13 +1960,37 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
 
   /* ---------- routing ---------- */
   function route() {
-    var h = (location.hash || '#overview').slice(1);
-    var view = VIEWS.indexOf(h) >= 0 ? h : 'overview';
+    var parts = (location.hash || '#overview').slice(1).split('/');
+    var view = VIEWS.indexOf(parts[0]) >= 0 ? parts[0] : 'overview';
     all('[data-view]').forEach(function (el) { el.hidden = el.getAttribute('data-view') !== view; });
-    all('.links a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-route') === view); });
-    window.scrollTo(0, 0);
+    all('.links a').forEach(function (a) {
+      var active = a.getAttribute('data-route') === view;
+      a.classList.toggle('on', active);
+      if (active) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    var target = parts[1] === 'cases' ? byId(view + '-cases') : null;
+    if (target) target.scrollIntoView({ block: 'start' });
+    else window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
+
+  all('.scenario-page').forEach(function (view) {
+    view.addEventListener('click', function (ev) {
+      var choice = ev.target.closest('button[data-case]');
+      if (choice) {
+        var id = choice.getAttribute('data-case');
+        all('button[data-case]', view).forEach(function (button) {
+          button.setAttribute('aria-pressed', String(button === choice));
+        });
+        all('[data-case-panel]', view).forEach(function (panel) {
+          panel.hidden = panel.getAttribute('data-case-panel') !== id;
+        });
+      }
+      var task = ev.target.closest('button[data-open-task]');
+      if (task) document.dispatchEvent(new CustomEvent('mb-task', { detail: task.getAttribute('data-open-task') }));
+    });
+  });
 
   /* ---------- progress ---------- */
   var STATUS_LABEL = { done: 'Done', next: 'Next up', planned: 'Planned' };
@@ -2627,9 +2924,11 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
   document.addEventListener('mb-task', function (ev) {
     var n = T.tasks.map(function (t) { return t.task_id; }).indexOf(ev.detail);
     if (n < 0) return;
+    byId('ticketing-records').open = true;
     choose(n);
     var top = byId('t-pick');
-    if (top && top.scrollIntoView) top.scrollIntoView({ block: 'start' });
+    top.scrollIntoView({ block: 'start' });
+    top.querySelector('button[aria-pressed="true"]').focus({ preventScroll: true });
   });
 })();
 
@@ -2874,6 +3173,17 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
   byId('ic-detail').addEventListener('click', function (ev) {
     var b = ev.target.closest ? ev.target.closest('button[data-lane]') : null;
     if (b) { lane = b.getAttribute('data-lane'); show(); }
+  });
+  document.addEventListener('mb-task', function (ev) {
+    var n = C.tasks.map(function (t) { return t.task_id; }).indexOf(ev.detail);
+    if (n < 0) return;
+    byId('insurance-records').open = true;
+    current = n;
+    lane = 'all';
+    show();
+    var top = byId('ic-pick');
+    top.scrollIntoView({ block: 'start' });
+    top.querySelector('button[aria-pressed="true"]').focus({ preventScroll: true });
   });
   show();
 

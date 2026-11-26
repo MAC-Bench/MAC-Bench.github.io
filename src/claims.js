@@ -238,6 +238,17 @@
     var b = ev.target.closest ? ev.target.closest('button[data-lane]') : null;
     if (b) { lane = b.getAttribute('data-lane'); show(); }
   });
+  document.addEventListener('mb-task', function (ev) {
+    var n = C.tasks.map(function (t) { return t.task_id; }).indexOf(ev.detail);
+    if (n < 0) return;
+    byId('insurance-records').open = true;
+    current = n;
+    lane = 'all';
+    show();
+    var top = byId('ic-pick');
+    top.scrollIntoView({ block: 'start' });
+    top.querySelector('button[aria-pressed="true"]').focus({ preventScroll: true });
+  });
   show();
 
   // ---------------------------------------------------------------- scoring
