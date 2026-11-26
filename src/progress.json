@@ -695,6 +695,43 @@
           ]
         },
         {
+          "id": "tk-sheets-2",
+          "title": "A review of the harder tasks: a limit for each stage, and checks that a wrong note fails",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "The seven harder tasks and their sheets were reviewed. The review found eight things, each was reproduced with scripted play, and each was true. All seven tasks are kept; five of them were changed in what is said about them, none in its world, its travellers or its events",
+            "In the task with two matters and two doors, the sheet had put the purchase of a new ticket under the door of the old one. The old ticket has to be cancelled before cancellations of it close, 150 minutes in. The new ticket is for the next day and can be bought until the watch ends: with the cancellation done in time and the policy kept waiting until minute 155, both travellers are still served. Cancelling and buying are now two stages with a limit each",
+            "The checks of a sheet could pass for a note that was wrong. A stage's calls were matched by name and minute, so a refusal of another kind on another order counted. A trap was checked by the name of its careless agent, which could have failed for another reason. Now a stage is bound to its traveller, to the event that sets it off, to a row of the clock, and to calls of the reference run that concern that traveller, end as the note says and carry that traveller's authorization. A door inside the watch is tried: the reference policy is held back until it has closed and has to leave that traveller unserved. A trap is bound to whom the careless agent's run leaves unserved and to something that run shows. A trap that nothing shows is called a design assumption on the page",
+            "Tests now turn the checks against wrong notes: a door on the wrong stage, a trap with the wrong traveller or the wrong evidence, a source about somebody else's booking, a source that came after the call that needed it. Each makes exactly the check fail that should. Writing them caught a fault in the first way a door was tried: held in the middle of a step, the policy failed because its offer had run out, not because the door had closed",
+            "In the tasks with a shared bill the sheets had written the path of the reference policy as what the task demands. Sharing the fare is needed; the order of the two tickets and the number of proposals are the agent's choice. Her ticket first ends at the same total. Both tickets in one proposal for two seats takes one round of answers fewer and costs 22.57 dollars more, and the agent need not ask whether she would help: a share put in front of her is authorised. The sheets now play these ways",
+            "The reference policy let a traveller help with money she then lacked for her own ticket, when the seat sold to the other was the last at its fare. A helper now keeps what her own ticket will cost once that seat is gone, bags counted. The two tasks that use this are solved as before; no earlier task reaches this code",
+            "Where a scripted run read what a task needs: an answer of the world now counts only if it was about that traveller's booking and came before the call that needed it, and a value that differs from object to object, such as when a quote runs out, is bound to the object. A passage of the handbook counts only if a search for its heading returns it",
+            "Smaller things. Two tickets on one flight, booked apart, each have a door of their own. A page made for a generated task uses the names of its own travellers. The late starts are said to be those of the policy that was played and of the starts that were tried; in one task the worked solution is started late as well and solves it from 45 minutes later than the reference policy does. A change that is tried and refused is no longer listed as a step the tasks need: the order states that its fare cannot be changed"
+          ],
+          "where": [
+            "src/macbench/domains/ticketing/sheets.py, format macbench-task-sheet/2; docs/spec/task_sheet.md, with what changed from the first format",
+            "src/macbench/domains/ticketing/reference.py, the helper's reserve; devset.py, the three task descriptions, the worked solutions and two other ways through the shared bill",
+            "docs/tasks/ticketing/ and tasks/ticketing/dev/sheets/, all 25 sheets made again; docs/spec/ticketing_tasks.md, section 6",
+            "tests/test_ticketing_sheets.py; tests/test_ticketing_harder.py"
+          ],
+          "checked": [
+            "527 automated tests pass, and one is skipped where the MCP SDK is not installed",
+            "430 checks on the 25 sheets pass. The seven sheets with design notes carry 28 to 55 each",
+            "Admitting the development set again leaves the 46 earlier task files and their rows unchanged byte for byte. Three of the seven newer tasks have a new fingerprint, from the line that says what they are there to find out and from nothing else",
+            "The held-out set admits with the same numbers and has the same fingerprint, and the records of the earlier model runs replay and score as they were kept"
+          ],
+          "open": [
+            "No model has played the seven tasks",
+            "Two things are not on the agent's card and cost an agent one answer to find out: a traveller rejects a new ticket while the old one stands, and a budget counts what was paid before the agent took over. The card was left as it is, so that earlier runs stay comparable. A variant of the card that states them, as a comparison, is not built",
+            "Four traps are design assumptions that nothing shows: which of two matters an agent puts first, an authorization that runs out while another traveller is away, a delay that should be left alone, and seats apart on a new flight",
+            "The check that waiting does not pay delays a whole policy. Doing a first step in time and sitting on the second is not covered",
+            "The 18 earlier hand-built tasks have sheets with the computed sections only",
+            "A long task in which a later event depends on what was done about an earlier one is not built"
+          ]
+        },
+        {
           "id": "tk-verify",
           "title": "Tasks that separate models, and runs under Harbor",
           "status": "next",

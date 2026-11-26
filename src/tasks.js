@@ -121,39 +121,68 @@
   function sheet(t) {
     var s = t.sheet;
     if (!s) return '';
-    var out = ['<p style="max-width:78ch">Made for review: what can be computed is computed from the task and from scripted play, and what is written by hand is checked against the world. Minutes count from the opening of the world.</p>'];
+    var nm = s.given || {};
+    var who = function (seats) { return seats && seats.length ? seats.map(function (x) { return esc(nm[x] || x); }).join(' and ') : 'nobody'; };
     var min = function (m) { return m === null || m === undefined ? '' : String(Math.round(m * 10) / 10).replace(/\.0$/, ''); };
+    var lbl = function (text) { return '<p class="lbl" style="margin:16px 0 8px">' + text + '</p>'; };
+    var out = ['<p style="max-width:78ch">Made for review. What can be computed is computed from the task and from scripted play. What is written by hand is bound to the world: a stage to its traveller, to the event that sets it off, to its own limit and to the calls of the reference run; a trap to what the run of a careless agent leaves undone and shows. What nothing shows is called a design assumption. Minutes count from the opening of the world.</p>'];
     (s.grows_out_of || []).forEach(function (g) {
-      out.push('<p style="max-width:78ch">Grows out of <b>' + esc(shortId(g.task_id)) + '</b>. The two task files differ in: ' +
+      out.push('<p style="max-width:78ch">Grows out of <b>' + esc(shortId(g.task_id)) + '</b>. ' +
+        (g.one_thing_differs ? 'One thing differs, so the two are a comparison in one variable: ' :
+          g.differs_in.length + ' things differ, so the two are not a comparison in one variable: ') +
         g.differs_in.map(function (d) { return '<code>' + esc(d) + '</code>'; }).join(', ') + '.</p>');
     });
-    out.push('<p class="lbl" style="margin:16px 0 8px">Doors inside the watch</p><div class="tscroll"><table class="ft plain"><thead><tr><th>Minute</th><th>What closes</th><th>Where the rule is</th></tr></thead><tbody>' +
+    out.push(lbl('Doors inside the watch') + '<div class="tscroll"><table class="ft plain"><thead><tr><th>Minute</th><th>What closes</th><th>Where the rule is</th></tr></thead><tbody>' +
       s.doors.map(function (d) { return '<tr><td>' + min(d.minute) + '</td><td>' + esc(d.what) + '</td><td>' + esc(d.rule) + '</td></tr>'; }).join('') +
       '</tbody></table></div>');
     if (s.design) {
-      out.push('<p class="lbl" style="margin:16px 0 8px">What solving it takes</p><ol class="plain-list" style="margin:0 0 6px">' + s.design.stages.map(function (st) {
-        var calls = st.calls.length ? ' The reference run: ' + st.calls.map(function (c) { return esc(c.call) + ' at minute ' + min(c.reference_minute); }).join(', ') + '.' : '';
-        return '<li><b>' + esc(st.name) + '.</b> Starts at minute ' + st.at_minutes + ', when ' + esc(st.starts) + '. Needs the authorization of: ' + esc(st.consent) +
-          '. Has to be done by minute ' + st.by_minutes + ': ' + esc(st.by) + '.' + (st.after ? ' First: ' + esc(st.after) + '.' : '') +
-          ' Steps: ' + st.steps.map(function (x, i) { return '(' + (i + 1) + ') ' + esc(x); }).join('; ') + '.' + calls + '</li>';
-      }).join('') + '</ol>');
-      out.push('<p class="lbl" style="margin:16px 0 8px">Traps</p><div class="tscroll"><table class="ft plain"><thead><tr><th>Trap</th><th>What goes wrong</th><th>Scripted agent that falls into it</th></tr></thead><tbody>' +
-        s.design.traps.map(function (x) { return '<tr><td>' + esc(x.name) + '</td><td>' + esc(x.wrong) + '</td><td>' + (x.shown_by ? esc(x.shown_by) : 'none') + '</td></tr>'; }).join('') +
-        '</tbody></table></div>');
-      out.push('<p class="lbl" style="margin:16px 0 8px">Where the agent can read what it needs</p><ul class="plain-list" style="margin:0">' +
-        s.design.sources.map(function (x) { return '<li>' + esc(x.needs) + ': ' + esc(x.where) + ', "' + esc(x.says) + '".</li>'; }).join('') + '</ul>');
-      out.push('<p class="lbl" style="margin:16px 0 8px">Not claimed</p><ul class="plain-list" style="margin:0">' +
+      out.push(lbl('What solving it takes') + '<div class="tscroll"><table class="ft plain"><thead><tr><th>Stage</th><th>For</th><th>Set off by</th><th>Has to be done by</th><th>Authorised by</th><th>The reference run</th></tr></thead><tbody>' +
+        s.design.stages.map(function (st) {
+          var calls = st.calls.map(function (c) { return esc(c.call) + (c.refused ? ', refused,' : '') + ' at minute ' + min(c.reference_minute); }).join('; ');
+          var door = st.held_past_the_door ? ' Held back ' + esc(st.held_past_the_door.held.replace(/`/g, '')) + ' until minute ' + st.held_past_the_door.until_minute +
+            ', it left ' + who(st.held_past_the_door.unserved) + ' unserved.' : '';
+          return '<tr><td><b>' + esc(st.name) + '</b>' + (st.after ? '<br><span style="color:var(--muted)">First: ' + esc(st.after) + '</span>' : '') + '</td><td>' + who(st.who) +
+            '</td><td>Minute ' + st.at_minutes + ': ' + esc(st.starts) + '</td><td>Minute ' + st.by_minutes + ': ' + esc(st.by) + '<br><span style="color:var(--muted)">' + esc(st.limit) + '</span></td><td>' +
+            who(st.consent) + '</td><td>' + (calls || 'makes no call about the booking') + '.' + door + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        '<p style="max-width:78ch;margin-top:8px">The steps are those of the reference policy, which is one way through. It starts no booking with fewer than ' +
+        s.reference_starts_no_booking_in_the_last_minutes + ' minutes of the watch left; that is its own limit, not a rule of the world.</p>');
+      out.push(lbl('Traps') + '<div class="tscroll"><table class="ft plain"><thead><tr><th>Trap</th><th>What goes wrong</th><th>Shown by</th><th>What that shows</th></tr></thead><tbody>' +
+        s.design.traps.map(function (x) {
+          var by = x.shown_by ? esc(x.shown_by) + (x.pinned_by ? ', and a test' : '') : (x.pinned_by ? 'a test' : 'nothing');
+          var shows = x.shown_by ? 'It leaves ' + who(x.leaves) + ' unserved. In its run: ' + x.marks.map(function (m) { return esc(m.shows.replace(/`/g, '')); }).join('; ') + '.' :
+            (x.pinned_by ? 'No scripted agent of the task falls into it. A test plays it by hand.' : 'A design assumption: no scripted agent of the task and no test shows it.');
+          return '<tr><td>' + esc(x.name) + '</td><td>' + esc(x.wrong) + '</td><td>' + by + '</td><td>' + shows + '</td></tr>';
+        }).join('') + '</tbody></table></div>');
+      out.push(lbl('Where a scripted run had what the task needs in front of it') + '<ul class="plain-list" style="margin:0">' +
+        s.design.sources.map(function (x) {
+          return '<li>' + esc(x.needs) + ': ' + esc(x.where) + ', "' + esc(x.says) + '"' +
+            (x.run ? '. First seen by ' + esc(x.run) + ' at minute ' + min(x.minute) : '') +
+            (x.used_by ? ', needed by ' + esc(x.used_by) + (x.used_at_minute !== null ? ' at minute ' + min(x.used_at_minute) : '') : '') + '.</li>';
+        }).join('') + '</ul>');
+      if (s.design.ways.length) {
+        out.push(lbl('Other ways through, played') + '<div class="tscroll"><table class="ft plain"><thead><tr><th>Way</th><th>Result</th><th>Last settling call</th><th>What it shows</th></tr></thead><tbody>' +
+          s.design.ways.map(function (w) {
+            return '<tr><td>' + esc(w.name) + '</td><td>' + (w.solved ? 'solved' + (w.regret_cents ? ', ' + usd(w.regret_cents) + ' above the reference' : ', at the loss of the reference') : 'not solved') +
+              '</td><td>' + (w.done_at_minute === null ? '' : 'minute ' + min(w.done_at_minute)) + '</td><td>' + esc(w.shows) + '</td></tr>';
+          }).join('') + '</tbody></table></div>');
+      }
+      out.push(lbl('Not claimed') + '<ul class="plain-list" style="margin:0">' +
         s.design.not_claimed.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>');
     }
+    var line = function (late, name) {
+      return late.earliest_start_failed === null ? name + ' solves the task from every start that was tried.' :
+        name + ' still solves the task when it starts at minute ' + late.latest_start_solved + ' and no longer at minute ' + late.earliest_start_failed + '.';
+    };
     var late = s.late;
-    out.push('<p style="max-width:78ch;margin-top:16px">The reference policy started late, tried every ' + late.step_minutes + ' minutes: ' +
-      (late.earliest_start_failed === null ? 'every start that was tried solves the task.' :
-        'it still solves the task when it starts at minute ' + late.latest_start_solved + ' and no longer at minute ' + late.earliest_start_failed + '.') +
-      (late.waiting_pays ? ' A later start ended better than starting at once.' : ' No later start ended better than starting at once.') +
-      (s.reference_done_at !== null ? ' Started at once, its last settling call is at minute ' + min(s.reference_done_at) + '.' : '') +
-      (s.worked ? ' A worked solution written by hand is done at minute ' + min(s.worked.done_at_minute) + '.' : '') +
+    out.push('<p style="max-width:78ch;margin-top:16px">Started late, tried every ' + late.step_minutes + ' minutes: ' + line(late, 'the reference policy') +
+      (s.late_worked ? ' ' + line(s.late_worked, 'A worked solution written by hand') : '') +
+      ' The line is that of the policy that was played, not of the task.' +
+      (late.waiting_pays ? ' A later start ended better than starting at once.' : ' At no start that was tried did a later start end better than starting at once.') +
+      (s.reference_done_at !== null ? ' Started at once, the last settling call of the reference policy is at minute ' + min(s.reference_done_at) + '.' : '') +
+      (s.worked ? ' The worked solution is done at minute ' + min(s.worked.done_at_minute) + '.' : '') +
       ' ' + s.checks[0] + ' of ' + s.checks[1] + ' checks of the sheet pass.</p>');
-    return '<details class="tcard"><summary>Task sheet: doors' + (s.design ? ', stages, traps' : '') + ' and late starts</summary><div style="padding:6px 2px 2px">' +
+    return '<details class="tcard"><summary>Task sheet: doors' + (s.design ? ', stages, traps, other ways' : '') + ' and late starts</summary><div style="padding:6px 2px 2px">' +
       out.join('') + '</div></details>';
   }
 
