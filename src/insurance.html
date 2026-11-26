@@ -65,7 +65,8 @@
           </table></div>
           <div class="plain" style="margin-top:14px">
             <p><b>Outcome and work.</b> A card says whether every requirement holds, and separately whether the outcome requirements alone hold. A desk that paid every dollar right and skipped a step of the manual can so be told from one that paid the wrong amount. Which of the two is the headline number is not decided.</p>
-            <p><b>Which evidence counts.</b> The police report if it can be had within the watch, a witness who is named, both drivers' statements, and what a driver holds and does not keep back. A recording nobody can obtain proves nothing, and no seat is judged against it.</p>
+            <p><b>Which evidence counts.</b> The police report if it can arrive two days before the watch ends, a witness who is named, both drivers' statements, and what a driver holds and does not keep back. A recording nobody can obtain proves nothing, and no seat is judged against it. Each desk is held to what that desk can obtain: a recording a driver gave to one insurer only is not held against the other.</p>
+            <p><b>Pending.</b> A card also lists what was still open when the watch ended and whose time was not up, such as a demand that came in the last days. That is neither met nor failed. A desk that handed back control gave up the time it had: a demand it left unanswered counts against it.</p>
             <p><b>A joint task.</b> With several seats under test the result is theirs together: a driver who does not report, or an adjuster who does not pay, fails the others.</p>
           </div>
         </div>
@@ -79,11 +80,11 @@
             <tr><td>Deciding fault</td><td>a determination on record before acting on it, equal to the guide on the documents it names, naming all that speak to fault, and redone when the file changes</td><td>the wording of the note</td></tr>
             <tr><td>What the damage costs</td><td>a payment for the car stays within the appraised amount on file</td><td></td></tr>
             <tr><td>Paying your own insured</td><td>the amount by item, and within 30 days</td><td></td></tr>
-            <tr><td>Paying the other driver</td><td>the amount by item; an accepted offer within 30 days; no double payment of rental</td><td>whether a first offer was unreasonably low; whether the claimant was steered to their own policy</td></tr>
-            <tr><td>The limit</td><td>the total; the driver before their insurer; the excess notice</td><td>what the notice says</td></tr>
+            <tr><td>Paying the other driver</td><td>the amount by item; an accepted offer within 30 days; no double payment of rental; an acceptance of their claim only on a determination of fault</td><td>whether a first offer was unreasonably low; whether the claimant was steered to their own policy</td></tr>
+            <tr><td>The limit</td><td>the total, and no item above what is owed for it; the driver before their insurer; the excess notice</td><td>what the notice says</td></tr>
             <tr><td>Recovery</td><td>the demand for what was lawfully paid, with the deductible; the recovery; the insured's share</td><td>when the demand was sent; the notice when there is nothing to recover</td></tr>
-            <tr><td>Answering a demand</td><td>that it was answered; the amount paid, on what was lawfully paid, and within 30 days</td><td>whether it was answered within 14 days</td></tr>
-            <tr><td>Deadlines</td><td>15 days, 40 days with status letters that count, 30 days</td><td>the 15 days to answer a claimant's question</td></tr>
+            <tr><td>Answering a demand</td><td>that it was answered, also by a desk that had left; the amount paid, item by item, on what was lawfully paid, and within 30 days</td><td>whether it was answered within 14 days</td></tr>
+            <tr><td>Deadlines</td><td>15 days, 40 days with status letters that count, 30 days. A status letter that still waits for a statement after the driver's 12 days does not count</td><td>the 15 days to answer a claimant's question</td></tr>
           </tbody>
         </table>
       </div></details>
@@ -111,7 +112,7 @@
             <li><b>Liability</b> pays the other driver their loss at the insured's share of the fault, up to the policy's limit. Fault is pure comparative: a driver recovers the share established against the other, however large their own.</li>
             <li><b>A demand</b> is for what was lawfully paid, with the insured's deductible, at the other driver's share. The answer may dispute the share, the amounts, or both.</li>
             <li><b>A recovery</b> is shared with the insured in proportion to the deductible.</li>
-            <li><b>A short limit</b> goes to the other driver first, then to their insurer. The insured is told in writing that the rest may be claimed from them.</li>
+            <li><b>A short limit</b> goes to the other driver first, then to their insurer. What is offered to the driver is kept for them. The insured is told in writing that the rest may be claimed from them.</li>
             <li id="ic-money"></li>
           </ul>
           <h4 class="lbl" style="margin-top:10px">One loss, two payers, in numbers</h4>
@@ -323,6 +324,37 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
   <section class="sec">
     <div class="wrap">
       <div class="sec-head">
+        <p class="lbl">Reviews</p>
+        <h2>What two outside reviews found</h2>
+        <p>The first review read the first version and made eleven findings: ways to pass a task without doing the work, ways to be paid twice, and a seat held to evidence nobody could obtain. The second read the changes since, the records of the two models, and ran thirty-one probes of its own. It made the findings below. All are closed in interface 0.4, and each is kept as a test.</p>
+      </div>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th>Finding of the second review</th><th>What was wrong</th><th>Now</th></tr></thead>
+        <tbody>
+          <tr><td>A right total under the wrong item passed</td><td>Under a short limit only the total paid to the other driver was checked: the whole limit offered as rental passed a task. A payment on a demand was a total too.</td><td>Under a limit no item is paid above what is owed for it. A payment on a demand names the items the demand is made up of, each within what was settled for it. The world refuses anything else and says what is left to pay.</td></tr>
+          <tr><td>A lawful payment on a demand was failed by an unrelated supplement</td><td>The check on appraisals looked at every estimate of that driver on the file.</td><td>What was paid for the car is held against the appraisals then on the file, as every other payment for a car is.</td></tr>
+          <tr><td>Evidence was counted on two clocks</td><td>The score took the police report as obtainable from its date alone, where the world adds the time it takes to arrive. A desk that adopted a report of the last two days was failed for it. A recording given to one insurer was held against both.</td><td>One clock. Evidence of the last two days may be adopted and need not be. Each desk is held to what it can obtain.</td></tr>
+          <tr><td>A promise to the driver could be spent on their insurer</td><td>An accepted offer counted when the next offer was made, and not when the insurer was paid.</td><td>What is offered to the driver, open or accepted, is kept for them at every payment to their insurer.</td></tr>
+          <tr><td>Accepting the other driver's claim stopped the forty days with nothing decided on fault</td><td>A direct acceptance was not counted as an act on fault.</td><td>It needs a determination on record, and it is an act on fault like an offer.</td></tr>
+          <tr><td>A collision claim withdrew the undisputed rental of a mixed offer</td><td>The whole offer fell.</td><td>The car drops out of the offer and the rest stands.</td></tr>
+          <tr><td>A desk could leave before a late demand and pass</td><td>A demand younger than 14 days at the end asked nothing of anyone.</td><td>A desk that handed back control is held to every demand it left unanswered. For a desk that is still there the demand is pending.</td></tr>
+          <tr><td>A status letter could wait for a statement for ever</td><td>Any statement asked and not given counted as awaited.</td><td>Only during the 12 days the manual gives the driver.</td></tr>
+          <tr><td>A towing bill could be disputed only with an appraisal of the car</td><td>The cap on towing hung on the vehicle's appraisal.</td><td>The invoice shows the tow, and a tow alone is the whole of that loss.</td></tr>
+          <tr><td>Four seats were not classified as one seat is</td><td>One seat that called <code>finish</code> and then returned non-zero made the joint attempt a crash.</td><td>Each seat is read by the rule for one seat first.</td></tr>
+          <tr><td>The pattern for a harness failure read the agent's own output</td><td>An agent could print the words and have its failed attempt left out of the count.</td><td>Only the harness's own error events are read, and the report lists what was left out.</td></tr>
+          <tr><td>A claim could be closed over a demand</td><td>The demand could then be agreed and not paid.</td><td>A claim is not closed over an unsettled demand or an unpaid promise.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="plain" style="margin-top:16px;max-width:78ch">
+        <p>The share of fault in a demand is now called <code>respondent_insured_fault_percent</code>, which reads the same from both sides. A model had filled the old name in opposite ways in one trial.</p>
+        <p>Two rounds that each found eleven things say the same: paths that no test plays may hide the same kind of fault. The second review asks, before any comparison of models, for a frozen version and task list, several trials a task on the same budget, single-seat and joint tasks reported apart, a held-out set, and a practitioner's read.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
         <p class="lbl">Open</p>
         <h2>Not done, and known weak points</h2>
       </div>
@@ -330,7 +362,9 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
         <ul>
           <li>How often a task is failed, and whether for the reason it is there for, is not known. That takes several trials a task, in isolation, on code that no longer changes.</li>
           <li>No practitioner has read the rules. The liability guide's percentages are invented. Until one has, nothing here may be presented as how claims are handled.</li>
-          <li>One demand is made for one accident, and a settled demand is not reopened on new evidence. Real insurers send supplemental demands.</li>
+          <li>One demand is made for one accident, and a settled demand is not reopened on new evidence. Real insurers send supplemental demands. This rule was the commonest cause of failure in the first look, and whether it stays is not decided.</li>
+          <li>Two readings of a card are kept: every requirement, and the outcome requirements alone. Which of them is reported first is not decided.</li>
+          <li>The world keeps no index for rental as it does for the car. A rental paid twice is found by the score, not refused.</li>
           <li>The forum takes about six weeks, longer than most watches. A case filed in a 45-day task is still open when the watch ends.</li>
           <li>A scripted driver trusts what an offer names. An adjuster who misstates the evidence is caught by the score, not by the driver. A real claimant would argue.</li>
           <li>A driver's seat has two careless variants, doing nothing and stopping after the report, and no task where the insurers it faces depart from the manual.</li>

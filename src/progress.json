@@ -1031,6 +1031,35 @@
           ]
         },
         {
+          "id": "ins-review-2",
+          "title": "A second outside review: eleven more findings closed",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-26",
+          "done": [
+            "The review read the changes since the first one, the records of the two models, and ran thirty-one probes of its own",
+            "A payment is held to its items: under a short limit no item is paid above what is owed for it, and a payment on a demand names the items the demand is made up of",
+            "One clock for evidence, and each desk held to what it can obtain. Evidence of the last two days may be adopted and need not be",
+            "What is offered to the other driver is kept for them under the limit. Accepting their claim needs a determination of fault",
+            "A desk that handed back control is held to a demand it left unanswered. What was open with time left is listed as pending",
+            "The runner reads only the harness's own error events, and classifies four seats by the rule for one",
+            "The share of fault in a demand has a name that reads the same from both sides. Interface 0.4"
+          ],
+          "where": [
+            "tests/test_insurance_review.py, the section on the second review",
+            "docs/insurance/README.md, section 11",
+            "docs/spec/insurance_claims.md, sections 7 and 9"
+          ],
+          "checked": [
+            "Each of the reviewer's probes was run before the change and reproduced. Each has a test now",
+            "The thirteen tasks and the numbers of their yardstick runs are unchanged"
+          ],
+          "open": [
+            "Not decided: a supplemental demand, which reading of a card is reported first, and longer watches for tasks that go to the forum",
+            "No model has played the tasks on interface 0.4"
+          ]
+        },
+        {
           "id": "ins-expert",
           "title": "A practitioner's read of the rules",
           "status": "next",
