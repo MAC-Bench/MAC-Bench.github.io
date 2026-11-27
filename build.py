@@ -15,6 +15,7 @@ import sys
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
+from src.multiagent import render as render_multiagent
 from src.scenarios import render as render_scenario
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -58,12 +59,13 @@ def main() -> None:
         shutil.copy(code / "demo" / "ticketing_after_session.json", HERE / "data" / "ticketing_after_session.json")
         shutil.copy(code / "tasks" / "ticketing_dev.json", HERE / "data" / "ticketing_tasks.json")
         shutil.copy(code / "claims" / "insurance_dev.json", HERE / "data" / "insurance.json")
+        shutil.copy(code / "ma1" / "ma1.json", HERE / "data" / "ma1.json")
     ticketing = json.loads((HERE / "data" / "ticketing.json").read_text(encoding="utf-8"))
     world = json.loads((HERE / "data" / "ticketing_world.json").read_text(encoding="utf-8"))
     session = [json.loads((HERE / "data" / name).read_text(encoding="utf-8"))
                for name in ("ticketing_session.json", "ticketing_after_session.json")]
     progress = json.loads((SRC / "progress.json").read_text(encoding="utf-8"))
-    css = "\n".join((SRC / name).read_text(encoding="utf-8") for name in ("styles.css", "scenarios.css"))
+    css = "\n".join((SRC / name).read_text(encoding="utf-8") for name in ("styles.css", "scenarios.css", "multiagent.css"))
     js = (SRC / "app.js").read_text(encoding="utf-8")
     world_js = (SRC / "world.js").read_text(encoding="utf-8")
     session_js = (SRC / "session.js").read_text(encoding="utf-8")
@@ -74,6 +76,9 @@ def main() -> None:
     body = (SRC / "body.html").read_text(encoding="utf-8")
     assert "<!--VIEW_INSURANCE-->" in body
     body = body.replace("<!--VIEW_INSURANCE-->", (SRC / "insurance.html").read_text(encoding="utf-8").strip())
+    ma = json.loads((HERE / "data" / "ma1.json").read_text(encoding="utf-8"))
+    assert "<!--VIEW_MULTIAGENT-->" in body
+    body = body.replace("<!--VIEW_MULTIAGENT-->", render_multiagent(ma))
     for view, catalog, interface in (("ticketing", tasks, ticketing), ("insurance", claims, claims)):
         marker = f"<!--SCENARIO_{view.upper()}-->"
         assert marker in body, marker
