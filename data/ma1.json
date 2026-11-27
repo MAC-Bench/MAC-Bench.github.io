@@ -1,7 +1,7 @@
 {
  "set": "ma1",
  "protocol": "macbench-ma/1",
- "cards": "card-v2",
+ "cards": "card-v3",
  "domains": {
   "ticketing": {
    "tasks": [
