@@ -1,160 +1,29 @@
 <header class="nav">
   <div class="wrap nav-in">
-    <a class="brand" href="#overview"><span class="brand-mark"></span>MAC-Bench</a>
+    <a class="brand" href="#report"><span class="brand-mark"></span>MAC-Bench</a>
     <nav class="links" aria-label="Sections">
-      <a href="#overview" data-route="overview">Overview</a>
-      <a href="#ticketing" data-route="ticketing">Ticketing</a>
-      <a href="#insurance" data-route="insurance">Insurance</a>
-      <a href="#multiagent" data-route="multiagent">Multi-agent</a>
-      <a href="#shopping" data-route="shopping">Shopping</a>
+      <a href="#report" data-route="report">Report</a>
+      <a href="#tasks" data-route="tasks">Tasks</a>
       <a href="#progress" data-route="progress">Progress</a>
+      <a href="https://github.com/MAC-Bench/MAC-benchmark" target="_blank" rel="noopener">Code</a>
     </nav>
   </div>
 </header>
 
 <main>
-<!-- ============================ overview ============================ -->
-<div data-view="overview">
-  <div class="hero">
-    <div class="wrap hero-in">
-      <div class="hero-copy">
-        <span class="chip s-next"><i></i>Development benchmark</span>
-        <h1>Agents that act for different people have to <mark>coordinate</mark>. We measure whether they can.</h1>
-        <p>MAC-Bench places language-model agents in three everyday service settings. Each agent holds private information and its own permissions. Every booking, payment and settlement goes through a simulated service, and a program scores the final state.</p>
-        <div class="hero-cta">
-          <a class="btn" href="#multiagent">See the multi-agent tasks</a>
-          <a class="btn ghost" href="#ticketing">The ticketing world</a>
-        </div>
-      </div>
+<!-- ============================ report ============================ -->
+<div data-view="report" class="report-page">
+<!--VIEW_REPORT-->
+</div>
 
-      <div class="stubs" aria-label="The three scenarios">
-        <a class="stub live" href="#ticketing">
-          <div class="stub-main">
-            <p class="lbl">Flight ticketing</p>
-            <p class="stub-title">SFO <span class="to" aria-hidden="true"></span> JFK</p>
-            <dl>
-              <div><dt>Seats</dt><dd>1 agent · 2 travellers</dd></div>
-              <div><dt>Flight</dt><dd>NV212</dd></div>
-              <div><dt>Fare</dt><dd>standard</dd></div>
-              <div><dt>Total</dt><dd>$651.96</dd></div>
-            </dl>
-          </div>
-          <div class="stub-side"><p class="lbl">Status</p><p class="state">Books from search to ticket</p></div>
-        </a>
-        <a class="stub" href="#insurance">
-          <div class="stub-main">
-            <p class="lbl">Auto-insurance claim</p>
-            <p class="stub-title">Two cars, four parties</p>
-            <dl>
-              <div><dt>Seats</dt><dd>2 drivers · 2 adjusters</dd></div>
-              <div><dt>Fault</dt><dd>80 / 20</dd></div>
-              <div><dt>Tasks</dt><dd>13</dd></div>
-            </dl>
-          </div>
-          <div class="stub-side"><p class="lbl">Status</p><p class="state">Runs with scripts, first look with models</p></div>
-        </a>
-        <a class="stub" href="#shopping">
-          <div class="stub-main">
-            <p class="lbl">Online shopping</p>
-            <p class="stub-title">One shopper, three merchants</p>
-            <dl>
-              <div><dt>Seats</dt><dd>1 shopping agent · 1 shopper</dd></div>
-              <div><dt>Scope</dt><dd>Purchase</dd></div>
-            </dl>
-          </div>
-          <div class="stub-side"><p class="lbl">Status</p><p class="state">Scripted purchase tasks</p></div>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Design</p>
-        <h2>Four rules the benchmark is built on</h2>
-      </div>
-      <div class="points">
-        <div class="point">
-          <h3>The world keeps the truth</h3>
-          <p>Proposals, orders, authorizations and settlements are objects in a simulated service. A price written in a chat message commits nobody. The verifier reads the final state and the event log, and scores with code.</p>
-        </div>
-        <div class="point">
-          <h3>Roles are seats</h3>
-          <p>A seat can be driven by the agent under test, a script, a frozen model, the reference policy or a person. The same task serves as a training environment and as a team evaluation.</p>
-        </div>
-        <div class="point">
-          <h3>Consent is an object</h3>
-          <p>An agent cannot charge or cancel on its own. A traveller grants a single-use authorization for one specific proposal or order, with a charge ceiling. If the plan changes afterwards, the authorization no longer matches.</p>
-        </div>
-        <div class="point">
-          <h3>Tasks are Harbor folders</h3>
-          <p>Tasks follow the Harbor task format used by Terminal-Bench. General tools come from the agent's own harness. The environment adds a domain service over MCP and REST, and a message board. Every ticketing task now exports to such a folder; none has been run under Harbor yet.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="sec" id="architecture">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Architecture</p>
-        <h2>Six layers that talk through files, and one trial end to end</h2>
-        <p>Colours mark the three modules: Task, Agent and Evaluation.</p>
-      </div>
-      <div class="figs">
-<!--FIG_LAYERS-->
-<!--FIG_RUNTIME-->
-      </div>
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Scenarios</p>
-        <h2>Three settings, from mostly cooperative to mixed motives</h2>
-      </div>
-      <div class="rows">
-        <a class="row" href="#ticketing">
-          <span class="row-name">Ticketing</span>
-          <p>One booking agent, two travellers</p>
-          <p>Mostly cooperative. Scored against the fare rules and the best joint itinerary.</p>
-          <span class="chip s-next"><i></i>In progress</span>
-        </a>
-        <a class="row" href="#insurance">
-          <span class="row-name">Insurance claims</span>
-          <p>Two drivers, two insurers</p>
-          <p>Goals differ without being opposite. Scored against the policy, the claims rules and a liability guide.</p>
-          <span class="chip s-next"><i></i>In progress</span>
-        </a>
-        <a class="row" href="#shopping">
-          <span class="row-name">Shopping</span>
-          <p>One shopping agent and one shopper, with three simulated merchants</p>
-          <p>Compare stock and policies, get consent and place orders.</p>
-          <span class="chip s-done"><i></i>Purchase implemented</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="wrap">
-      <div class="sec-head">
-        <p class="lbl">Progress</p>
-        <h2>What is built so far</h2>
-      </div>
-      <div class="stack" style="gap:22px">
-        <div class="tally" id="tally-overview"></div>
-        <div><a class="btn ghost" href="#progress">Open the full list</a></div>
-      </div>
-    </div>
-  </section>
+<!-- ============================ tasks ============================ -->
+<div data-view="tasks" class="report-page" hidden>
+<!--VIEW_TASKS-->
 </div>
 
 <!-- ============================ ticketing ============================ -->
-<div data-view="ticketing" class="scenario-page" hidden>
-<!--SCENARIO_TICKETING-->
+<div data-view="ticketing" class="scenario-page report-page" hidden>
+<!--TASKHEAD_TICKETING-->
   <section class="scenario-section scenario-reference">
     <div class="wrap">
       <h2>Explore the details</h2>
@@ -356,11 +225,6 @@
 
 <!-- ============================ insurance ============================ -->
 <!--VIEW_INSURANCE-->
-
-<!-- ============================ multi-agent ============================ -->
-<div data-view="multiagent" class="scenario-page" hidden>
-<!--VIEW_MULTIAGENT-->
-</div>
 
 <!-- ============================ shopping ============================ -->
 <!--VIEW_SHOPPING-->

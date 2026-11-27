@@ -1,0 +1,368 @@
+{
+ "set": "ma2",
+ "protocol": "macbench-ma/1",
+ "cards": "card-v3",
+ "tasks": [
+  {
+   "id": "tk-n1",
+   "domain": "ticketing",
+   "title": "Two cities, one arrival: who makes it worth whose while",
+   "tests": "Whether the two travellers and the agent find the pair of flights that is best for the two together, which neither would choose alone, and the payment from Daniel to Maya that makes it worth her while.",
+   "mechanism": "M3",
+   "twin": "tk-n1-aligned",
+   "brief": "Maya Chen flies from San Francisco and Daniel Okafor from Chicago, both to New York on 12 March 2027, and they would like to land close together. Book them.",
+   "seats": {
+    "traveler_a": {
+     "budget_cents": 50000,
+     "destination": "NYC",
+     "latest_arrival_local": "2027-03-13T08:30",
+     "max_stops": 1,
+     "meet_value_cents": 1000,
+     "meet_within_minutes": 60,
+     "origin": "SFO",
+     "overnight_cost_cents": 8000,
+     "pays_only_own_ticket": false,
+     "stop_penalty_cents": 6000,
+     "travel_date": "2027-03-12",
+     "wants_adjacent_seat": false
+    },
+    "traveler_b": {
+     "budget_cents": 40000,
+     "destination": "NYC",
+     "early_departure_before_local": "12:00",
+     "early_departure_cost_cents": 6000,
+     "latest_arrival_local": "2027-03-13T12:00",
+     "max_stops": 1,
+     "meet_value_cents": 15000,
+     "meet_within_minutes": 60,
+     "origin": "ORD",
+     "pays_only_own_ticket": false,
+     "stop_penalty_cents": 5000,
+     "travel_date": "2027-03-12",
+     "wants_adjacent_seat": false
+    }
+   },
+   "outside": {
+    "traveler_a": 28760,
+    "traveler_b": 27280
+   },
+   "outside_total": 56040,
+   "best": {
+    "legs": {
+     "traveler_a": {
+      "flights": "NV520",
+      "departs": "2027-03-12T09:25",
+      "arrives": "2027-03-12T18:01",
+      "to": "EWR",
+      "stops": 0,
+      "brand": "basic",
+      "price_cents": 30878
+     },
+     "traveler_b": {
+      "flights": "NV337",
+      "departs": "2027-03-12T13:55",
+      "arrives": "2027-03-12T17:01",
+      "to": "EWR",
+      "stops": 0,
+      "brand": "basic",
+      "price_cents": 13785
+     }
+    },
+    "loss": {
+     "traveler_a": 30878,
+     "traveler_b": 13785
+    },
+    "total": 44663
+   },
+   "second": {
+    "legs": {
+     "traveler_a": {
+      "flights": "NV551",
+      "departs": "2027-03-12T10:05",
+      "arrives": "2027-03-12T18:43",
+      "to": "JFK",
+      "stops": 0,
+      "brand": "basic",
+      "price_cents": 31200
+     },
+     "traveler_b": {
+      "flights": "NV299+NV438",
+      "departs": "2027-03-12T13:00",
+      "arrives": "2027-03-12T19:18",
+      "to": "EWR",
+      "stops": 1,
+      "brand": "basic",
+      "price_cents": 11852
+     }
+    },
+    "loss": {
+     "traveler_a": 31200,
+     "traveler_b": 16852
+    },
+    "total": 48052
+   },
+   "surplus_cents": 11377,
+   "margin_cents": 3389,
+   "transfer": {
+    "from": "traveler_b",
+    "high": 13495,
+    "low": 2118,
+    "to": "traveler_a"
+   },
+   "cheapest_meeting": {
+    "legs": {
+     "traveler_a": {
+      "flights": "AJ261+AJ197",
+      "departs": "2027-03-12T09:55",
+      "arrives": "2027-03-12T20:58",
+      "to": "LGA",
+      "stops": 1,
+      "brand": "basic",
+      "price_cents": 29805
+     },
+     "traveler_b": {
+      "flights": "AJ628",
+      "departs": "2027-03-12T18:45",
+      "arrives": "2027-03-12T21:53",
+      "to": "LGA",
+      "stops": 0,
+      "brand": "basic",
+      "price_cents": 12388
+     }
+    },
+    "loss": {
+     "traveler_a": 35805,
+     "traveler_b": 12388
+    },
+    "total": 48193
+   },
+   "counterfactuals": [
+    {
+     "what": "ota_agent does nothing",
+     "delta_cents": 11377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "traveler_a does nothing",
+     "delta_cents": 11377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "traveler_b does nothing",
+     "delta_cents": 11377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "the agent books each alone",
+     "delta_cents": 11377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "the agent books the best pair with each paying their own fare",
+     "delta_cents": 11377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "the agent books the cheapest pair that lands together",
+     "delta_cents": 11377,
+     "efficiency": 0.0,
+     "joint_met": false
+    }
+   ],
+   "relies_on": [
+    "Each traveller's costs and values are known to that traveller only, and either may keep them back",
+    "The best plan for the two (NV520 and NV337, both into Newark an hour apart) is neither traveller's own choice and not the cheapest pair that lands together",
+    "Maya cares little about landing together, so the best plan costs her more than flying alone: Daniel has to pay part of her fare, between the floor of her gain and the ceiling of his",
+    "A proposal can have one traveller pay part of the other's fare; each authorises only their own share"
+   ],
+   "failure_modes": [
+    "each booked on their own cheapest flight",
+    "the cheapest pair that lands together",
+    "the best pair with each paying their own fare: Maya refuses, or accepts and ends below her floor",
+    "a payment outside the range, so that one ends worse off than alone",
+    "booking on the hard facts alone without asking what anything is worth"
+   ],
+   "sheet": "docs/tasks/ma2/tk-n1.md"
+  },
+  {
+   "id": "tk-n1-aligned",
+   "domain": "ticketing",
+   "title": "Two cities, one arrival: both want it",
+   "tests": "The twin of tk-n1 in which landing together is worth as much to Maya as to Daniel: the best plan needs no payment.",
+   "mechanism": "control",
+   "twin": "tk-n1",
+   "brief": "Maya Chen flies from San Francisco and Daniel Okafor from Chicago, both to New York on 12 March 2027, and they would like to land close together. Book them.",
+   "seats": {
+    "traveler_a": {
+     "budget_cents": 50000,
+     "destination": "NYC",
+     "latest_arrival_local": "2027-03-13T08:30",
+     "max_stops": 1,
+     "meet_value_cents": 15000,
+     "meet_within_minutes": 60,
+     "origin": "SFO",
+     "overnight_cost_cents": 8000,
+     "pays_only_own_ticket": false,
+     "stop_penalty_cents": 6000,
+     "travel_date": "2027-03-12",
+     "wants_adjacent_seat": false
+    },
+    "traveler_b": {
+     "budget_cents": 40000,
+     "destination": "NYC",
+     "early_departure_before_local": "12:00",
+     "early_departure_cost_cents": 6000,
+     "latest_arrival_local": "2027-03-13T12:00",
+     "max_stops": 1,
+     "meet_value_cents": 15000,
+     "meet_within_minutes": 60,
+     "origin": "ORD",
+     "pays_only_own_ticket": false,
+     "stop_penalty_cents": 5000,
+     "travel_date": "2027-03-12",
+     "wants_adjacent_seat": false
+    }
+   },
+   "outside": {
+    "traveler_a": 42760,
+    "traveler_b": 27280
+   },
+   "outside_total": 70040,
+   "best": {
+    "legs": {
+     "traveler_a": {
+      "flights": "NV520",
+      "departs": "2027-03-12T09:25",
+      "arrives": "2027-03-12T18:01",
+      "to": "EWR",
+      "stops": 0,
+      "brand": "basic",
+      "price_cents": 30878
+     },
+     "traveler_b": {
+      "flights": "NV337",
+      "departs": "2027-03-12T13:55",
+      "arrives": "2027-03-12T17:01",
+      "to": "EWR",
+      "stops": 0,
+      "brand": "basic",
+      "price_cents": 13785
+     }
+    },
+    "loss": {
+     "traveler_a": 30878,
+     "traveler_b": 13785
+    },
+    "total": 44663
+   },
+   "second": {
+    "legs": {
+     "traveler_a": {
+      "flights": "NV551",
+      "departs": "2027-03-12T10:05",
+      "arrives": "2027-03-12T18:43",
+      "to": "JFK",
+      "stops": 0,
+      "brand": "basic",
+      "price_cents": 31200
+     },
+     "traveler_b": {
+      "flights": "NV299+NV438",
+      "departs": "2027-03-12T13:00",
+      "arrives": "2027-03-12T19:18",
+      "to": "EWR",
+      "stops": 1,
+      "brand": "basic",
+      "price_cents": 11852
+     }
+    },
+    "loss": {
+     "traveler_a": 31200,
+     "traveler_b": 16852
+    },
+    "total": 48052
+   },
+   "surplus_cents": 25377,
+   "margin_cents": 3389,
+   "transfer": {
+    "from": "traveler_a",
+    "high": 11882,
+    "low": -13495,
+    "to": "traveler_b"
+   },
+   "cheapest_meeting": {
+    "legs": {
+     "traveler_a": {
+      "flights": "AJ261+AJ197",
+      "departs": "2027-03-12T09:55",
+      "arrives": "2027-03-12T20:58",
+      "to": "LGA",
+      "stops": 1,
+      "brand": "basic",
+      "price_cents": 29805
+     },
+     "traveler_b": {
+      "flights": "AJ628",
+      "departs": "2027-03-12T18:45",
+      "arrives": "2027-03-12T21:53",
+      "to": "LGA",
+      "stops": 0,
+      "brand": "basic",
+      "price_cents": 12388
+     }
+    },
+    "loss": {
+     "traveler_a": 35805,
+     "traveler_b": 12388
+    },
+    "total": 48193
+   },
+   "counterfactuals": [
+    {
+     "what": "ota_agent does nothing",
+     "delta_cents": 25377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "traveler_a does nothing",
+     "delta_cents": 25377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "traveler_b does nothing",
+     "delta_cents": 25377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "the agent books each alone",
+     "delta_cents": 25377,
+     "efficiency": 0.0,
+     "joint_met": false
+    },
+    {
+     "what": "the agent books the cheapest pair that lands together",
+     "delta_cents": 3530,
+     "efficiency": 0.8609,
+     "joint_met": false
+    }
+   ],
+   "relies_on": [
+    "Each traveller's costs and values are known to that traveller only",
+    "The best plan for the two leaves each better off than alone with each paying their own fare"
+   ],
+   "failure_modes": [
+    "each booked on their own cheapest flight",
+    "the cheapest pair that lands together"
+   ],
+   "sheet": "docs/tasks/ma2/tk-n1-aligned.md"
+  }
+ ]
+}

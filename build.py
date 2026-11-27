@@ -15,7 +15,7 @@ import sys
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
-from src.multiagent import render as render_multiagent
+from src.report import render_report, render_tasks, task_head
 from src.scenarios import render as render_scenario
 from src.shopping import render as render_shopping
 
@@ -60,13 +60,13 @@ def main() -> None:
         shutil.copy(code / "demo" / "ticketing_after_session.json", HERE / "data" / "ticketing_after_session.json")
         shutil.copy(code / "tasks" / "ticketing_dev.json", HERE / "data" / "ticketing_tasks.json")
         shutil.copy(code / "claims" / "insurance_dev.json", HERE / "data" / "insurance.json")
-        shutil.copy(code / "ma1" / "ma1.json", HERE / "data" / "ma1.json")
+        shutil.copy(code / "ma2" / "ma2.json", HERE / "data" / "ma2.json")
     ticketing = json.loads((HERE / "data" / "ticketing.json").read_text(encoding="utf-8"))
     world = json.loads((HERE / "data" / "ticketing_world.json").read_text(encoding="utf-8"))
     session = [json.loads((HERE / "data" / name).read_text(encoding="utf-8"))
                for name in ("ticketing_session.json", "ticketing_after_session.json")]
     progress = json.loads((SRC / "progress.json").read_text(encoding="utf-8"))
-    css = "\n".join((SRC / name).read_text(encoding="utf-8") for name in ("styles.css", "scenarios.css", "multiagent.css"))
+    css = "\n".join((SRC / name).read_text(encoding="utf-8") for name in ("styles.css", "scenarios.css", "multiagent.css", "report.css"))
     js = (SRC / "app.js").read_text(encoding="utf-8")
     world_js = (SRC / "world.js").read_text(encoding="utf-8")
     session_js = (SRC / "session.js").read_text(encoding="utf-8")
@@ -82,17 +82,19 @@ def main() -> None:
     body = (SRC / "body.html").read_text(encoding="utf-8")
     assert "<!--VIEW_INSURANCE-->" in body
     body = body.replace("<!--VIEW_INSURANCE-->", (SRC / "insurance.html").read_text(encoding="utf-8").strip())
-    ma = json.loads((HERE / "data" / "ma1.json").read_text(encoding="utf-8"))
-    assert "<!--VIEW_MULTIAGENT-->" in body
-    body = body.replace("<!--VIEW_MULTIAGENT-->", render_multiagent(ma))
+    ma2 = json.loads((HERE / "data" / "ma2.json").read_text(encoding="utf-8"))
+    for marker, html in (("<!--VIEW_REPORT-->", render_report(ma2)), ("<!--VIEW_TASKS-->", render_tasks())):
+        assert marker in body, marker
+        body = body.replace(marker, html)
     assert "<!--VIEW_SHOPPING-->" in body
     body = body.replace("<!--VIEW_SHOPPING-->", render_shopping((SRC / "shopping.html").read_text(encoding="utf-8").strip(), shopping))
-    for view, catalog, interface in (("ticketing", tasks, ticketing), ("insurance", claims, claims),
-                                     ("shopping", shopping, shopping)):
-        marker = f"<!--SCENARIO_{view.upper()}-->"
+    for view in ("ticketing", "insurance", "shopping"):
+        marker = f"<!--TASKHEAD_{view.upper()}-->"
         assert marker in body, marker
-        recorded_tickets = session[1]["tickets"] if view == "ticketing" else ()
-        body = body.replace(marker, render_scenario(view, catalog, interface, recorded_tickets))
+        body = body.replace(marker, task_head(view, ma2))
+    assert "<!--SCENARIO_SHOPPING-->" in body                   # the shopping team's own presentation follows the head of its page
+    body = body.replace("<!--SCENARIO_SHOPPING-->", '<div class="wrap"><h2 class="team-head">The shopping world, from the shopping team</h2></div>'
+                        + render_scenario("shopping", shopping, shopping, ()))
     for marker, name in (("<!--FIG_LAYERS-->", "fig_layers.html"), ("<!--FIG_RUNTIME-->", "fig_runtime.html"),
                          ("<!--FIG_CLAIMS_PARTIES-->", "fig_claims_parties.html"), ("<!--FIG_CLAIMS_PIPELINE-->", "fig_claims_pipeline.html")):
         fig = (SRC / "figs" / name).read_text(encoding="utf-8").strip()

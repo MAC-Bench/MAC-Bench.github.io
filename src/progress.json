@@ -882,6 +882,21 @@
           "where": [
             "src/multiagent.py, src/multiagent.css, data/ma1.json (written by tools/export_ma.py in the code repository)"
           ]
+        },
+        {
+          "id": "site-report",
+          "title": "The site as a report",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-27",
+          "done": [
+            "Home page in the form of a benchmark report: an illustration of the three services, the design, the evaluation, the experimental setup, with placeholders for what is not done",
+            "A Tasks page with a card and a small diagram for each service",
+            "A page per service: who takes part and what each holds, then a worked task with its computed best plan"
+          ],
+          "where": [
+            "src/report.py, src/report.css"
+          ]
         }
       ]
     },
@@ -1190,6 +1205,29 @@
           "open": [
             "The tasks are not hard enough for the model tried: harder tasks, in which seats' own goals pull against a shared one, are being designed",
             "Results are not reported on this page"
+          ]
+        },
+        {
+          "id": "ma2-negotiation",
+          "title": "The negotiation set: seats whose legitimate interests pull apart",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-27",
+          "done": [
+            "Values in dollars as typed facts; a solver computes each seat's floor, the plan that leaves nothing on the table and the payments that keep every seat above its floor",
+            "An episode is measured by its efficiency and the money left on the table; each seat must end no worse off than alone",
+            "One ticketing task and its control twin, admitted under every seating; the scripts reach the best plan"
+          ],
+          "where": [
+            "docs/spec/negotiation.md",
+            "docs/tasks/ma2/"
+          ],
+          "checked": [
+            "The truth of the ticketing task is computed from the world's own fares and checked by tests; 731 tests pass"
+          ],
+          "open": [
+            "The claims task of the set is designed and being built",
+            "First trials with a strong model are under way"
           ]
         }
       ]

@@ -3,7 +3,9 @@
 
   var TK = JSON.parse(document.getElementById('data-ticketing').textContent);
   var PG = JSON.parse(document.getElementById('data-progress').textContent);
-  var VIEWS = ['overview', 'ticketing', 'insurance', 'multiagent', 'shopping', 'progress'];
+  var VIEWS = ['report', 'tasks', 'ticketing', 'insurance', 'shopping', 'progress'];
+  var ALIAS = { overview: 'report', multiagent: 'report' };
+  var UNDER = { ticketing: 'tasks', insurance: 'tasks', shopping: 'tasks' };
 
   function byId(id) { return document.getElementById(id); }
   function all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
@@ -15,11 +17,12 @@
 
   /* ---------- routing ---------- */
   function route() {
-    var parts = (location.hash || '#overview').slice(1).split('/');
-    var view = VIEWS.indexOf(parts[0]) >= 0 ? parts[0] : 'overview';
+    var parts = (location.hash || '#report').slice(1).split('/');
+    var asked = ALIAS[parts[0]] || parts[0];
+    var view = VIEWS.indexOf(asked) >= 0 ? asked : 'report';
     all('[data-view]').forEach(function (el) { el.hidden = el.getAttribute('data-view') !== view; });
     all('.links a').forEach(function (a) {
-      var active = a.getAttribute('data-route') === view;
+      var active = a.getAttribute('data-route') === (UNDER[view] || view);
       a.classList.toggle('on', active);
       if (active) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
@@ -29,6 +32,15 @@
     else window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
+  document.addEventListener('click', function (ev) {          // the report's contents: go to a section without changing the view
+    var link = ev.target.closest('a[data-jump]');
+    if (!link) return;
+    var target = byId(link.getAttribute('data-jump'));
+    if (!target) return;
+    ev.preventDefault();
+    if ((location.hash || '#report') !== '#report') location.hash = '#report';
+    setTimeout(function () { target.scrollIntoView({ block: 'start' }); }, 0);
+  });
 
   all('.scenario-page').forEach(function (view) {
     view.addEventListener('click', function (ev) {
@@ -98,7 +110,6 @@
       '<span class="pmeta">' + meta + '</span></summary><div class="pbody">' + body + '</div></details>';
   }
   function renderProgress() {
-    byId('tally-overview').innerHTML = tallyHtml();
     byId('tally-progress').innerHTML = tallyHtml();
     byId('updated').textContent = PG.updated;
     byId('pgroups').innerHTML = PG.groups.map(function (g) {
