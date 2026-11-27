@@ -279,7 +279,7 @@ def render(ma):
       <div class="scenario-scoring">
         <div class="score-card"><span class="scenario-icon">{icon("shield")}</span><h3>The protocol: tested</h3><p>Seatings and their refusals, scripts confined to their own seat, every seat's ending charged to the right seat, the same end played in one process and over the network.</p></div>
         <div class="score-card"><span class="scenario-icon">{icon("file")}</span><h3>The tasks: admitted</h3><p>All fifteen pass every test above when the scripts play them. The evidence is stored with the tasks and replayed by one command.</p></div>
-        <div class="score-card"><span class="scenario-icon">{icon("chart")}</span><h3>Models: first trials</h3><p>First trials with a model are under way. No results are reported here yet.</p></div>
+        <div class="score-card"><span class="scenario-icon">{icon("chart")}</span><h3>Models: first trials</h3><p>First trials with a model found a gap in the drivers' cards and a scoring rule to settle; both are fixed. The tasks were not hard enough, and harder ones are being designed.</p></div>
       </div>
     </div>
   </section>""".strip()

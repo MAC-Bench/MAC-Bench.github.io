@@ -1174,10 +1174,22 @@
         {
           "id": "ma-models",
           "title": "First trials with a model on the set",
-          "status": "next",
-          "plan": [
-            "Condition A on all fifteen tasks with one seat under test, condition C on two tasks, one trial each",
-            "Reported per condition and per seat, never pooled with the development sets"
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-27",
+          "done": [
+            "Condition A on all fifteen tasks with one seat under test, condition C on two tasks, one trial each; every seat played from outside ran and ended without an infrastructure failure",
+            "What the trials found, and what was changed: a driver's card did not say that the driver needs a car while theirs is in the shop, so model drivers rented none; the card now says so and the driver is judged on it (cards v3). An insurer that settled the rest of a rental with the other driver on the claim a demand opened was held to have paid what was not owed; an offer the driver accepted now counts as their claim"
+          ],
+          "where": [
+            "docs/MIGRATION_ma1.md, section 3"
+          ],
+          "checked": [
+            "The set rebuilt on cards v3 and every task admitted again; 722 tests pass, two skipped"
+          ],
+          "open": [
+            "The tasks are not hard enough for the model tried: harder tasks, in which seats' own goals pull against a shared one, are being designed",
+            "Results are not reported on this page"
           ]
         }
       ]
