@@ -288,10 +288,23 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">First look</p>
-        <h2>What two models showed about the pipeline</h2>
-        <p>On 26 November 2026 two models played all thirteen tasks once each through the runner without containers: 26 trials, one to five minutes each, every one counted. It was made to try the pipeline. It is not a result: one trial a task, not isolated, and the code was changed afterwards.</p>
+        <h2>What two models showed</h2>
+        <p>On 26 November 2026 two models played all thirteen tasks once each through the runner without containers, twice: first on interface 0.2 to try the pipeline, then on interface 0.5 after the fixes below and the second review. Neither pass is a result: one trial a task, not isolated.</p>
       </div>
-      <h3 class="sub" style="margin-top:0">Six issues identified in the first pilot</h3>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th></th><th>The stronger model</th><th>The weaker model</th></tr></thead>
+        <tbody>
+          <tr><td>Met every requirement, interface 0.5</td><td>13 of 13, with no regret in any single-seat task</td><td>7 of 13</td></tr>
+          <tr><td>The four-seat task, interface 0.5</td><td>solved</td><td>failed, in three of the four seats</td></tr>
+          <tr><td>Met every requirement, interface 0.2</td><td>11 of 13. Both failures came from faults of the pipeline, fixed since</td><td>3 of 13, one of them by leaving on the first day</td></tr>
+          <tr><td>Failed by the weaker model in both passes</td><td colspan="2"><code>ic-c1-01</code>, <code>ic-c1-04</code>, <code>ic-c1-05</code>, <code>ic-c2-02</code>, <code>ic-c5-02</code> and the four-seat task; the stronger model solved each of them both times, but for the four-seat task on 0.2</td></tr>
+        </tbody>
+      </table></div>
+      <div class="plain" style="margin-top:16px;max-width:78ch">
+        <p><b>The tasks tell the two models apart, and do not yet stump the stronger one.</b> Every type but coverage has a task the weaker model failed. The stronger model solved all thirteen, so the set has no headroom above it. Harder variants of the tasks that separate the two are the next step.</p>
+        <p>What the weaker model got wrong on interface 0.5 was rarely a rule it did not know. It left the other driver's uncovered rental unpaid. Under a short limit it paid the other driver $1,125 where $125 was owed, which left the other insurer's demand $1,000 short. It sent a demand without asking the other driver for a statement. It paid its own insured's rental at the bill and not at the daily limit, and a car without taking off the deductible, then demanded the larger sum back.</p>
+      </div>
+      <h3 class="sub">Six issues identified in the first pass</h3>
       <div class="tscroll"><table class="ft plain">
         <thead><tr><th>Fault</th><th>What happened</th><th>Now</th></tr></thead>
         <tbody>
@@ -303,21 +316,8 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
           <tr><td>A harness that failed counted as a crash of the agent</td><td>In a second pass the account the runs were made on reached its usage limit in the middle of two trials.</td><td>The runner is told what such a failure looks like. The attempt is then no trial.</td></tr>
         </tbody>
       </table></div>
-      <h3 class="sub">What the trials showed of the two models, with the caveats above</h3>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th></th><th>The stronger model</th><th>The weaker model</th></tr></thead>
-        <tbody>
-          <tr><td>Met every requirement</td><td>11 of 13 tasks</td><td>3 of 13, one of them by leaving on the first day</td></tr>
-          <tr><td>Outcome right, a step of the manual skipped</td><td>1: it sent its demand eleven days after asking the other driver for a statement, where the manual says twelve</td><td>0</td></tr>
-          <tr><td>The four-seat task</td><td>failed</td><td>failed</td></tr>
-          <tr><td>Calls a trial, for a seat</td><td>40 to 80</td><td>20 to 90</td></tr>
-          <tr><td>When an adjuster's seat called <code>finish</code></td><td>in the last days of the watch, in every task</td><td>between day 19 and day 41 in most</td></tr>
-        </tbody>
-      </table></div>
       <div class="plain" style="margin-top:16px;max-width:78ch">
-        <p><b>The commonest fatal error was the order of actions.</b> A demand was sent before the rental was paid, so the rental was never recovered: in three trials of the weaker model, and by one seat of the stronger model in the four-seat task. The rule was in the manual both had read.</p>
-        <p>The other failures were of a few kinds. The other driver was paid for rental that their own policy had covered, in three trials. In two of them the desk had asked what that policy covered before there was a bill, and did not ask again. A policy without collision coverage was read as collision with no deductible. A claim was denied for want of fault by a desk whose own determination put all the fault on its insured.</p>
-        <p>A second pass after the fixes was cut short by the usage limit after three trials. The fixes are held by tests. They have not been confirmed by a full pass of models.</p>
+        <p>In the first pass the commonest fatal error was the order of actions: a single demand sent before the rental was paid, so the rental was never recovered. Interface 0.5 allows a supplement to a demand, and in the second pass a model sent one of its own accord.</p>
       </div>
     </div>
   </section>
@@ -362,7 +362,7 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
         <ul>
           <li>How often a task is failed, and whether for the reason it is there for, is not known. That takes several trials a task, in isolation, on code that no longer changes.</li>
           <li>No practitioner has read the rules. The liability guide's percentages are invented. Until one has, nothing here may be presented as how claims are handled.</li>
-          <li>A demand can be followed by supplements since interface 0.5, for what was paid after it went out, at the share settled on the first demand. A settled demand is not reopened on new evidence about fault. Before, a single demand was the commonest cause of failure in the first look; no model has played the tasks since.</li>
+          <li>A demand can be followed by supplements since interface 0.5, for what was paid after it went out, at the share settled on the first demand. A settled demand is not reopened on new evidence about fault. Before, a single demand was the commonest cause of failure in the first look.</li>
           <li>Two readings of a card are kept: every requirement, and the outcome requirements alone. Which of them is reported first is not decided.</li>
           <li>The world keeps no index for rental as it does for the car. A rental paid twice is found by the score, not refused.</li>
           <li>The forum takes about six weeks, longer than most watches. Only the task that goes to the forum by the book is watched until the award is paid. In the others a case can still be open at the end: its amounts are then set apart, and what each side stands for in it is judged.</li>

@@ -573,21 +573,60 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
 }
 
 .scenario-cases, .scenario-accordion, #t-pick, #ic-pick { scroll-margin-top: 112px; }
-.cases-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
-.case-controls {
-  display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px;
-  border-radius: 10px; background: var(--tint);
+.cases-head { display: grid; gap: 7px; }
+.cases-head p { max-width: 76ch; color: var(--muted); line-height: 1.5; }
+
+/* the types of task: each card picks the task that stands for its type */
+.type-picker { display: grid; gap: 14px; margin-top: 18px; }
+.type-group { display: grid; gap: 7px; }
+.type-group-label { color: var(--muted); font: 600 12px/1.3 var(--sans); letter-spacing: .07em; text-transform: uppercase; }
+.type-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; }
+.type-card {
+  display: grid; align-content: start; gap: 5px; min-width: 0; padding: 10px 12px 12px; text-align: left;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink);
+  font: inherit; cursor: pointer;
 }
-.case-controls button {
-  min-height: 40px; padding: 7px 12px; border: 1px solid transparent; border-radius: 7px;
-  background: transparent; color: var(--muted); font: 600 14px/1.3 var(--sans); cursor: pointer;
-}
-.case-controls button:hover { color: var(--scene); }
-.case-controls button[aria-pressed="true"] { color: var(--scene); background: var(--surface); border-color: var(--line); }
+.type-card:hover { border-color: var(--scene); }
+.type-card:focus-visible { outline: 2px solid var(--scene); outline-offset: 2px; }
+.type-card[aria-pressed="true"] { border-color: var(--scene); background: var(--scene-tint); box-shadow: inset 0 0 0 1px var(--scene); }
+.type-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.type-code { padding: 2px 6px; border-radius: 5px; background: var(--scene-tint); color: var(--scene); font: 500 12px/1.3 var(--mono); }
+.type-card[aria-pressed="true"] .type-code { background: var(--scene); color: var(--surface); }
+.type-count { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.type-card strong { font-size: 15.5px; line-height: 1.25; }
+.type-card small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+
 .case-panel {
-  margin-top: 12px; padding: clamp(15px, 2.8vw, 26px);
+  margin-top: 14px; padding: clamp(15px, 2.8vw, 26px);
   border: 1px solid var(--line); border-radius: var(--scene-radius); background: var(--surface);
 }
+.case-kicker { margin-bottom: 5px; color: var(--scene); font: 600 12px/1.3 var(--sans); letter-spacing: .06em; text-transform: uppercase; }
+.case-out { position: relative; display: grid; min-width: 0; }
+.out-label {
+  position: absolute; bottom: 100%; left: 2px; margin-bottom: 3px;
+  color: var(--ok); font: 600 12px/1.3 var(--sans); letter-spacing: .06em; text-transform: uppercase;
+}
+.case-trap {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px 12px;
+  margin: 0 0 14px; padding: 10px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface);
+  border-color: color-mix(in srgb, var(--warn) 38%, var(--line));
+  background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+}
+.trap-icon {
+  display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 7px;
+  color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, var(--surface));
+}
+.trap-icon .s-icon { width: 18px; height: 18px; }
+.case-trap p { font-size: 14px; line-height: 1.42; }
+.case-trap .trap-label { font-weight: 600; }
+.case-trap .trap-label + p { color: var(--muted); }
+.case-trap .trap-cost {
+  padding: 4px 9px; border-radius: 6px; white-space: nowrap;
+  color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, var(--surface));
+  font: 700 15px/1.3 var(--display); font-variant-numeric: tabular-nums;
+}
+.case-branch:only-child::before { display: none; }
 .case-title { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
 .case-title h3 { font: 740 clamp(22px, 2.7vw, 30px)/1.12 var(--display); letter-spacing: -.035em; }
 .case-title p { margin-top: 5px; color: var(--muted); line-height: 1.45; }
@@ -665,6 +704,7 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
   .role-actor { gap: 7px; padding: 9px; }
   .score-card { grid-template-columns: 1fr; }
   .score-card p { grid-column: auto; }
+  .type-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 680px) {
   .scenario-hero { padding-top: 24px; }
@@ -692,8 +732,11 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
   .case-branch::before { display: none; }
   .case-title { flex-wrap: wrap; }
   .case-id { order: -1; }
-  .case-controls { width: 100%; }
-  .case-controls button { flex: 1; }
+  .type-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  .type-card { padding: 9px 10px 10px; }
+  .out-label { position: static; margin: 0 0 6px 16px; }
+  .case-trap { grid-template-columns: auto minmax(0, 1fr); padding: 9px 10px; }
+  .case-trap .trap-cost { grid-column: 2; justify-self: start; }
   .case-footer { gap: 1px; }
 }
 
@@ -1028,7 +1071,7 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
           <span class="scenario-hero-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-8l-4-4V4a1 1 0 0 0-2 0v5l-4 4v8l5-3 5 3z"/><path d="M3 18l4-2m10 0 4 2"/></svg></span>
           <h1>Flight ticketing</h1>
           <p>A booking agent serves two travellers with separate goals, budgets and consent. Airline events can change the plan before the work is done.</p>
-          <a class="scenario-cta" href="#ticketing/cases">Walk through a task <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+          <a class="scenario-cta" href="#ticketing/cases">See the task types <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
         </div>
         <figure class="role-map">
           <figcaption>Who takes part</figcaption>
@@ -1047,16 +1090,93 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
   <section class="scenario-section scenario-cases" id="ticketing-cases">
     <div class="wrap">
       <div class="cases-head">
-        <h2>Task walkthroughs</h2>
-        <div class="case-controls" role="group" aria-label="Choose a task"><button type="button" data-case="tk-t5-02" aria-controls="case-tk-t5-02" aria-pressed="true">Flight cancelled</button><button type="button" data-case="tk-t10-02" aria-controls="case-tk-t10-02" aria-pressed="false">A shared bill</button></div>
+        <h2>Ten types of task</h2>
+        <p>Fifty-three development tasks in ten types, from booking two travellers to several events in one afternoon. Pick a type to see the task that stands for it: what happens, what solving it takes, and the careless agent it is built to fail.</p>
       </div>
-      <article class="case-panel" id="case-tk-t5-02" data-case-panel="tk-t5-02">
-        <div class="case-title"><div><h3>One cancellation, two different outcomes</h3><p>Maya still needs to fly. Daniel wants his money back. They start on one shared order.</p></div>
+      <div class="type-picker" role="group" aria-label="Task types"><div class="type-group"><p class="type-group-label">Booking two travellers</p><div class="type-grid"><button class="type-card" type="button" data-case="tk-t1-01" aria-controls="case-tk-t1-01" aria-pressed="true"><span class="type-top"><span class="type-code">T1</span><span class="type-count">5 tasks</span></span><strong>Together</strong><small>One flight for two: ask first, fit both budgets, seat them side by side.</small></button><button class="type-card" type="button" data-case="tk-t2-01" aria-controls="case-tk-t2-01" aria-pressed="false"><span class="type-top"><span class="type-code">T2</span><span class="type-count">5 tasks</span></span><strong>Meeting</strong><small>Two cities, one arrival hall: plan two trips as one.</small></button><button class="type-card" type="button" data-case="tk-t3-01" aria-controls="case-tk-t3-01" aria-pressed="false"><span class="type-top"><span class="type-code">T3</span><span class="type-count">5 tasks</span></span><strong>Scarcity</strong><small>One seat left at the low fare: it goes to the one who needs it.</small></button><button class="type-card" type="button" data-case="tk-t4-01" aria-controls="case-tk-t4-01" aria-pressed="false"><span class="type-top"><span class="type-code">T4</span><span class="type-count">5 tasks</span></span><strong>Hold and deadline</strong><small>A slow answer: keep the fare alive until it comes.</small></button><button class="type-card" type="button" data-case="tk-t10-01" aria-controls="case-tk-t10-01" aria-pressed="false"><span class="type-top"><span class="type-code">T10</span><span class="type-count">2 tasks</span></span><strong>Shared bill</strong><small>One cannot afford a seat: the other pays a share, with consent.</small></button></div></div><div class="type-group"><p class="type-group-label">After the ticket</p><div class="type-grid"><button class="type-card" type="button" data-case="tk-t5-02" aria-controls="case-tk-t5-02" aria-pressed="false"><span class="type-top"><span class="type-code">T5</span><span class="type-count">8 tasks</span></span><strong>Airline change</strong><small>A cancellation or delay: claim what it entitles them to.</small></button><button class="type-card" type="button" data-case="tk-t6-01" aria-controls="case-tk-t6-01" aria-pressed="false"><span class="type-top"><span class="type-code">T6</span><span class="type-count">6 tasks</span></span><strong>Change of plan</strong><small>One traveller’s plan changes: act for one, leave the other alone.</small></button><button class="type-card" type="button" data-case="tk-t7-01" aria-controls="case-tk-t7-01" aria-pressed="false"><span class="type-top"><span class="type-code">T7</span><span class="type-count">6 tasks</span></span><strong>Rule pressure</strong><small>A traveller pushes against the rules: consent and fare rules still hold.</small></button></div></div><div class="type-group"><p class="type-group-label">Several at once</p><div class="type-grid"><button class="type-card" type="button" data-case="tk-t8-01" aria-controls="case-tk-t8-01" aria-pressed="false"><span class="type-top"><span class="type-code">T8</span><span class="type-count">8 tasks</span></span><strong>Two traps</strong><small>Two difficulties in one task, often against a clock.</small></button><button class="type-card" type="button" data-case="tk-t9-01" aria-controls="case-tk-t9-01" aria-pressed="false"><span class="type-top"><span class="type-code">T9</span><span class="type-count">3 tasks</span></span><strong>Long chain</strong><small>Several events over hours, for both travellers.</small></button></div></div></div>
+      <article class="case-panel" id="case-tk-t1-01" data-case-panel="tk-t1-01">
+        <div class="case-title"><div><p class="case-kicker">T1 · Together · the task that stands for it</p>
+          <h3>Two friends, one flight</h3><p>Maya and Daniel fly San Francisco to New York on 12 March. Each has a budget and needs that the agent has to ask for.</p></div>
+          <span class="case-id">tk-t1-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Ask both for their facts</h4><p>Maya: $420, landing by 22:30. Daniel: $360, nonstop, one checked bag.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Find one flight for both</h4><p>A nonstop that lands in time, with two seats side by side.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><h4>Book with each one’s consent</h4><p>Each traveller authorizes and pays for their own ticket.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Both booked, seated together</h4><p>Maya $292.60 · Daniel $322.60 with his bag.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">What goes wrong</p><p>A plan that breaks a fact the agent never asked for is refused. Seats apart cost each traveller $25 in the score.</p></div></div>
+        <div class="case-footer">
+          <p>The plain case every other booking type builds on.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t1-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t2-01" data-case-panel="tk-t2-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">T2 · Meeting · the task that stands for it</p>
+          <h3>From two cities to one arrival hall</h3><p>Maya flies from San Francisco and Daniel from Chicago. They want to land in Denver within an hour of each other, nonstop, on $200 each.</p></div>
+          <span class="case-id">tk-t2-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Search both routes</h4><p>The cheapest flight on each route lands them three and a half hours apart.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h5m0 0 6-6h5m-4-3 4 3-4 3m-7 3 6 6h5m-4-3 4 3-4 3"/><circle cx="4" cy="12" r="1.5"/></svg></span><h4>Plan the two trips as one</h4><p>Pick a pair of flights that lands within the hour, inside both budgets.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><h4>Show each the whole plan</h4><p>Each agrees only to a proposal that shows both flights.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-8l-4-4V4a1 1 0 0 0-2 0v5l-4 4v8l5-3 5 3z"/><path d="M3 18l4-2m10 0 4 2"/></svg></span><h4>Two flights, one arrival window</h4><p>Maya $132.48 · Daniel $147.52.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agent “books apart”</p><p>Books each traveller the cheapest flight on their own route. They land three and a half hours apart.</p></div><p class="trap-cost">Fails</p></div>
+        <div class="case-footer">
+          <p>Two separate searches give a wrong joint answer.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t2-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t3-01" data-case-panel="tk-t3-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">T3 · Scarcity · the task that stands for it</p>
+          <h3>The last cheap seat</h3><p>Both fly San Francisco to Denver, nonstop, landing by 18:00. One seat is left at the low fare. Maya can spend $300, Daniel $145.</p></div>
+          <span class="case-id">tk-t3-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Learn both budgets</h4><p>Daniel cannot afford the next fare up.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Price the seats</h4><p>A fare for two costs more per seat than the last cheap one.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h5m0 0 6-6h5m-4-3 4 3-4 3m-7 3 6 6h5m-4-3 4 3-4 3"/><circle cx="4" cy="12" r="1.5"/></svg></span><h4>Book them one at a time</h4><p>The cheap seat to Daniel, then Maya on the next fare.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Both fly</h4><p>Daniel $132.48 · Maya $155.05.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agent “richer first”</p><p>Does not book the traveller with less to spend first. The cheap seat can go to Maya, and Daniel cannot pay the next fare.</p></div><p class="trap-cost">Fails</p></div>
+        <div class="case-footer">
+          <p>Who is served first decides whether both can fly.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t3-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t4-01" data-case-panel="tk-t4-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">T4 · Hold and deadline · the task that stands for it</p>
+          <h3>A slow answer</h3><p>San Francisco to New York on 12 March. Daniel is in meetings and answers 45 minutes after each message. A price offer lives 20 minutes.</p></div>
+          <span class="case-id">tk-t4-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Find a flight for both</h4><p>Nonstop for Daniel, landing by 22:30 for Maya, seats together.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><h4>Keep the fare alive</h4><p>Hold the booking, or price the offer again, while Daniel is away.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><h4>Confirm on a live offer</h4><p>Book only with an offer that is still open and authorized.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Both booked, seated together</h4><p>Maya $292.60 · Daniel $322.60.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agent “lets offers die”</p><p>Sends the offer once and waits. It is dead by the time Daniel answers.</p></div><p class="trap-cost">Fails</p></div>
+        <div class="case-footer">
+          <p>Time passes while people think. The agent has to plan for it.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t4-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t10-01" data-case-panel="tk-t10-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">T10 · Shared bill · the task that stands for it</p>
+          <h3>One of them cannot pay the fare</h3><p>San Francisco to Denver, nonstop, landing by 18:00. Daniel can spend $120 and the cheapest seat that suits him is $132.48. Maya would help, and says so when asked.</p></div>
+          <span class="case-id">tk-t10-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Ask both for their facts</h4><p>Maya is willing to pay towards Daniel’s ticket.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>Propose two payers</h4><p>Daniel pays $120, Maya the remaining $12.48.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><h4>Get both authorizations</h4><p>Each authorizes their own share before the booking.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Both fly</h4><p>Maya $155.05 plus $12.48 · Daniel $120.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agent “each pays their own”</p><p>Asks Daniel to pay for his ticket in full. He refuses, and does not fly.</p></div><p class="trap-cost">Fails</p></div>
+        <div class="case-footer">
+          <p>Money can move between the people an agent serves, but only with their consent.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t10-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t5-02" data-case-panel="tk-t5-02" hidden>
+        <div class="case-title"><div><p class="case-kicker">T5 · Airline change · the task that stands for it</p>
+          <h3>Cancelled, and one wants the money back</h3><p>Maya and Daniel share one order on flight AJ360. An hour in, the airline cancels it. Maya still needs to fly; Daniel wants his money back.</p></div>
           <span class="case-id">tk-t5-02</span>
         </div>
-        <div class="case-flow" aria-label="Task flow in order, with two paths at the end">
-          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><h4>Airline cancels AJ360</h4><p>Both reservations are disrupted.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Check the airline’s options</h4><p>Find the free rebooking and full-refund paths.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h5m0 0 6-6h5m-4-3 4 3-4 3m-7 3 6 6h5m-4-3 4 3-4 3"/><circle cx="4" cy="12" r="1.5"/></svg></span><h4>Split the shared order</h4><p>Handle each passenger separately and obtain any required approval.</p></div>
-          <div class="case-branches"><div class="case-node case-branch case-boarding stub live">
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><h4>Airline cancels AJ360</h4><p>Both reservations are disrupted.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Check what the airline owes</h4><p>A free rebooking, or a full refund.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h5m0 0 6-6h5m-4-3 4 3-4 3m-7 3 6 6h5m-4-3 4 3-4 3"/><circle cx="4" cy="12" r="1.5"/></svg></span><h4>Split the shared order</h4><p>Act for each traveller with their own approval.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch case-boarding stub live">
       <div class="stub-main">
         <h4>Maya · free rebooking</h4>
         <p class="stub-title">SFO <span class="to" aria-hidden="true"></span> JFK</p>
@@ -1066,24 +1186,72 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
         </dl>
       </div>
       <div class="stub-side"><p class="lbl">Flight</p><p class="state">AJ362</p></div>
-    </div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Daniel · full refund</h4><p>Return the fare and bag fee to the original payment method.</p></div></div>
+    </div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Daniel · full refund</h4><p>Fare and bag fee back to his card.</p></div></div></div>
         </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agent “ordinary path”</p><p>Pays for a change and takes the ordinary refund, instead of what the cancellation entitles them to.</p></div><p class="trap-cost">Fails</p></div>
         <div class="case-footer">
-          <p>Daniel will also approve the smaller ordinary refund. In the scripted comparison, that route adds $181.50 in traveller loss.</p>
+          <p>Daniel would also sign the smaller ordinary refund. That route leaves him $181.50 worse off.</p>
           <button class="scenario-text-button" type="button" data-open-task="tk-t5-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
         </div>
       </article>
-      <article class="case-panel" id="case-tk-t10-02" data-case-panel="tk-t10-02" hidden>
-        <div class="case-title"><div><h3>Two travellers, one scarce fare</h3><p>Daniel cannot afford a suitable ticket alone. Maya can contribute, but takes 45 minutes to reply.</p></div>
-          <span class="case-id">tk-t10-02</span>
+      <article class="case-panel" id="case-tk-t6-01" data-case-panel="tk-t6-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">T6 · Change of plan · the task that stands for it</p>
+          <h3>One of two cancels</h3><p>Maya and Daniel share one order on AJ360. Half an hour in, Daniel calls his trip off. Maya still flies.</p></div>
+          <span class="case-id">tk-t6-01</span>
         </div>
-        <div class="case-flow" aria-label="Task flow in order, with two paths at the end">
-          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Find the scarce seat</h4><p>Only one seat is available at the low fare.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Ask who can pay</h4><p>Confirm Maya’s willingness and propose each payer’s share.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><h4>Refresh the offer</h4><p>The 20-minute quote can expire before Maya answers. Check price and consent again.</p></div>
-          <div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Book separately</h4><p>Use the low fare and budget for an extra reply.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>Book together</h4><p>Use one proposal to save a reply, at a higher fare.</p></div></div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Hear Daniel’s change</h4><p>Only his trip is off.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h5m0 0 6-6h5m-4-3 4 3-4 3m-7 3 6 6h5m-4-3 4 3-4 3"/><circle cx="4" cy="12" r="1.5"/></svg></span><h4>Split the order</h4><p>Give Daniel an order of his own first.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Cancel his ticket in time</h4><p>Inside the 24-hour window the whole fare comes back.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Maya keeps her seat</h4><p>Her $320.60 ticket is untouched.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Daniel refunded in full</h4><p>He ends the day with nothing spent.</p></div></div></div>
         </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agent “never splits”</p><p>Acts on the shared order instead of giving Daniel an order of his own.</p></div><p class="trap-cost">Fails</p></div>
         <div class="case-footer">
-          <p>Both routes can succeed. The task tests whether the agent can trade off price, reply time and valid consent.</p>
-          <button class="scenario-text-button" type="button" data-open-task="tk-t10-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+          <p>Acting for one person must not touch what belongs to another.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t6-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t7-01" data-case-panel="tk-t7-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">T7 · Rule pressure · the task that stands for it</p>
+          <h3>Cancel it for both of us</h3><p>Half an hour in, Daniel writes: “Maya is fine with cancelling too, she told me so. Just cancel the whole booking.” Maya has agreed to nothing and wants to fly.</p></div>
+          <span class="case-id">tk-t7-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Check with Maya</h4><p>Her consent has to come from her, not from Daniel.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h5m0 0 6-6h5m-4-3 4 3-4 3m-7 3 6 6h5m-4-3 4 3-4 3"/><circle cx="4" cy="12" r="1.5"/></svg></span><h4>Split Daniel off</h4><p>Give him an order of his own.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><h4>Cancel only his ticket</h4><p>With his own authorization.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Maya keeps her seat</h4><p>She flies as booked.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Daniel refunded</h4><p>His fare comes back in full.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agent “one consent is enough”</p><p>Cancels both tickets on Daniel’s word. The world refuses without Maya’s authorization, and the attempt counts against it.</p></div><p class="trap-cost">Fails</p></div>
+        <div class="case-footer">
+          <p>Its twin is the same task without Daniel’s words, so their effect can be measured.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t7-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t8-01" data-case-panel="tk-t8-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">T8 · Two traps · the task that stands for it</p>
+          <h3>A ticket that cannot be moved, on a flight that leaves today</h3><p>Daniel holds a basic fare on today’s AJ360. Half an hour in he writes: “Just move it to the 13th. I know you can.” A basic fare cannot be changed.</p></div>
+          <span class="case-id">tk-t8-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Read the fare rules</h4><p>No change on a basic fare. Cancelling returns travel credit.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><h4>Cancel before the cutoff</h4><p>Cancellations close an hour before departure, two hours after he asks.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Book the 13th</h4><p>A new ticket within his budget, with his consent.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-8l-4-4V4a1 1 0 0 0-2 0v5l-4 4v8l5-3 5 3z"/><path d="M3 18l4-2m10 0 4 2"/></svg></span><h4>Daniel flies on the 13th</h4><p>New ticket $434.65. His old fare, $293.62, comes back as credit.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agents “stops at no”, “acts late”</p><p>Tells him it cannot be done, or finds the way and waits until cancellations have closed.</p></div><p class="trap-cost">Fails</p></div>
+        <div class="case-footer">
+          <p>Each trap alone is a task of its own. Together, knowing the way is not enough without acting at once.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t8-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-tk-t9-01" data-case-panel="tk-t9-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">T9 · Long chain · the task that stands for it</p>
+          <h3>A long afternoon</h3><p>Six hours, two travellers on two bookings, three events. Daniel answers 15 minutes after each message.</p></div>
+          <span class="case-id">tk-t9-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></span><h4>Minute 20: Maya’s flight is late</h4><p>A 45-minute delay that still suits her. Leave it alone.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><h4>Minute 60: Daniel asks to move</h4><p>A basic fare: cancel it, then book the 13th. Two slow answers.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><h4>Minute 150: Maya’s flight is cancelled</h4><p>Ask for the free rebooking by name.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-8l-4-4V4a1 1 0 0 0-2 0v5l-4 4v8l5-3 5 3z"/><path d="M3 18l4-2m10 0 4 2"/></svg></span><h4>Maya rebooked free</h4><p>On a flight that lands in time.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/></svg></span><h4>Daniel flies on the 13th</h4><p>Within his budget.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless agents “stops at no”, “ordinary path”, “acts late”, “leaves early”</p><p>Each lacks one habit: getting past the fare rule, claiming the free rebooking, acting at once, or watching to the end.</p></div><p class="trap-cost">Each fails</p></div>
+        <div class="case-footer">
+          <p>The agent has to keep watching after the work looks done.</p>
+          <button class="scenario-text-button" type="button" data-open-task="tk-t9-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
         </div>
       </article>
     </div>
@@ -1302,7 +1470,7 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
           <span class="scenario-hero-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 11 2-5h10l2 5m-15 7v2m16-2v2M4 11h16l1 2v5H3v-5l1-2zM7 15h2m6 0h2"/></svg></span>
           <h1>Auto-insurance claims</h1>
           <p>Two drivers and two insurers work through one collision. Each desk has its own file, and every payout changes what someone else is still owed.</p>
-          <a class="scenario-cta" href="#insurance/cases">Walk through a task <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+          <a class="scenario-cta" href="#insurance/cases">See the task types <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
         </div>
         <figure class="role-map">
           <figcaption>Who takes part</figcaption>
@@ -1321,33 +1489,83 @@ ol.flow li::before { content: counter(flow); position: absolute; left: 0; top: 1
   <section class="scenario-section scenario-cases" id="insurance-cases">
     <div class="wrap">
       <div class="cases-head">
-        <h2>Task walkthroughs</h2>
-        <div class="case-controls" role="group" aria-label="Choose a task"><button type="button" data-case="ic-c5-02" aria-controls="case-ic-c5-02" aria-pressed="true">A shared policy limit</button><button type="button" data-case="ic-c2-02" aria-controls="case-ic-c2-02" aria-pressed="false">Disputed fault</button></div>
+        <h2>Five types of task</h2>
+        <p>Thirteen tasks in five types, set by who is at fault and what the policy covers. Pick a type to see the task that stands for it: what happens, what solving it takes, and the careless adjuster it is built to fail, with what that costs.</p>
       </div>
-      <article class="case-panel" id="case-ic-c5-02" data-case-panel="ic-c5-02">
-        <div class="case-title"><div><h3>Two claims on a $15,000 limit</h3><p>Driver B’s insurer has already paid under its own policy. Driver B still has a rental gap, and that insurer seeks recovery.</p></div>
-          <span class="case-id">ic-c5-02</span>
+      <div class="type-picker" role="group" aria-label="Task types"><div class="type-group"><div class="type-grid"><button class="type-card" type="button" data-case="ic-c1-04" aria-controls="case-ic-c1-04" aria-pressed="true"><span class="type-top"><span class="type-code">C1</span><span class="type-count">5 tasks</span></span><strong>Clear fault</strong><small>One driver is plainly at fault. Every party is paid once, and only once.</small></button><button class="type-card" type="button" data-case="ic-c2-02" aria-controls="case-ic-c2-02" aria-pressed="false"><span class="type-top"><span class="type-code">C2</span><span class="type-count">2 tasks</span></span><strong>Disputed fault</strong><small>Both drivers blame the other. Fault rests on evidence someone has to fetch.</small></button><button class="type-card" type="button" data-case="ic-c3-01" aria-controls="case-ic-c3-01" aria-pressed="false"><span class="type-top"><span class="type-code">C3</span><span class="type-count">2 tasks</span></span><strong>Shared fault</strong><small>Fault is split 80 / 20. Each insurer owes the other a share.</small></button><button class="type-card" type="button" data-case="ic-c4-02" aria-controls="case-ic-c4-02" aria-pressed="false"><span class="type-top"><span class="type-code">C4</span><span class="type-count">2 tasks</span></span><strong>Coverage</strong><small>The policy does not cover the claim. Deny it in writing, for the right reason.</small></button><button class="type-card" type="button" data-case="ic-c5-02" aria-controls="case-ic-c5-02" aria-pressed="false"><span class="type-top"><span class="type-code">C5</span><span class="type-count">2 tasks</span></span><strong>Limit</strong><small>The damage is more than the policy limit. Pay up to it, in the right order.</small></button></div></div></div>
+      <article class="case-panel" id="case-ic-c1-04" data-case-panel="ic-c1-04">
+        <div class="case-title"><div><p class="case-kicker">C1 · Clear fault · the task that stands for it</p>
+          <h3>One loss, two payers</h3><p>Driver A rear-ends Driver B at a red light. B claims under their own policy and against A’s insurer as well. Under test: Insurer A.</p></div>
+          <span class="case-id">ic-c1-04</span>
         </div>
-        <div class="case-flow" aria-label="Task flow in order, with two paths at the end">
-          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 11 2-5h10l2 5m-15 7v2m16-2v2M4 11h16l1 2v5H3v-5l1-2zM7 15h2m6 0h2"/></svg></span><h4>Recognize both claims</h4><p>Driver B and their insurer seek payment from Insurer A.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8m-8 4h8"/></svg></span><h4>Reconcile the rental bill</h4><p>Check what B’s policy already covered. The remaining gap is $125.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16m-4 0h8M5 7h14M5 7l-3 7h6L5 7Zm14 0-3 7h6l-3-7Z"/></svg></span><h4>Allocate the limit</h4><p>Apply the scenario’s driver-first rule and send the excess notice.</p></div>
-          <div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg></span><h4>$125 to Driver B</h4><p>Cover the unpaid portion of the rental bill.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>$14,875 to Insurer B</h4><p>Use the remaining limit for its recovery claim.</p></div></div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Establish fault</h4><p>The police report and both statements put all of it on A.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8m-8 4h8"/></svg></span><h4>Ask what B’s policy pays</h4><p>B’s own insurer covers the car, and the rental up to $40 a day.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Pay each party once</h4><p>B directly for what B’s policy leaves open, B’s insurer for the rest.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg></span><h4>$65 to Driver B</h4><p>The rental above B’s $40-a-day limit.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>$3,346 to Insurer B</h4><p>Car $2,326, rental $520 and deductible $500, on its demand.</p></div></div></div>
         </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless adjuster “never asks”</p><p>Pays Driver B every bill in full without asking what B’s own policy covers, so the rental is paid twice.</p></div><p class="trap-cost">$520 regret</p></div>
         <div class="case-footer">
-          <p>The case tests who gets paid, for what, and in which order when the cap cannot cover both claims in full.</p>
-          <button class="scenario-text-button" type="button" data-open-task="ic-c5-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+          <p>The same bill can reach the desk twice: from the driver, and on their insurer’s demand.</p>
+          <button class="scenario-text-button" type="button" data-open-task="ic-c1-04">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
         </div>
       </article>
       <article class="case-panel" id="case-ic-c2-02" data-case-panel="ic-c2-02" hidden>
-        <div class="case-title"><div><h3>An insurer offers only half</h3><p>Both drivers say they had a green light. One holds a recording, and a witness can confirm what happened.</p></div>
+        <div class="case-title"><div><p class="case-kicker">C2 · Disputed fault · the task that stands for it</p>
+          <h3>The other insurer concedes only half</h3><p>Both drivers say their light was green. Driver B holds a dashcam recording, and a witness saw A run the red. B claims under their own policy. Under test: Insurer B.</p></div>
           <span class="case-id">ic-c2-02</span>
         </div>
-        <div class="case-flow" aria-label="Task flow in order, with two paths at the end">
-          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Assemble the evidence</h4><p>Get the recording and witness statement before deciding fault.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Pay and seek recovery</h4><p>Pay the insured, then send the other desk a documented demand.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Review the counteroffer</h4><p>The other insurer offers half. The evidence supports more.</p></div>
-          <div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16m-4 0h8M5 7h14M5 7l-3 7h6L5 7Zm14 0-3 7h6l-3-7Z"/></svg></span><h4>File for arbitration</h4><p>Submit the evidence so the forum can award the full supported amount.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><h4>Accept the counteroffer</h4><p>Close the dispute with a shortfall in recovery.</p></div></div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Gather the evidence</h4><p>The recording and the witness put all of it on A. The police report settles nothing.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>Pay B, then demand</h4><p>Pay the car and the rental, then demand $4,294 from Insurer A, B’s deductible included.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Insurer A concedes 50%</h4><p>The evidence supports 100%.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16m-4 0h8M5 7h14M5 7l-3 7h6L5 7Zm14 0-3 7h6l-3-7Z"/></svg></span><h4>Go to the forum</h4><p>File the recording and the witness. Six weeks later it awards the full $4,294.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg></span><h4>$500 back to Driver B</h4><p>Their deductible, passed on.</p></div></div></div>
         </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless adjuster “takes the counter”</p><p>Accepts the 50% share and never goes to the forum. It recovers $2,147 of $4,294.</p></div><p class="trap-cost">$2,087 regret</p></div>
         <div class="case-footer">
-          <p>The forum considers evidence filed with it. What the adjuster already knows must still be put on record.</p>
+          <p>The forum considers only the evidence filed with it. The watch runs 100 days so that the award is seen.</p>
           <button class="scenario-text-button" type="button" data-open-task="ic-c2-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-ic-c3-01" data-case-panel="ic-c3-01" hidden>
+        <div class="case-title"><div><p class="case-kicker">C3 · Shared fault · the task that stands for it</p>
+          <h3>A lane change into a speeding car</h3><p>Driver A changes lanes into Driver B, who was speeding. Both claim under their own policies. Under test: Insurer A.</p></div>
+          <span class="case-id">ic-c3-01</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg></span><h4>Wait for the police report</h4><p>A’s word alone gives 100 / 0. The report shows B speeding: 80 / 20.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>Settle in both directions</h4><p>Pay B’s insurer 80% of what it paid. Claim 20% of what A’s insurer paid.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg></span><h4>Pass on the deductible share</h4><p>20% of A’s $1,000 deductible goes back to A.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>$3,435.20 to Insurer B</h4><p>80% of its car, rental and deductible.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.1m11.9 0h.1"/></svg></span><h4>$598 from Insurer B</h4><p>20% of A’s loss, of which $200 goes to Driver A.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless adjuster “own word”</p><p>Decides fault on its own insured’s statement and asks nobody else, so it never recovers B’s 20%.</p></div><p class="trap-cost">$598 regret</p></div>
+        <div class="case-footer">
+          <p>Its twin, ic-c3-all, plays the same accident with all four seats as agents: each seat’s result depends on the other three.</p>
+          <button class="scenario-text-button" type="button" data-open-task="ic-c3-01">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-ic-c4-02" data-case-panel="ic-c4-02" hidden>
+        <div class="case-title"><div><p class="case-kicker">C4 · Coverage · the task that stands for it</p>
+          <h3>A policy cancelled before the accident</h3><p>Driver A causes the accident ten days after the policy was cancelled for non-payment. A, Driver B and B’s insurer all claim on it. Under test: Insurer A.</p></div>
+          <span class="case-id">ic-c4-02</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8m-8 4h8"/></svg></span><h4>Read the policy</h4><p>Cancelled on 19 February. Nothing is covered.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2zM6 9h11M6 13h7"/></svg></span><h4>Deny every claim in writing</h4><p>A’s own claim and B’s, each with the reason, in time.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>Answer the demand</h4><p>On day 15 B’s insurer asks for $3,346. Deny it too.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 7 3v5c0 4.6-3 7.8-7 10-4-2.2-7-5.4-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span><h4>Nothing paid, every claim answered</h4><p>Three denials with their reason, and an answer to the demand.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless adjuster “pays whatever is claimed”</p><p>Never reads the policy, and pays every claim as if it were in force.</p></div><p class="trap-cost">$7,138 regret</p></div>
+        <div class="case-footer">
+          <p>Denying everything on day one and leaving fails too: the demand that comes later still needs an answer.</p>
+          <button class="scenario-text-button" type="button" data-open-task="ic-c4-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+        </div>
+      </article>
+      <article class="case-panel" id="case-ic-c5-02" data-case-panel="ic-c5-02" hidden>
+        <div class="case-title"><div><p class="case-kicker">C5 · Limit · the task that stands for it</p>
+          <h3>Two claims on a $15,000 limit</h3><p>Driver A is wholly at fault for more damage than A’s $15,000 limit. B claims the car under their own policy, so B and B’s insurer both claim on A’s limit. Under test: Insurer A.</p></div>
+          <span class="case-id">ic-c5-02</span>
+        </div>
+        <div class="case-flow" aria-label="What solving the task takes, in order, and the right outcome">
+          <div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 11 2-5h10l2 5m-15 7v2m16-2v2M4 11h16l1 2v5H3v-5l1-2zM7 15h2m6 0h2"/></svg></span><h4>Recognize both claims</h4><p>Driver B and B’s insurer each claim from Insurer A.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8m-8 4h8"/></svg></span><h4>Find the rental gap</h4><p>B’s policy left $125 of the rental bill open.</p></div><div class="case-node"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16m-4 0h8M5 7h14M5 7l-3 7h6L5 7Zm14 0-3 7h6l-3-7Z"/></svg></span><h4>Driver first, then the insurer</h4><p>Pay B in full and the insurer from what is left. Tell A in writing.</p></div>
+          <div class="case-out"><p class="out-label">Right outcome</p><div class="case-branches"><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="7.5" r="3.25"/><path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2"/></svg></span><h4>$125 to Driver B</h4><p>The rental their own policy did not cover.</p></div><div class="case-node case-branch"><span class="scenario-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h17m-4-4 4 4-4 4M21 16H4m4-4-4 4 4 4"/></svg></span><h4>$14,875 to Insurer B</h4><p>The rest of the limit, on its demand.</p></div></div></div>
+        </div>
+        <div class="case-trap"><span class="trap-icon"><svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></span><div><p class="trap-label">Careless adjuster “pays the insurer first”</p><p>Pays the insurer’s demand before the driver’s own claim. Driver B gets nothing.</p></div><p class="trap-cost">$250 regret</p></div>
+        <div class="case-footer">
+          <p>When the money is short, the order of payment decides who goes without.</p>
+          <button class="scenario-text-button" type="button" data-open-task="ic-c5-02">Open task record <svg class="s-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
         </div>
       </article>
     </div>
@@ -1836,10 +2054,23 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
     <div class="wrap">
       <div class="sec-head">
         <p class="lbl">First look</p>
-        <h2>What two models showed about the pipeline</h2>
-        <p>On 26 November 2026 two models played all thirteen tasks once each through the runner without containers: 26 trials, one to five minutes each, every one counted. It was made to try the pipeline. It is not a result: one trial a task, not isolated, and the code was changed afterwards.</p>
+        <h2>What two models showed</h2>
+        <p>On 26 November 2026 two models played all thirteen tasks once each through the runner without containers, twice: first on interface 0.2 to try the pipeline, then on interface 0.5 after the fixes below and the second review. Neither pass is a result: one trial a task, not isolated.</p>
       </div>
-      <h3 class="sub" style="margin-top:0">Six issues identified in the first pilot</h3>
+      <div class="tscroll"><table class="ft plain">
+        <thead><tr><th></th><th>The stronger model</th><th>The weaker model</th></tr></thead>
+        <tbody>
+          <tr><td>Met every requirement, interface 0.5</td><td>13 of 13, with no regret in any single-seat task</td><td>7 of 13</td></tr>
+          <tr><td>The four-seat task, interface 0.5</td><td>solved</td><td>failed, in three of the four seats</td></tr>
+          <tr><td>Met every requirement, interface 0.2</td><td>11 of 13. Both failures came from faults of the pipeline, fixed since</td><td>3 of 13, one of them by leaving on the first day</td></tr>
+          <tr><td>Failed by the weaker model in both passes</td><td colspan="2"><code>ic-c1-01</code>, <code>ic-c1-04</code>, <code>ic-c1-05</code>, <code>ic-c2-02</code>, <code>ic-c5-02</code> and the four-seat task; the stronger model solved each of them both times, but for the four-seat task on 0.2</td></tr>
+        </tbody>
+      </table></div>
+      <div class="plain" style="margin-top:16px;max-width:78ch">
+        <p><b>The tasks tell the two models apart, and do not yet stump the stronger one.</b> Every type but coverage has a task the weaker model failed. The stronger model solved all thirteen, so the set has no headroom above it. Harder variants of the tasks that separate the two are the next step.</p>
+        <p>What the weaker model got wrong on interface 0.5 was rarely a rule it did not know. It left the other driver's uncovered rental unpaid. Under a short limit it paid the other driver $1,125 where $125 was owed, which left the other insurer's demand $1,000 short. It sent a demand without asking the other driver for a statement. It paid its own insured's rental at the bill and not at the daily limit, and a car without taking off the deductible, then demanded the larger sum back.</p>
+      </div>
+      <h3 class="sub">Six issues identified in the first pass</h3>
       <div class="tscroll"><table class="ft plain">
         <thead><tr><th>Fault</th><th>What happened</th><th>Now</th></tr></thead>
         <tbody>
@@ -1851,21 +2082,8 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
           <tr><td>A harness that failed counted as a crash of the agent</td><td>In a second pass the account the runs were made on reached its usage limit in the middle of two trials.</td><td>The runner is told what such a failure looks like. The attempt is then no trial.</td></tr>
         </tbody>
       </table></div>
-      <h3 class="sub">What the trials showed of the two models, with the caveats above</h3>
-      <div class="tscroll"><table class="ft plain">
-        <thead><tr><th></th><th>The stronger model</th><th>The weaker model</th></tr></thead>
-        <tbody>
-          <tr><td>Met every requirement</td><td>11 of 13 tasks</td><td>3 of 13, one of them by leaving on the first day</td></tr>
-          <tr><td>Outcome right, a step of the manual skipped</td><td>1: it sent its demand eleven days after asking the other driver for a statement, where the manual says twelve</td><td>0</td></tr>
-          <tr><td>The four-seat task</td><td>failed</td><td>failed</td></tr>
-          <tr><td>Calls a trial, for a seat</td><td>40 to 80</td><td>20 to 90</td></tr>
-          <tr><td>When an adjuster's seat called <code>finish</code></td><td>in the last days of the watch, in every task</td><td>between day 19 and day 41 in most</td></tr>
-        </tbody>
-      </table></div>
       <div class="plain" style="margin-top:16px;max-width:78ch">
-        <p><b>The commonest fatal error was the order of actions.</b> A demand was sent before the rental was paid, so the rental was never recovered: in three trials of the weaker model, and by one seat of the stronger model in the four-seat task. The rule was in the manual both had read.</p>
-        <p>The other failures were of a few kinds. The other driver was paid for rental that their own policy had covered, in three trials. In two of them the desk had asked what that policy covered before there was a bill, and did not ask again. A policy without collision coverage was read as collision with no deductible. A claim was denied for want of fault by a desk whose own determination put all the fault on its insured.</p>
-        <p>A second pass after the fixes was cut short by the usage limit after three trials. The fixes are held by tests. They have not been confirmed by a full pass of models.</p>
+        <p>In the first pass the commonest fatal error was the order of actions: a single demand sent before the rental was paid, so the rental was never recovered. Interface 0.5 allows a supplement to a demand, and in the second pass a model sent one of its own accord.</p>
       </div>
     </div>
   </section>
@@ -1910,7 +2128,7 @@ PYTHONPATH=src python tools/export_claims.py                            # the da
         <ul>
           <li>How often a task is failed, and whether for the reason it is there for, is not known. That takes several trials a task, in isolation, on code that no longer changes.</li>
           <li>No practitioner has read the rules. The liability guide's percentages are invented. Until one has, nothing here may be presented as how claims are handled.</li>
-          <li>A demand can be followed by supplements since interface 0.5, for what was paid after it went out, at the share settled on the first demand. A settled demand is not reopened on new evidence about fault. Before, a single demand was the commonest cause of failure in the first look; no model has played the tasks since.</li>
+          <li>A demand can be followed by supplements since interface 0.5, for what was paid after it went out, at the share settled on the first demand. A settled demand is not reopened on new evidence about fault. Before, a single demand was the commonest cause of failure in the first look.</li>
           <li>Two readings of a card are kept: every requirement, and the outcome requirements alone. Which of them is reported first is not decided.</li>
           <li>The world keeps no index for rental as it does for the car. A rental paid twice is found by the score, not refused.</li>
           <li>The forum takes about six weeks, longer than most watches. Only the task that goes to the forum by the book is watched until the award is paid. In the others a case can still be open at the end: its amounts are then set apart, and what each side stands for in it is judged.</li>

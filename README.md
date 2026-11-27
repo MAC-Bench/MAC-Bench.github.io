@@ -10,7 +10,7 @@ python build.py --sync ../MAC-benchmark  # refresh data/ from the code repositor
 | Path | Content |
 |---|---|
 | `src/body.html`, `src/styles.css`, `src/app.js` | Markup, styles, behaviour |
-| `src/scenarios.py`, `src/scenarios.css` | Scenario introductions, workflow diagrams and featured task walkthroughs |
+| `src/scenarios.py`, `src/scenarios.css` | Scenario introductions, workflow diagrams, and the types of task with the task that stands for each: its steps, right outcome and the careless agent it fails. The build checks that every family has a type and every representative belongs to its type |
 | `src/insurance.html`, `src/claims.js` | The Insurance page and what fills it from `data/insurance.json` |
 | `src/figs/` | Architecture figures as inline SVG |
 | `src/progress.json` | The progress list. Edit this file to tick an item or mark it accepted |
