@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-26",
+  "updated": "2026-11-27",
   "groups": [
     {
       "id": "foundations",
@@ -1110,10 +1110,20 @@
       "items": [
         {
           "id": "shop-collab",
-          "title": "Built by a collaborator on the shared interface conventions",
-          "status": "planned",
-          "plan": [
-            "Uses the same way of declaring roles, actions, errors and time costs as ticketing"
+          "title": "Shopping purchase tasks through order placement",
+          "status": "done",
+          "date": "2026-11-27",
+          "review": "awaiting",
+          "done": [
+            "One agent buys for a scripted shopper from three simulated merchants. The world prices carts, holds stock where offered and places orders with the shopper's authorization.",
+            "Twenty development tasks cover variant availability, landed cost and refunds, split purchases, and stock that sells out while the shopper waits."
+          ],
+          "where": [
+            "docs/spec/shopping.md; src/macbench/domains/shopping/; tasks/shopping/dev/ in the benchmark repository"
+          ],
+          "checked": [
+            "The reference and family careless-agent runs for all 20 tasks replay and match the development manifest.",
+            "All 259 Shopping tests passed, including the local HTTP tests."
           ]
         }
       ]

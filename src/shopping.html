@@ -1,0 +1,97 @@
+<div data-view="shopping" class="scenario-page" hidden>
+<!--SCENARIO_SHOPPING-->
+  <section class="scenario-section scenario-reference">
+    <div class="wrap">
+      <h2>Explore the details</h2>
+      <details class="scenario-accordion" id="shopping-records">
+        <summary>Task catalogue and run logs</summary>
+        <div class="reference-content">
+          <section class="sec stack">
+            <h3>Public development set</h3>
+            <p>Open a task ID to see the shopper’s facts, the opening stock and merchant policies, and the cards for both seats. Each task includes replay-verified logs for the reference policy and the careless agent for its family, both played against the scripted shopper.</p>
+            <div class="tscroll"><table class="ft shopping-task-table">
+              <thead><tr><th scope="col">Task</th><th scope="col">Title</th><th scope="col">Source</th><th scope="col">Reference loss</th><th scope="col">Reference calls</th><th scope="col">Careless agent’s result</th></tr></thead>
+              <tbody><!--SHOPPING_TASK_ROWS--></tbody>
+            </table></div>
+            <!--SHOPPING_TASK_RECORDS-->
+            <p>The hand-built tasks and generated tasks pass the same admission checks. The reference must solve them with valid consent, and leaving at once must fail. The careless agent for the family must fail or, on a B2 shipping or discount task, succeed at a higher cost. B4 tasks also have to remain solvable by a reference that waits ten extra minutes after learning the facts.</p>
+            <p class="note">The results are from scripted runs. On the B2 shipping and discount tasks, the list-price-only agent meets the requirements and receives the same binary reward while spending $10–$15 more.</p>
+          </section>
+        </div>
+      </details>
+      <details class="scenario-accordion">
+        <summary>Catalogue, merchant policies and checkout</summary>
+        <div class="reference-content">
+          <section class="sec stack">
+            <h3>Stock and the cost of a cart</h3>
+            <p>The shared catalogue has <!--SHOPPING_CATALOGUE-->. Harbor Lane Supply, Copperleaf Market and Bramble &amp; Finch each list every product and track stock by variant. Prices and policies are fixed for the episode. Other shoppers can buy unreserved units, and restocks can add them.</p>
+            <div class="two-col">
+              <div class="plain">
+                <h4>Prices and delivery</h4>
+                <ul>
+                  <li>Add the line totals, deduct any order discount and add shipping once per merchant. Both discount and free-shipping thresholds apply to the item subtotal at or above the threshold.</li>
+                  <li>The service spreads the discount across units in proportion to price and assigns leftover cents by largest fractional remainder.</li>
+                  <li>The longest line delivery time sets the cart’s delivery time. The order keeps the resulting promised date.</li>
+                </ul>
+              </div>
+              <div class="plain">
+                <h4>Refund terms and payment</h4>
+                <ul>
+                  <li>Category rules set eligibility by condition and reason. Merchants set refund destination, return fees and other terms. The scorer uses the policy snapshot on the order to check the shopper’s return requirement.</li>
+                  <li>Store credit can pay for carts from its issuing merchant. A card can cover the rest. Each cart’s charges are fixed in the proposal.</li>
+                  <li>The agent can read the terms through <code>get_merchant_policy</code> and find relevant passages with <code>search_policy</code>.</li>
+                </ul>
+              </div>
+            </div>
+            <h3>Quotes, reservations and consent</h3>
+            <div class="tscroll"><table class="ft">
+              <thead><tr><th scope="col">Object</th><th scope="col">What it does</th></tr></thead>
+              <tbody>
+                <tr><td>Cart quote</td><td>Prices one merchant’s cart for 20 minutes. Refreshing a live quote checks stock and renews its expiry under the same ID.</td></tr>
+                <tr><td>Reservation</td><td>At merchants that offer it, holds the quoted units for 60 minutes and keeps the quote live through the hold. Unused units return to stock when the reservation lapses.</td></tr>
+                <tr><td>Proposal</td><td>Combines up to one cart per merchant and fixes the charges. A digest binds the cart contents and the payment split.</td></tr>
+                <tr><td>Authorization</td><td>The shopper grants single-use permission for the proposal at its digest, up to a charge ceiling. The default lifetime is 60 minutes.</td></tr>
+                <tr><td>Order</td><td>After validating every cart, payment and the authorization, one commit charges the shopper and creates one order per cart.</td></tr>
+              </tbody>
+            </table></div>
+            <p>The scripted shopper answers typed requests and proposal attachments after its task’s delay. It checks the remaining quantities, variants, delivery date, payment methods and budget when it answers. It accepts substitutes only for units of the wanted variant that cannot be bought in time. A proposal built on an expired quote needs a new quote, proposal and authorization.</p>
+          </section>
+        </div>
+      </details>
+      <details class="scenario-accordion">
+        <summary>Scoring the purchase</summary>
+        <div class="reference-content">
+          <section class="sec stack">
+            <p>The scorer replays the episode and checks the world at the end of the observation period. A run earns reward 1.0 when every requirement passes, and 0.0 otherwise.</p>
+            <ul class="plain-list">
+              <li><strong>Items.</strong> The ordered units match the wanted quantities and acceptable variants exactly.</li>
+              <li><strong>Delivery.</strong> Every promised delivery date meets the shopper’s deadline.</li>
+              <li><strong>Returns.</strong> When the shopper may return the items, every item in its arrival condition qualifies for an ordinary return with a refund to the original payment.</li>
+              <li><strong>Budget.</strong> Net charges across cards and store credit, plus the ceilings of unused live authorizations on active proposals, fit the budget.</li>
+              <li><strong>Record.</strong> The event log replays exactly in a fresh instance of the task.</li>
+            </ul>
+            <p>Loss is net card spend plus the shopper’s value of store credit spent, minus the value of store credit received. Each part rounds to cents. Regret is the run’s loss minus the reference loss when both runs succeed. The reference ranks feasible baskets by their total with shipping and discounts. Call counts, refusals and messages are tracked as process metrics.</p>
+          </section>
+        </div>
+      </details>
+      <details class="scenario-accordion">
+        <summary>Tools and worked checkout</summary>
+        <div class="reference-content">
+          <section class="sec stack">
+            <h3>What each seat can do</h3>
+            <p>Purchase interface v<!--SHOPPING_INTERFACE-->. Both seats can read the catalogue and policies. The shopping agent prices, reserves, proposes and buys. The shopper reads its wallet, responds to proposals and grants or revokes consent.</p>
+            <div class="tscroll"><table class="ft acts">
+              <thead><tr><th scope="col">Action</th><th scope="col">Seats</th><th scope="col">World time</th><th scope="col">Action-specific errors</th></tr></thead>
+              <tbody><!--SHOPPING_ACTION_ROWS--></tbody>
+            </table></div>
+          </section>
+          <section class="sec stack">
+            <h3>Two satin lipsticks in brick</h3>
+            <p>In this recorded checkout, a Bramble &amp; Finch cart totals $53.98 before a $5 discount and qualifies for free shipping. The agent reserves the cart and proposes $48.98. The shopper authorizes that amount, and the service places the order.</p>
+            <!--SHOPPING_EXAMPLES-->
+          </section>
+        </div>
+      </details>
+    </div>
+  </section>
+</div>

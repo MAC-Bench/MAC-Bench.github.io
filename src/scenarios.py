@@ -12,6 +12,7 @@ ICONS = {
     "search": '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/>',
     "lock": '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/>',
     "ticket": '<path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v2m0 2v2m0 2v2"/>',
+    "bag": '<path d="M5 8h14l1 13H4L5 8zM9 10V6a3 3 0 0 1 6 0v4"/>',
     "clock": '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>',
     "chart": '<path d="M4 4v16h16M8 16v-3m4 3V9m4 7v-5m4 5V6"/>',
     "file": '<path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8m-8 4h8"/>',
@@ -27,6 +28,7 @@ ICONS = {
 
 SCENARIOS = {
     "ticketing": {
+        "icon": "plane",
         "title": "Flight ticketing",
         "intro": "A booking agent serves two travellers with separate goals, budgets and consent. Airline events can change the plan before the work is done.",
         "workflow_title": "From request to confirmed ticket",
@@ -248,6 +250,7 @@ SCENARIOS = {
         ],
     },
     "insurance": {
+        "icon": "car",
         "title": "Auto-insurance claims",
         "intro": "Two drivers and two insurers work through one collision. Each desk has its own file, and every payout changes what someone else is still owed.",
         "workflow_title": "From accident report to settlement",
@@ -372,6 +375,99 @@ SCENARIOS = {
             ("chart", "Loss by seat", "Compare overpayment, unpaid amounts and missed recovery with a scripted reference."),
         ],
     },
+    "shopping": {
+        "icon": "bag",
+        "title": "Online shopping",
+        "intro": "One shopper buys from three merchants through a shopping agent. Stock can sell out while the shopper considers a proposal, and each purchase needs their consent.",
+        "workflow_title": "From shopping request to placed order",
+        "steps": [
+            ("message", "Learn what the shopper needs", "Ask for variants, quantities, budget, delivery date, return needs and payment methods."),
+            ("search", "Compare merchants", "Check variant stock, shipping, discounts and refund terms. Split the basket when needed."),
+            ("lock", "Keep the plan viable", "Refresh live quotes, reserve stock where offered and get consent for the exact proposal."),
+            ("bag", "Place and check the orders", "Use the authorization to charge and place all carts together. Check the resulting orders."),
+        ],
+        "types_title": "Four types of purchase task",
+        "types_intro": "Each type has one hand-built task and four generated tasks. Pick a type to see how its hand-built case plays out and which shortcut the task is designed to catch.",
+        "groups": [("", ["B1 only one merchant has it", "B2 several have it: compare",
+                         "B3 split across merchants", "B4 a slow answer, and it sells out"])],
+        "types": [
+            {
+                "family": "B1 only one merchant has it", "name": "Find the variant",
+                "line": "The cheapest merchant has the product in a different size.",
+                "case": {
+                    "id": "sh-b1-01",
+                    "title": "A sweater in XS",
+                    "intro": "The shopper wants a merino wool sweater in XS, with $210 to spend. They will take S only if the XS cannot be bought in time.",
+                    "spine": [
+                        ("message", "Ask for the size", "Learn that XS is wanted and S is the fallback."),
+                        ("search", "Check stock by variant", "Harbor Lane Supply lists at $140.99 and has S. Only Copperleaf Market has XS, at $178.99."),
+                        ("lock", "Quote the XS", "Copperleaf charges $6 shipping and refunds a qualifying return to the card."),
+                    ],
+                    "outcomes": [("bag", "One XS sweater ordered", "$184.99 from Copperleaf Market, arriving by the shopper’s deadline.")],
+                    "trap": {"agent": "looks only at the cheapest merchant",
+                             "does": "Offers S from Harbor Lane. The shopper refuses while XS is still available in time.", "cost": "Fails"},
+                    "lesson": "Variant-level stock decides where the agent can buy.",
+                },
+            },
+            {
+                "family": "B2 several have it: compare", "name": "Compare the full deal",
+                "line": "Shipping, discounts or refund terms can change which offer fits.",
+                "case": {
+                    "id": "sh-b2-01",
+                    "title": "Trekking poles the shopper may send back",
+                    "intro": "The shopper wants carbon trekking poles. They may return them, so an ordinary return needs to refund the original payment.",
+                    "spine": [
+                        ("message", "Ask about returns", "The shopper has $145 and may send the poles back."),
+                        ("file", "Read the refund terms", "Bramble & Finch lists at $118.99 and issues store credit for an ordinary return."),
+                        ("money", "Compare eligible totals", "Harbor Lane is $122.99 plus $8 shipping. Copperleaf is $123.99 with free shipping."),
+                    ],
+                    "outcomes": [("bag", "Poles ordered from Copperleaf", "$123.99 delivered, with an eligible refund to the card.")],
+                    "trap": {"agent": "list price only",
+                             "does": "Buys from Bramble & Finch. The order fails the return-policy check even though the shopper authorizes the purchase.", "cost": "Fails"},
+                    "lesson": "Compare what will be charged and what the order’s return terms give the shopper.",
+                },
+            },
+            {
+                "family": "B3 split across merchants", "name": "Split the basket",
+                "line": "The items or units needed are spread across merchants.",
+                "case": {
+                    "id": "sh-b3-01",
+                    "title": "A lipstick and a lamp",
+                    "intro": "The shopper needs two satin lipsticks in brick and one black LED desk lamp. They can spend $150 and need both by 15 April.",
+                    "spine": [
+                        ("search", "Find the two variants", "Only Bramble & Finch has the brick lipstick. Only Harbor Lane Supply has the black lamp."),
+                        ("split", "Make two carts", "Price each merchant’s cart with its own shipping and discount terms."),
+                        ("lock", "Propose both carts together", "The shopper can authorize the whole purchase at $132.97."),
+                    ],
+                    "outcomes": [("bag", "Two orders placed together", "Lipsticks $58.98 · lamp $73.99. Both are due 13 April.")],
+                    "trap": {"agent": "one merchant only", "does": "Looks for a single merchant with the entire basket and leaves without buying it.", "cost": "Fails"},
+                    "lesson": "One proposal can bind multiple carts to one authorization.",
+                },
+            },
+            {
+                "family": "B4 a slow answer, and it sells out", "name": "Protect stock while waiting",
+                "line": "Reserve a cart or recover after other shoppers buy the stock.",
+                "case": {
+                    "id": "sh-b4-01",
+                    "title": "Blush for a slow shopper",
+                    "intro": "Only Bramble & Finch stocks the requested rose blush. The shopper needs two and takes 45 minutes to answer each message.",
+                    "spine": [
+                        ("clock", "Account for the wait", "An ordinary quote lasts 20 minutes. Bramble & Finch offers a 60-minute reservation."),
+                        ("lock", "Hold two units before asking", "Reserving the cart protects its stock and extends the quote through the wait."),
+                        ("bag", "Place after authorization", "At minute 70, other shoppers buy the unreserved units. The agent can still place the reserved cart."),
+                    ],
+                    "outcomes": [("bag", "Two rose blushes ordered", "$65.98 from Bramble & Finch, with free shipping.")],
+                    "trap": {"agent": "lets the stock go", "does": "Leaves the units on sale during the wait and gives up when they sell out.", "cost": "Fails"},
+                    "lesson": "When a merchant offers no reservation and the stock sells out, find a feasible cart and get fresh consent.",
+                },
+            },
+        ],
+        "checks": [
+            ("bag", "Items, delivery and returns", "Check exact quantities and acceptable variants, the promised dates and any refund requirement."),
+            ("lock", "Budget and replay", "Check charges and live commitments against the budget. Replay the record to verify the outcome."),
+            ("chart", "Loss and regret", "Value card spend and store credit in cents. Compare loss with the reference when both runs succeed."),
+        ],
+    },
 }
 
 
@@ -386,10 +482,10 @@ def tile(symbol, title, detail, cls, heading="h3"):
             f'<{heading}>{escape(title)}</{heading}><p>{escape(detail)}</p></div>')
 
 
-def roles(view):
-    def actor(symbol, name, detail):
-        return (f'<div class="role-actor">{icon(symbol)}<div><strong>{name}</strong>'
-                f'<small>{detail}</small></div></div>')
+def roles(view, catalog):
+    def actor(symbol, name, detail=""):
+        subtitle = f"<small>{escape(detail)}</small>" if detail else ""
+        return f'<div class="role-actor">{icon(symbol)}<div><strong>{escape(name)}</strong>{subtitle}</div></div>'
 
     if view == "ticketing":
         return (f'<div class="role-pair">{actor("person", "Maya", "Goals · budget · consent")}'
@@ -397,6 +493,12 @@ def roles(view):
                 '<div class="role-join"><span></span><span></span></div>'
                 f'<div class="role-center">{actor("desk", "Booking agent", "Searches and acts for both")}</div>'
                 f'<p class="role-base">{icon("plane")}Booking service · inventory, fares and orders</p>')
+    if view == "shopping":
+        merchants = "".join(actor("bag", merchant) for merchant in catalog["catalogue"]["merchants"].values())
+        return (f'<div class="role-center">{actor("person", "Shopper", "Private facts · budget · consent")}</div>'
+                '<p class="role-via">Via the shopping agent</p>'
+                f'<div class="role-merchants">{merchants}</div>'
+                f'<p class="role-base">{icon("desk")}Simulated merchants · stock, prices and policies</p>')
     return (f'<div class="role-pair">{actor("person", "Driver A", "Reports own loss")}'
             f'{actor("person", "Driver B", "Reports own loss")}</div>'
             f'<div class="role-pair role-connect"><span>{icon("down")} Own policy</span>'
@@ -432,7 +534,7 @@ def trap_strip(trap, view):
     agents = trap.get("agent")
     if agents:
         names = [agents] if isinstance(agents, str) else agents
-        noun = ("Careless agent" if view == "ticketing" else "Careless adjuster") + ("s" if len(names) > 1 else "")
+        noun = ("Careless adjuster" if view == "insurance" else "Careless agent") + ("s" if len(names) > 1 else "")
         label = f'{noun} ' + ', '.join(f'“{escape(n)}”' for n in names)
     else:
         label = escape(trap["label"])
@@ -495,9 +597,13 @@ def render(view, catalog, interface, recorded_tickets=()):
         assert family_of.get(kind["case"]["id"]) == kind["family"], (view, kind["case"]["id"])
     count = len(family_of) + len(catalog.get("generated", ()))
     action_count = len(interface["actions"])
-    stats = ([("Public dev tasks", count), ("Held-out tasks", catalog["heldout"]["count"]), ("Scenario actions", action_count)]
-             if view == "ticketing" else [("Public dev tasks", count), ("Seats in the world", len(catalog["seats"])),
-                                         ("Scenario actions", action_count)])
+    if view == "ticketing":
+        world_stat = ("Held-out tasks", catalog["heldout"]["count"])
+    elif view == "insurance":
+        world_stat = ("Seats in the world", len(catalog["seats"]))
+    else:
+        world_stat = ("Products", catalog["catalogue"]["products"])
+    stats = [("Public dev tasks", count), world_stat, ("Available actions" if view == "shopping" else "Scenario actions", action_count)]
     facts = ''.join(f'<div><dt>{label}</dt><dd>{value}</dd></div>' for label, value in stats)
     steps = ''.join(f'<li>{tile(*step, "journey-card")}</li>' for step in data["steps"])
     checks = ''.join(tile(*check, "score-card") for check in data["checks"])
@@ -512,14 +618,14 @@ def render(view, catalog, interface, recorded_tickets=()):
     <div class="wrap">
       <div class="scenario-hero-grid">
         <div class="scenario-hero-copy">
-          <span class="scenario-hero-icon">{icon("plane" if view == "ticketing" else "car")}</span>
+          <span class="scenario-hero-icon">{icon(data["icon"])}</span>
           <h1>{escape(data["title"])}</h1>
           <p>{escape(data["intro"])}</p>
           <a class="scenario-cta" href="#{view}/cases">See the task types {icon("arrow")}</a>
         </div>
         <figure class="role-map">
           <figcaption>Who takes part</figcaption>
-          {roles(view)}
+          {roles(view, catalog)}
         </figure>
       </div>
       <dl class="scenario-facts">{facts}</dl>

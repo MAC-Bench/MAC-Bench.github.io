@@ -17,7 +17,7 @@
   <div class="hero">
     <div class="wrap hero-in">
       <div class="hero-copy">
-        <span class="chip s-next"><i></i>Design stage · ticketing and claims under construction</span>
+        <span class="chip s-next"><i></i>Development benchmark</span>
         <h1>Agents that act for different people have to <mark>coordinate</mark>. We measure whether they can.</h1>
         <p>MAC-Bench places language-model agents in three everyday service settings. Each agent holds private information and its own permissions. Every booking, payment and settlement goes through a simulated service, and a program scores the final state.</p>
         <div class="hero-cta">
@@ -55,13 +55,13 @@
         <a class="stub" href="#shopping">
           <div class="stub-main">
             <p class="lbl">Online shopping</p>
-            <p class="stub-title">One buyer, three merchants</p>
+            <p class="stub-title">One shopper, three merchants</p>
             <dl>
-              <div><dt>Seats</dt><dd>1 buyer · 3 merchants</dd></div>
-              <div><dt>Phases</dt><dd>quote · checkout · after-sales</dd></div>
+              <div><dt>Seats</dt><dd>1 shopping agent · 1 shopper</dd></div>
+              <div><dt>Scope</dt><dd>Purchase</dd></div>
             </dl>
           </div>
-          <div class="stub-side"><p class="lbl">Status</p><p class="state">With a collaborator</p></div>
+          <div class="stub-side"><p class="lbl">Status</p><p class="state">Scripted purchase tasks</p></div>
         </a>
       </div>
     </div>
@@ -129,9 +129,9 @@
         </a>
         <a class="row" href="#shopping">
           <span class="row-name">Shopping</span>
-          <p>One buyer, three competing merchants</p>
-          <p>Mixed motives, from quote to after-sales.</p>
-          <span class="chip s-planned"><i></i>With a collaborator</span>
+          <p>One shopping agent and one shopper, with three simulated merchants</p>
+          <p>Compare stock and policies, get consent and place orders.</p>
+          <span class="chip s-done"><i></i>Purchase implemented</span>
         </a>
       </div>
     </div>
@@ -357,25 +357,7 @@
 <!--VIEW_INSURANCE-->
 
 <!-- ============================ shopping ============================ -->
-<div data-view="shopping" hidden>
-  <div class="wrap">
-    <div class="page-head">
-      <p class="lbl">Scenario</p>
-      <h1>Online shopping</h1>
-      <p>One buyer's agent and three competing merchants, from first question to after-sales. The platform, payments, carrier and dispute rulings are played by the world.</p>
-      <div class="chips"><span class="chip s-planned"><i></i>Built by a collaborator</span></div>
-    </div>
-    <div class="plain" style="padding-bottom:72px">
-      <p>This scenario is implemented by a collaborator. It uses the same way of declaring an interface as ticketing.</p>
-      <ul>
-        <li>Roles, actions, error codes and a world-time cost per call are declared once and exported as data.</li>
-        <li>Money is integer cents, time is UTC, validity windows are half-open.</li>
-        <li>Offers and consent are world objects that messages point to.</li>
-      </ul>
-      <p>The shared part lives in <code>src/macbench/kernel/interface.py</code> and <code>src/macbench/board/interface.py</code>.</p>
-    </div>
-  </div>
-</div>
+<!--VIEW_SHOPPING-->
 
 <!-- ============================ progress ============================ -->
 <div data-view="progress" hidden>

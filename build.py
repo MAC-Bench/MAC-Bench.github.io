@@ -16,6 +16,7 @@ import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
 from src.scenarios import render as render_scenario
+from src.shopping import render as render_shopping
 
 HERE = pathlib.Path(__file__).resolve().parent
 SRC = HERE / "src"
@@ -71,10 +72,18 @@ def main() -> None:
     tasks = json.loads((HERE / "data" / "ticketing_tasks.json").read_text(encoding="utf-8"))
     claims_js = (SRC / "claims.js").read_text(encoding="utf-8")
     claims = json.loads((HERE / "data" / "insurance.json").read_text(encoding="utf-8"))
+    shopping_js = (SRC / "shopping.js").read_text(encoding="utf-8")
+    shopping = json.loads((HERE / "data" / "shopping.json").read_text(encoding="utf-8"))
+    shopping_runs = json.loads((HERE / "data" / "shopping_runs.json").read_text(encoding="utf-8"))
+    assert set(shopping_runs) == {task["task_id"] for task in shopping["tasks"]}
+    assert all(set(runs) == {"reference", "careless"} for runs in shopping_runs.values())
     body = (SRC / "body.html").read_text(encoding="utf-8")
     assert "<!--VIEW_INSURANCE-->" in body
     body = body.replace("<!--VIEW_INSURANCE-->", (SRC / "insurance.html").read_text(encoding="utf-8").strip())
-    for view, catalog, interface in (("ticketing", tasks, ticketing), ("insurance", claims, claims)):
+    assert "<!--VIEW_SHOPPING-->" in body
+    body = body.replace("<!--VIEW_SHOPPING-->", render_shopping((SRC / "shopping.html").read_text(encoding="utf-8").strip(), shopping))
+    for view, catalog, interface in (("ticketing", tasks, ticketing), ("insurance", claims, claims),
+                                     ("shopping", shopping, shopping)):
         marker = f"<!--SCENARIO_{view.upper()}-->"
         assert marker in body, marker
         recorded_tickets = session[1]["tickets"] if view == "ticketing" else ()
@@ -97,8 +106,9 @@ def main() -> None:
             f'<script type="application/json" id="data-tasks">{embed(tasks)}</script>\n'
             f'<script type="application/json" id="data-session">{embed(session)}</script>\n'
             f'<script type="application/json" id="data-claims">{embed(claims)}</script>\n'
+            f'<script type="application/json" id="data-shopping-runs">{embed(shopping_runs)}</script>\n'
             f"<script>\n{js}\n</script>\n<script>\n{world_js}\n</script>\n<script>\n{session_js}\n</script>\n<script>\n{tasks_js}\n</script>\n"
-            f"<script>\n{claims_js}\n</script>\n")
+            f"<script>\n{claims_js}\n</script>\n<script>\n{shopping_js}\n</script>\n")
     head_common = f'<link rel="stylesheet" href="{FONTS}">\n<style>\n{css}\n</style>\n'
 
     page = ("<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
@@ -115,7 +125,7 @@ def main() -> None:
     assert not check.errors and not check.stack, (check.errors[:3], check.stack)
     ids = re.findall(r'\sid="([^"{}+]+)"', body)
     assert len(ids) == len(set(ids)), [x for x in ids if ids.count(x) > 1]
-    for needed in re.findall(r"byId\('([^']+)'\)", js + world_js + session_js + tasks_js + claims_js):
+    for needed in re.findall(r"byId\('([^']+)'\)", js + world_js + session_js + tasks_js + claims_js + shopping_js):
         assert needed in ids or needed.startswith(("tk-fill", "tk-form", "tk-out")), needed
 
     (HERE / "index.html").write_text(page, encoding="utf-8")
@@ -123,7 +133,7 @@ def main() -> None:
     (HERE / "preview" / "artifact.html").write_text(fragment, encoding="utf-8")
     done = sum(i["status"] == "done" for g in progress["groups"] for i in g["items"])
     print(f"index.html {len(page.encode('utf-8'))} bytes; {len(ticketing['actions'])} actions; "
-          f"{len(world['flights'])} flights; {len(claims['tasks'])} claims tasks; "
+          f"{len(world['flights'])} flights; {len(claims['tasks'])} claims tasks; {len(shopping_runs)} shopping tasks with logs; "
           f"{done} of {len([i for g in progress['groups'] for i in g['items']])} items done")
 
 
