@@ -869,6 +869,19 @@
             "The same Python world code loaded in the page, so the site and the benchmark cannot drift apart",
             "Replay of recorded trials, step by step"
           ]
+        },
+        {
+          "id": "site-multiagent",
+          "title": "The Multi-agent page",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-27",
+          "done": [
+            "The three conditions drawn as seats, the contract of each role, the fifteen tasks with who holds what and how each fails, and where the tasks came from"
+          ],
+          "where": [
+            "src/multiagent.py, src/multiagent.css, data/ma1.json (written by tools/export_ma.py in the code repository)"
+          ]
         }
       ]
     },
@@ -1100,6 +1113,71 @@
             "Claims tasks exported as Harbor folders, with a container for each seat under test",
             "Several trials a task, on code that no longer changes",
             "A sheet per task, as the hand-built ticketing tasks have"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "multiagent",
+      "title": "Multi-agent set",
+      "items": [
+        {
+          "id": "ma-protocol",
+          "title": "One multi-agent protocol for both scenarios",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-27",
+          "done": [
+            "Three conditions for every task: the model under test with scripts (A), with a fixed reference model (B), or in every seat (C). A seating that a task does not support is refused, never replaced",
+            "Scripts reach the world as their own seat only: they cannot call as another seat, schedule another seat's wake-up or read the service's state",
+            "One card structure of seven sections for every role; only the section on the other seats depends on the condition",
+            "Every seat judged by the contract of its role, each requirement marked as up to the seat or shared, plus the joint result; losses of different seats are never added",
+            "Seated runs: each seat played from outside has its own card, credential, folder and time limit, and its ending is charged to the seat or to the infrastructure"
+          ],
+          "where": [
+            "docs/spec/multiagent.md",
+            "src/macbench/seating.py, verdict.py, cards.py, lockstep.py, play.py",
+            "tools/run_ma.py, tools/report_ma.py"
+          ],
+          "checked": [
+            "720 tests pass, two skipped",
+            "One seat played over the network by its script brings the world to the very same end as in one process"
+          ],
+          "open": [
+            "Harbor folders with one container per seat played from outside",
+            "Running teams of different models in condition C at scale"
+          ]
+        },
+        {
+          "id": "ma1-set",
+          "title": "The set ma1: seven ticketing and eight claims tasks",
+          "status": "done",
+          "review": "awaiting",
+          "date": "2026-11-27",
+          "done": [
+            "Every task admitted by playing the scripts: solved under every seating it declares, at least two seats needed, work of its own for every focal seat, every counterfactual breaking the joint result or costing a seat, every call around the rules refused, no private facts on another seat's card",
+            "A sheet per task: seats, private facts, what has to pass between seats, why another seat decides, the lawful solution, the counterfactuals as played, the ways it fails",
+            "Every hand-built development task listed as kept, rewritten, folded in or left out, with the reason"
+          ],
+          "where": [
+            "tasks/ma1/",
+            "docs/tasks/ma1/",
+            "docs/MIGRATION_ma1.md"
+          ],
+          "checked": [
+            "python tools/build_ma.py --check plays every admission again and finds the files as the code makes them"
+          ],
+          "open": [
+            "Held-out tasks for the set"
+          ]
+        },
+        {
+          "id": "ma-models",
+          "title": "First trials with a model on the set",
+          "status": "next",
+          "plan": [
+            "Condition A on all fifteen tasks with one seat under test, condition C on two tasks, one trial each",
+            "Reported per condition and per seat, never pooled with the development sets"
           ]
         }
       ]

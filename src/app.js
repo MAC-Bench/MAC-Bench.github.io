@@ -3,7 +3,7 @@
 
   var TK = JSON.parse(document.getElementById('data-ticketing').textContent);
   var PG = JSON.parse(document.getElementById('data-progress').textContent);
-  var VIEWS = ['overview', 'ticketing', 'insurance', 'shopping', 'progress'];
+  var VIEWS = ['overview', 'ticketing', 'insurance', 'multiagent', 'shopping', 'progress'];
 
   function byId(id) { return document.getElementById(id); }
   function all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }

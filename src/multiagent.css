@@ -1,0 +1,139 @@
+/* The Multi-agent page. Seats are drawn as chips: the model under test in signage yellow (the page's one loud
+   colour), the fixed reference model in the agent indigo, scripts as dashed outlines; a judged seat carries a tag. */
+[data-view="multiagent"].scenario-page {
+  --scene: var(--eval);
+  --scene-tint: var(--eval-tint);
+  --map-line: #7d6440;
+  --map-bg: #33281a;
+  --map-panel: #44361f;
+  --map-accent: #f4c20d;
+  --map-text: #fbf5ea;
+  --map-muted: #e2d4bd;
+}
+.ma-admitbox ul { display: grid; gap: 9px; }
+.ma-admitbox li { display: flex; gap: 9px; align-items: flex-start; font-size: 14.5px; line-height: 1.4; }
+.ma-admitbox li .s-icon { width: 18px; height: 18px; margin-top: 1px; color: var(--map-accent); }
+
+/* conditions */
+.ma-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; color: var(--muted); font-size: 13.5px; }
+.ma-legend li { display: flex; align-items: center; gap: 7px; }
+.ma-swatch { display: inline-block; width: 22px; height: 14px; border-radius: 4px; border: 1.5px solid transparent; }
+.ma-swatch.is-m { background: var(--signal); border-color: var(--signal-ink); }
+.ma-swatch.is-k { background: var(--agent-tint); border-color: var(--agent); }
+.ma-swatch.is-s { background: var(--surface); border: 1.5px dashed var(--line-strong); }
+.ma-swatch.is-judged { background: transparent; border: 2px solid var(--ink); box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--ink); width: 16px; height: 10px; margin: 0 3px; }
+.ma-conds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin-top: 12px; }
+.ma-cond {
+  display: grid; align-content: start; gap: 11px; min-width: 0; padding: 15px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+}
+.ma-cond header { display: flex; align-items: center; gap: 10px; }
+.ma-cond h3 { font-size: 16.5px; line-height: 1.25; }
+.ma-letter {
+  display: inline-grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 8px;
+  background: var(--ink); color: var(--bg); font: 800 19px/1 var(--display);
+}
+.ma-cond > p { font-size: 14px; line-height: 1.45; color: var(--muted); }
+.ma-seats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 9px; }
+.ma-seat {
+  position: relative; display: grid; gap: 1px; min-width: 0; padding: 8px 8px 7px; border-radius: 8px;
+  border: 1.5px solid transparent; text-align: center;
+}
+.ma-seat b { font-size: 14px; line-height: 1.2; }
+.ma-seat small { font-size: 11.5px; line-height: 1.25; }
+.ma-seat.is-m { background: var(--signal); color: var(--signal-ink); border-color: var(--signal-ink); }
+.ma-seat.is-k { background: var(--agent-tint); color: var(--ink); border-color: var(--agent); }
+.ma-seat.is-s { background: var(--surface); color: var(--muted); border-style: dashed; border-color: var(--line-strong); }
+.ma-seat.is-judged { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.ma-seat i {
+  position: absolute; top: -9px; left: 50%; transform: translateX(-50%); padding: 0 5px; border-radius: 4px;
+  background: var(--ink); color: var(--bg); font: 600 10px/1.5 var(--sans); font-style: normal; letter-spacing: .05em; text-transform: uppercase;
+}
+.ma-world {
+  display: flex; align-items: center; justify-content: center; gap: 7px; padding: 6px 8px; border-radius: 7px;
+  background: var(--tint); color: var(--muted); font-size: 12.5px; line-height: 1.3; text-align: center;
+}
+.ma-cond .ma-measures { color: var(--ink); padding-top: 9px; border-top: 1px solid var(--line); }
+.ma-measures span, .ma-ctl, .ma-sub {
+  display: block; color: var(--scene); font: 600 11.5px/1.4 var(--sans); letter-spacing: .07em; text-transform: uppercase;
+}
+
+/* roles */
+.ma-roles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-top: 16px; }
+.ma-role { display: grid; align-content: start; gap: 6px; min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.ma-role-head { display: flex; gap: 10px; align-items: center; margin-bottom: 4px; }
+.ma-role-head h3 { font-size: 16px; line-height: 1.2; }
+.ma-role-head p { color: var(--muted); font-size: 13px; line-height: 1.35; }
+.ma-role ul, .ma-why ul, .ma-admit ul, .ma-seatcard ul, .ma-left ul { display: grid; gap: 4px; }
+.ma-role li, .ma-why li, .ma-admit li {
+  position: relative; padding-left: 14px; font-size: 14px; line-height: 1.42;
+}
+.ma-role li::before, .ma-why li::before, .ma-admit li::before {
+  content: ""; position: absolute; left: 1px; top: .62em; width: 6px; height: 6px; border-radius: 1px; background: var(--scene);
+}
+.ma-ctl.is-shared { color: var(--agent); margin-top: 4px; }
+.ma-role ul + .ma-ctl.is-shared + ul li::before { background: var(--agent); }
+.ma-rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin-top: 15px; }
+.ma-rules p { padding-top: 10px; border-top: 2px solid var(--ink); font-size: 14px; line-height: 1.45; color: var(--muted); }
+.ma-rules b { display: block; color: var(--ink); font-size: 15px; }
+
+/* tasks */
+.ma-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ma-grid .type-top { flex-wrap: wrap; row-gap: 2px; }
+.ma-grid .type-code { white-space: nowrap; }
+.ma-panel { display: grid; gap: 14px; }
+.ma-panel .case-title, .ma-panel .case-trap { margin: 0; }
+.ma-rewritten {
+  padding: 9px 12px; border-radius: 9px; font-size: 14px; line-height: 1.45; color: var(--muted);
+  background: var(--scene-tint);
+}
+.ma-rewritten b { color: var(--ink); }
+.ma-seatcards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: -6px; }
+.ma-seatcards.n4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ma-seatcard { display: grid; align-content: start; gap: 7px; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.ma-seatcard-head { display: flex; justify-content: space-between; align-items: start; gap: 6px; }
+.ma-seatcard-head b { display: block; font-size: 15px; line-height: 1.25; }
+.ma-seatcard-head small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.3; }
+.ma-focal {
+  flex: none; padding: 1px 6px; border-radius: 5px; background: var(--signal); color: var(--signal-ink);
+  font: 600 10.5px/1.6 var(--sans); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap;
+}
+.ma-seatcard li { font-size: 13.2px; line-height: 1.38; padding-left: 10px; border-left: 2px solid var(--line); }
+.ma-worldline { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: var(--muted); margin-top: -4px; }
+.ma-worldline b { color: var(--ink); }
+.ma-worldline .s-icon { width: 18px; height: 18px; color: var(--scene); margin-top: 1px; }
+.ma-why { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+.ma-why > div, .ma-admit { display: grid; align-content: start; gap: 6px; min-width: 0; }
+.ma-admit li { color: var(--muted); }
+.ma-admit li::before { background: var(--ok); }
+.ma-panel .case-footer code { font-size: 12px; }
+
+/* provenance */
+.ma-table { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.ma-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ma-table th, .ma-table td { padding: 10px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.ma-table tbody tr:last-child > * { border-bottom: 0; }
+.ma-table thead th { color: var(--muted); font: 600 12px/1.35 var(--sans); letter-spacing: .05em; text-transform: uppercase; }
+.ma-table td {
+  font: 700 20px/1.2 var(--display); font-variant-numeric: tabular-nums; color: var(--scene);
+}
+.ma-table tbody th { font-weight: 600; white-space: nowrap; }
+.ma-tablenote { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.ma-lefts { display: grid; gap: 7px; margin-top: 10px; }
+.ma-left { padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.ma-left summary { cursor: pointer; color: var(--scene); font-weight: 600; font-size: 14.5px; }
+.ma-left ul { margin-top: 8px; }
+.ma-left li { font-size: 13.5px; line-height: 1.42; color: var(--muted); }
+
+@media (max-width: 940px) {
+  .ma-conds, .ma-roles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ma-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ma-seatcards.n4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .ma-table th, .ma-table td { padding: 9px 8px; }
+  .ma-table thead th { font-size: 11px; letter-spacing: .02em; }
+  .ma-conds, .ma-roles, .ma-rules, .ma-why, .ma-seatcards, .ma-seatcards.n4 { grid-template-columns: minmax(0, 1fr); }
+  .ma-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ma-rules { gap: 10px; }
+}
