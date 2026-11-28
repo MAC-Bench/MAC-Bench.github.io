@@ -377,8 +377,8 @@ SCENARIOS = {
     },
     "shopping": {
         "icon": "bag",
-        "title": "Online shopping",
-        "intro": "One shopper buys from three merchants through a shopping agent. Stock can sell out while the shopper considers a proposal, and each purchase needs their consent.",
+        "title": "Purchase",
+        "intro": "The agent starts with a shopping request. It finds out what the shopper needs, compares merchants and places the authorized order.",
         "workflow_title": "From shopping request to placed order",
         "steps": [
             ("message", "Learn what the shopper needs", "Ask for variants, quantities, budget, delivery date, return needs and payment methods."),
@@ -495,7 +495,7 @@ def roles(view, catalog):
                 f'<p class="role-base">{icon("plane")}Booking service · inventory, fares and orders</p>')
     if view == "shopping":
         merchants = "".join(actor("bag", merchant) for merchant in catalog["catalogue"]["merchants"].values())
-        return (f'<div class="role-center">{actor("person", "Shopper", "Private facts · budget · consent")}</div>'
+        return (f'<div class="role-center">{actor("person", "Shopper", "Needs · item condition · consent")}</div>'
                 '<p class="role-via">Via the shopping agent</p>'
                 f'<div class="role-merchants">{merchants}</div>'
                 f'<p class="role-base">{icon("desk")}Simulated merchants · stock, prices and policies</p>')
@@ -584,7 +584,48 @@ def type_picker(data, counts, first):
     return f'<div class="type-picker" role="group" aria-label="Task types">{"".join(groups)}</div>'
 
 
-def render(view, catalog, interface, recorded_tickets=()):
+def render_overview(view, catalog, interface):
+    data = SCENARIOS[view]
+    count = len(catalog["tasks"]) + len(catalog.get("generated", ()))
+    action_count = len(interface["actions"])
+    if view == "ticketing":
+        world_stat = ("Held-out tasks", catalog["heldout"]["count"])
+    elif view == "insurance":
+        world_stat = ("Seats in the world", len(catalog["seats"]))
+    else:
+        world_stat = ("Products", catalog["catalogue"]["products"])
+    stats = [("Public purchase tasks" if view == "shopping" else "Public dev tasks", count),
+             world_stat, ("Shopping actions" if view == "shopping" else "Scenario actions", action_count)]
+    facts = ''.join(f'<div><dt>{label}</dt><dd>{value}</dd></div>' for label, value in stats)
+    title, intro = data["title"], data["intro"]
+    crumbs = ""
+    cta = f'\n          <a class="scenario-cta" href="#{view}/cases">See the task types {icon("arrow")}</a>'
+    if view == "shopping":
+        title = "Online shopping"
+        intro = ("One shopper uses an agent to buy from three merchants and handle returns or exchanges on delivered orders. "
+                 "The shopper authorizes each action and the service applies the merchant’s terms.")
+        crumbs = '\n      <p class="crumbs"><a href="#tasks">Tasks</a> / Online shopping</p>'
+        cta = ""
+    return f"""
+  <div class="scenario-hero">
+    <div class="wrap">{crumbs}
+      <div class="scenario-hero-grid">
+        <div class="scenario-hero-copy">
+          <span class="scenario-hero-icon">{icon(data["icon"])}</span>
+          <h1>{escape(title)}</h1>
+          <p>{escape(intro)}</p>{cta}
+        </div>
+        <figure class="role-map">
+          <figcaption>Who takes part</figcaption>
+          {roles(view, catalog)}
+        </figure>
+      </div>
+      <dl class="scenario-facts">{facts}</dl>
+    </div>
+  </div>""".strip()
+
+
+def render(view, catalog, interface, recorded_tickets=(), *, include_overview=True):
     data = SCENARIOS[view]
     family_of = {task["task_id"]: task["family"] for task in catalog["tasks"]}
     counts = {}
@@ -595,16 +636,6 @@ def render(view, catalog, interface, recorded_tickets=()):
     assert sorted(f for _, group in data["groups"] for f in group) == sorted(counts), view
     for kind in data["types"]:
         assert family_of.get(kind["case"]["id"]) == kind["family"], (view, kind["case"]["id"])
-    count = len(family_of) + len(catalog.get("generated", ()))
-    action_count = len(interface["actions"])
-    if view == "ticketing":
-        world_stat = ("Held-out tasks", catalog["heldout"]["count"])
-    elif view == "insurance":
-        world_stat = ("Seats in the world", len(catalog["seats"]))
-    else:
-        world_stat = ("Products", catalog["catalogue"]["products"])
-    stats = [("Public dev tasks", count), world_stat, ("Available actions" if view == "shopping" else "Scenario actions", action_count)]
-    facts = ''.join(f'<div><dt>{label}</dt><dd>{value}</dd></div>' for label, value in stats)
     steps = ''.join(f'<li>{tile(*step, "journey-card")}</li>' for step in data["steps"])
     checks = ''.join(tile(*check, "score-card") for check in data["checks"])
     by_family = {kind["family"]: kind for kind in data["types"]}
@@ -613,27 +644,13 @@ def render(view, catalog, interface, recorded_tickets=()):
     picker = type_picker(data, counts, first)
     tickets = {ticket["seat_name"]: ticket for ticket in recorded_tickets}
     panels = '\n'.join(case_panel(kind, kind["case"], kind["case"]["id"] == first, tickets, view) for kind in order)
-    return f"""
-  <div class="scenario-hero">
-    <div class="wrap">
-      <div class="scenario-hero-grid">
-        <div class="scenario-hero-copy">
-          <span class="scenario-hero-icon">{icon(data["icon"])}</span>
-          <h1>{escape(data["title"])}</h1>
-          <p>{escape(data["intro"])}</p>
-          <a class="scenario-cta" href="#{view}/cases">See the task types {icon("arrow")}</a>
-        </div>
-        <figure class="role-map">
-          <figcaption>Who takes part</figcaption>
-          {roles(view, catalog)}
-        </figure>
-      </div>
-      <dl class="scenario-facts">{facts}</dl>
-    </div>
-  </div>
+    overview = render_overview(view, catalog, interface) if include_overview else ""
+    workflow_head = (f'<h2>{escape(data["workflow_title"])}</h2>' if include_overview else
+                     f'<div class="cases-head"><h2>{escape(data["title"])}</h2><p>{escape(data["intro"])}</p></div>')
+    return f"""{overview}
   <section class="scenario-section">
     <div class="wrap">
-      <h2>{escape(data["workflow_title"])}</h2>
+      {workflow_head}
       <ol class="scenario-journey">{steps}</ol>
     </div>
   </section>

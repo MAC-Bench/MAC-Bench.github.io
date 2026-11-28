@@ -16,7 +16,6 @@ import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 
 from src.report import render_report, render_tasks, task_head
-from src.scenarios import render as render_scenario
 from src.shopping import render as render_shopping
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -77,6 +76,7 @@ def main() -> None:
     shopping_js = (SRC / "shopping.js").read_text(encoding="utf-8")
     shopping = json.loads((HERE / "data" / "shopping.json").read_text(encoding="utf-8"))
     shopping_runs = json.loads((HERE / "data" / "shopping_runs.json").read_text(encoding="utf-8"))
+    after_sales = json.loads((HERE / "data" / "shopping_after_session.json").read_text(encoding="utf-8"))
     assert set(shopping_runs) == {task["task_id"] for task in shopping["tasks"]}
     assert all(set(runs) == {"reference", "careless"} for runs in shopping_runs.values())
     body = (SRC / "body.html").read_text(encoding="utf-8")
@@ -87,14 +87,12 @@ def main() -> None:
         assert marker in body, marker
         body = body.replace(marker, html)
     assert "<!--VIEW_SHOPPING-->" in body
-    body = body.replace("<!--VIEW_SHOPPING-->", render_shopping((SRC / "shopping.html").read_text(encoding="utf-8").strip(), shopping))
-    for view in ("ticketing", "insurance", "shopping"):
+    shopping_template = (SRC / "shopping.html").read_text(encoding="utf-8").strip()
+    body = body.replace("<!--VIEW_SHOPPING-->", render_shopping(shopping_template, shopping, after_sales))
+    for view in ("ticketing", "insurance"):
         marker = f"<!--TASKHEAD_{view.upper()}-->"
         assert marker in body, marker
         body = body.replace(marker, task_head(view, ma2))
-    assert "<!--SCENARIO_SHOPPING-->" in body                   # the shopping team's own presentation follows the head of its page
-    body = body.replace("<!--SCENARIO_SHOPPING-->", '<div class="wrap"><h2 class="team-head">The shopping world, from the shopping team</h2></div>'
-                        + render_scenario("shopping", shopping, shopping, ()))
     for marker, name in (("<!--FIG_LAYERS-->", "fig_layers.html"), ("<!--FIG_RUNTIME-->", "fig_runtime.html"),
                          ("<!--FIG_CLAIMS_PARTIES-->", "fig_claims_parties.html"), ("<!--FIG_CLAIMS_PIPELINE-->", "fig_claims_pipeline.html")):
         fig = (SRC / "figs" / name).read_text(encoding="utf-8").strip()
@@ -114,6 +112,7 @@ def main() -> None:
             f'<script type="application/json" id="data-session">{embed(session)}</script>\n'
             f'<script type="application/json" id="data-claims">{embed(claims)}</script>\n'
             f'<script type="application/json" id="data-shopping-runs">{embed(shopping_runs)}</script>\n'
+            f'<script type="application/json" id="data-shopping-after-session">{embed(after_sales)}</script>\n'
             f"<script>\n{js}\n</script>\n<script>\n{world_js}\n</script>\n<script>\n{session_js}\n</script>\n<script>\n{tasks_js}\n</script>\n"
             f"<script>\n{claims_js}\n</script>\n<script>\n{shopping_js}\n</script>\n")
     head_common = f'<link rel="stylesheet" href="{FONTS}">\n<style>\n{css}\n</style>\n'

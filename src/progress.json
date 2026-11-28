@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-27",
+  "updated": "2026-11-28",
   "groups": [
     {
       "id": "foundations",
@@ -1251,7 +1251,29 @@
           ],
           "checked": [
             "The reference and family careless-agent runs for all 20 tasks replay and match the development manifest.",
-            "All 259 Shopping tests passed, including the local HTTP tests."
+            "At the purchase milestone, 259 Shopping tests passed, including the local HTTP tests."
+          ]
+        },
+        {
+          "id": "shop-after-sales",
+          "title": "Shopping returns and exchanges",
+          "status": "done",
+          "date": "2026-11-28",
+          "review": "awaiting",
+          "done": [
+            "Shopping interface 0.4 supports returns and exchanges on delivered order lines. The shopper authorizes the quote, and the service settles the case after inspection.",
+            "After-sales tasks have a scripted shopper and a scorer for which units were handled, the truth of declarations, budget, delivery and replay."
+          ],
+          "where": [
+            "docs/spec/shopping.md sections 5a and 8a",
+            "src/macbench/domains/shopping/aftersale.py and tests/shopping/ in the benchmark repository"
+          ],
+          "checked": [
+            "All 417 Shopping tests passed.",
+            "The worked return and exchange session reproduced its full event log and final state on replay."
+          ],
+          "open": [
+            "The after-sales reference policy, careless agents and public development tasks."
           ]
         }
       ]

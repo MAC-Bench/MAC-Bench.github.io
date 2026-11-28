@@ -131,14 +131,14 @@ def hero_art() -> str:
               + '<path class="ar-signal ar-edge" d="M597 302l6 10l10 -4l-4 10l10 6l-11 3l2 11l-9 -6l-7 9l-2 -11l-11 -1l9 -7l-5 -10l10 3z"/>'
               + robot(470, 172, "indigo", 0.9) + robot(712, 172, "indigo", 0.9)
               + arc(490, 162, 692, 162, 46) + bubble(591, 104, "form") + bubble(536, 230, "money", "paper"))
-    # shopping: a shop front, the merchant agent behind its window, a buyer with a bag
-    shopping = (shop(846, 336) + robot(902, 300, "amber", 0.9)
-                + person(1078, 336, "teal", "shop")
-                + arc(1068, 270, 920, 262, 40) + bubble(1004, 210, "bag") + bubble(952, 168, "check"))
+    # shopping: a shopper and their agent outside a merchant's shop
+    shopping = (shop(846, 336, w=168) + robot(1040, 316, "indigo", 0.8)
+                + person(1082, 336, "teal", "shop")
+                + arc(1072, 270, 1042, 285, 20) + bubble(1004, 210, "bag") + bubble(952, 168, "check"))
     names = ('<text class="ar-scene" x="196" y="392">Flight ticketing</text><text class="ar-scene" x="581" y="392">Insurance claims</text>'
              '<text class="ar-scene" x="960" y="392">Online shopping</text>')
     return svg("0 0 1120 420", "Three everyday services: two travellers and a booking agent at an airport, two drivers' insurers "
-               "passing a claim form after a minor collision, and a buyer at a shop front talking to the shop's agent. Dashed arcs "
+               "passing a claim form after a minor collision, and a shopper with their agent outside a shop. Dashed arcs "
                "and speech bubbles show the agents talking to each other on behalf of different people.",
                '<rect class="ar-bg" width="1120" height="420" rx="22"/>' + clouds + ground + flights + claims + shopping + names, "hero-art")
 
@@ -259,24 +259,6 @@ def topology_claims() -> str:
                "fix what is owed, and the rest is theirs to agree.", body, "topo")
 
 
-def topology_shop() -> str:
-    body = ('<defs><marker id="ts-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
-            '<path d="M0 0L10 5L0 10z" class="ar-ink"/></marker></defs>')
-    body += node(150, 120, 240, "Shopper", "a person with a purchase to make", "teal", ["budget, needs, preferences", "consents to each purchase"])
-    body += node(480, 132, 220, "Shopping agent", "acts for the shopper", "indigo", ["compares, reserves, orders"], False)
-    names = ("Harbor Lane Supply", "Copperleaf Market", "Bramble & Finch")
-    for i, y in enumerate((24, 150, 276)):
-        body += node(830, y, 240, names[i], "a simulated merchant", "amber", ["stock, prices, policies"], False)
-    body += ('<path class="tp-msg" d="M270 166H370" marker-end="url(#ts-ah)" marker-start="url(#ts-ah)"/>'
-             '<text class="tp-edge c" x="320" y="154">asks, proposes</text><text class="tp-edge c" x="320" y="186">consents</text>')
-    for y in (60, 186, 312):
-        body += f'<path class="tp-act" d="M590 166L710 {y}" marker-end="url(#ts-ah)"/>'
-    body += '<text class="tp-edge c" x="480" y="118">to the merchants: quotes, reserves, places orders</text>'
-    body += ('<text class="tp-sub" x="40" y="352">Stock can sell out while the shopper considers a proposal; every purchase needs the shopper\'s consent.</text>')
-    return svg("0 0 1000 370", "Interaction structure of shopping: a shopper and the shopping agent that acts for them; the agent "
-               "compares, reserves and orders from three simulated merchants with their own stock, prices and policies.", body, "topo")
-
-
 # --- charts ------------------------------------------------------------------------------------------------------------------
 
 def bars(rows: list[tuple[str, int, str]], unit_label: str, best_low: bool, label: str) -> str:
@@ -323,9 +305,9 @@ TASKS = [
     ("insurance", "shield", "Auto-insurance claims", "Two drivers and their two insurers after a collision.",
      ["Each party holds part of the evidence and its own costs", "The rules fix what is owed; repair, rental and timing are negotiable",
       "Insurers recover from each other on what the evidence supports"], diagram_claims),
-    ("shopping", "money", "Online shopping", "A shopper buys from three merchants through a shopping agent.",
-     ["The shopper holds budget, needs and consent", "Stock can sell out while a proposal waits for consent",
-      "Built by a collaborating team on the shared conventions"], diagram_shop),
+    ("shopping", "money", "Online shopping", "One shopper uses an agent to buy, return or exchange items across three simulated merchants.",
+     ["The shopper holds private needs, item details and consent", "Stock can sell out while a proposal waits for consent",
+      "Merchant policies and inspection determine refunds and replacements"], diagram_shop),
 ]
 
 
@@ -559,13 +541,10 @@ def task_head(view: str, ma2: dict) -> str:
         topo, example = topology_ticketing(tk), task_example_ticketing(tk)
         cap = ("The agent talks to each traveller and acts in the booking service. Each traveller's values are private (lock). Landing "
                "together is a shared interest valued very differently, so the best plan needs a payment from Daniel to Maya.")
-    elif view == "insurance":
+    else:
         topo, example = topology_claims(), task_example_claims()
         cap = ("Driver B and the at-fault driver's insurer negotiate one offer. Each holds private values or costs (lock). The rules fix "
                "what is owed; the rest is theirs to agree.")
-    else:
-        topo, example = topology_shop(), f'<section class="rsec">{placeholder("A representative task", "Designed by the shopping team on the same method: a computed best outcome, legitimate interests that differ.")}</section>'
-        cap = "The shopper and the agent that acts for them; three simulated merchants with their own stock, prices and policies."
     return f"""
   <header class="rhead small">
     <div class="wrap rhead-in">

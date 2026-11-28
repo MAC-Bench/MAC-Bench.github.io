@@ -36,7 +36,6 @@
 
 .report-page { --scene: var(--eval); --scene-tint: var(--eval-tint); }
 .ar-scene { fill: var(--ink); font: 650 14px var(--display); text-anchor: middle; letter-spacing: .01em; }
-.team-head { margin-top: 30px; font: 750 clamp(22px, 2.6vw, 28px)/1.15 var(--display); letter-spacing: -.03em; }
 
 /* report head */
 .rhead { padding-block: 44px 8px; }

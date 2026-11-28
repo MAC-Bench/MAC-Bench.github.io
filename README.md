@@ -5,7 +5,7 @@ Source of the project site, to be served at https://mac-bench.github.io once pub
 ```bash
 python build.py                          # src/ + data/ -> index.html and preview/artifact.html
 python build.py --sync ../MAC-benchmark  # refresh data/ from the code repository's build/ first
-python tools/export_shopping.py ../MAC-benchmark  # refresh purchase task settings and regenerate run logs
+python tools/export_shopping.py ../MAC-benchmark  # refresh Shopping task data and regenerate the run logs
 ```
 
 | Path | Content |
@@ -15,8 +15,9 @@ python tools/export_shopping.py ../MAC-benchmark  # refresh purchase task settin
 | `src/report.py`, `src/report.css` | The report (home page), the Tasks page and the head of each task's page: the illustration, the diagrams of who takes part, the worked tasks from `data/ma2.json` |
 | `src/multiagent.py`, `src/multiagent.css` | The cards of the three conditions and of each role's contract, used by the report |
 | `src/insurance.html`, `src/claims.js` | The Insurance page and what fills it from `data/insurance.json` |
-| `src/shopping.html`, `src/shopping.py`, `src/shopping.js` | The Shopping purchase page, with task settings and expandable run logs |
+| `src/shopping.html`, `src/shopping.py`, `src/shopping.js` | Shopping purchases, returns and exchanges with expandable run logs |
 | `data/shopping.json`, `data/shopping_runs.json` | Purchase fixtures, interface examples and replay-verified logs from the reference and each family's careless agent |
+| `data/shopping_after_session.json` | The benchmark's worked return and exchange session with replay-verified calls and outcomes |
 | `src/figs/` | Architecture figures as inline SVG |
 | `src/progress.json` | The progress list. Edit this file to tick an item or mark it accepted |
 | `data/ticketing.json` | The ticketing interface, exported by the code repository |

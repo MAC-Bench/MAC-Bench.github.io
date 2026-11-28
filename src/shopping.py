@@ -1,6 +1,9 @@
-"""Render purchase records and the interface reference from the benchmark export."""
+"""Render the Shopping overview, scenarios and reference data."""
 import json
 from html import escape
+
+from .scenarios import render as render_scenario
+from .scenarios import render_overview, tile
 
 
 def money(cents):
@@ -163,9 +166,49 @@ def example_block(name, example):
     </details>"""
 
 
-def render(template, data):
+def after_sales_outcome(outcome):
+    returned = outcome["returned"]
+    exchanged = outcome["exchanged"]
+    refunds = " and ".join(
+        f'{money(refund["amount_cents"])} to {"store credit" if refund["method"] == "store_credit" else "the card"}'
+        for refund in returned["payments"]
+    )
+    delivered = escape(outcome["delivered_at"])
+    window_end = escape(outcome["window_end"])
+    return f"""<div class="stack">
+      <p>Order <code>{escape(outcome["order_id"])}</code> came from {escape(outcome["merchant"])} with two brick lipsticks
+        and a black desk lamp, with a {money(outcome["discount_cents"])} order discount. It was delivered on <time datetime="{delivered}">{delivered[:10]}</time>.
+        The original lines’ return window closes on <time datetime="{window_end}">{window_end[:10]} at {window_end[11:16]} UTC</time>.</p>
+      <div class="two-col">
+        <div class="gcell">
+          <h4>Return one lipstick · {money(returned["settled_cents"])} refunded</h4>
+          <p>Its net price after the order discount was {money(returned["net_cents"])}.
+            Return shipping takes {money(returned["return_shipping_cents"])}. Inspection finds the lipstick unopened
+            and sends {refunds}.</p>
+        </div>
+        <div class="gcell">
+          <h4>Exchange the black lamp for white</h4>
+          <p>Confirmation holds one white lamp at an exchange fee of {money(exchanged["fee_cents"])}.
+            Inspection sends it as unit <code>{escape(exchanged["new_unit_id"])}</code>, due {escape(exchanged["arrives_on"])}.</p>
+        </div>
+      </div>
+    </div>"""
+
+
+def render(template, data, after_sales):
     catalogue = data["catalogue"]
+    timing = data["after_sales"]
+    steps = [
+        ("file", "Read the delivered order", "Ask which units to handle, their condition and reason, and the desired replacement or fallback."),
+        ("money", "Quote each case", f'Check the return window, fees and stock. A quote lives up to {timing["quote_minutes"]} minutes.'),
+        ("lock", "Get consent and confirm", "The shopper authorizes the exact quote. Confirmation holds any replacement stock and charges the exchange fee."),
+        ("exchange", "Follow the inspection", f'After {timing["inspection_minutes"]} minutes the merchant checks the item and settles the refund or ships the replacement.'),
+    ]
     sections = {
+        "OVERVIEW": render_overview("shopping", data, data),
+        "PURCHASE": render_scenario("shopping", data, data, include_overview=False),
+        "AFTER_STEPS": "".join(f'<li>{tile(*step, "journey-card")}</li>' for step in steps),
+        "AFTER_OUTCOME": after_sales_outcome(after_sales["outcome"]),
         "TASK_ROWS": "\n".join(task_row(task) for task in data["tasks"]),
         "TASK_RECORDS": "\n".join(task_record(task, catalogue["merchants"]) for task in data["tasks"]),
         "CATALOGUE": (f'{catalogue["products"]} products in {catalogue["categories"]} categories, '

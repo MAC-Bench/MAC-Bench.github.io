@@ -38,6 +38,7 @@
   letter-spacing: -.055em; text-wrap: balance;
 }
 .scenario-hero-copy p { max-width: 47ch; color: var(--muted); font-size: clamp(16px, 1.7vw, 18px); line-height: 1.54; }
+.scenario-hero .crumbs { margin-bottom: 14px; }
 .s-icon { flex: none; display: block; width: 22px; height: 22px; }
 .scenario-icon, .scenario-hero-icon {
   display: inline-grid; place-items: center; width: 36px; height: 36px;
@@ -257,6 +258,16 @@
 .reference-content .sec { padding-block: 27px; }
 .reference-content .wrap { padding-inline: 0; }
 .reference-content .sec h2 { font-size: clamp(22px, 2.6vw, 29px); margin-bottom: 0; }
+.shopping-tabs { display: flex; gap: 8px; margin-top: 32px; border-bottom: 1px solid var(--line-strong); }
+.shopping-tabs button {
+  min-height: 46px; padding: 9px 16px; border: 0; border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0;
+  background: transparent; color: var(--muted); cursor: pointer; font: 600 15px/1.35 var(--sans);
+}
+.shopping-tabs button:hover { color: var(--ink); }
+.shopping-tabs button[aria-selected="true"] { background: var(--scene-tint); color: var(--scene); border-bottom-color: var(--scene); }
+.shopping-tabs button:focus-visible { outline: 2px solid var(--scene); outline-offset: 2px; }
+.shopping-panel > .scenario-section:first-child { margin-top: 24px; }
+.shopping-panel .scenario-reference { margin-bottom: 0; }
 .shopping-task-record { padding: 16px; border: 1px solid var(--line); border-radius: 10px; scroll-margin-top: 112px; }
 .shopping-task-record .tcard { margin-top: 3px; }
 .shopping-task-record h5 { margin: 0; font-size: 15px; }
@@ -265,6 +276,7 @@
 table.shopping-task-table td:nth-child(2),
 table.shopping-settings td:nth-child(-n+2) { font-family: inherit; color: inherit; }
 .shopping-run { margin-bottom: 6px; }
+.shopping-run h5 { margin: 0; font-size: 15px; }
 .shopping-run .sx-row { grid-template-columns: 76px 98px 164px minmax(0, 1fr) auto; }
 
 @media (min-width: 941px) {

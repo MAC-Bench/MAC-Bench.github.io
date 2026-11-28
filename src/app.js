@@ -27,7 +27,7 @@
       if (active) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
-    var target = parts[1] === 'cases' ? byId(view + '-cases') : null;
+    var target = view !== 'shopping' && parts[1] === 'cases' ? byId(view + '-cases') : null;
     if (target) target.scrollIntoView({ block: 'start' });
     else window.scrollTo(0, 0);
   }

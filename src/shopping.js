@@ -9,6 +9,48 @@
   function money(cents) { return '$' + (cents / 100).toFixed(2); }
   function clock(utc) { return esc(utc.slice(11, 19)); }
 
+  var tablist = byId('shopping-tabs');
+  var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
+  var purchaseTab = tabs[0];
+  var afterSalesTab = tabs[1];
+
+  function showScenario(tab) {
+    tabs.forEach(function (item) {
+      var isSelected = item === tab;
+      item.setAttribute('aria-selected', String(isSelected));
+      item.tabIndex = isSelected ? 0 : -1;
+      byId(item.getAttribute('aria-controls')).hidden = !isSelected;
+    });
+  }
+
+  function chooseScenario(tab) {
+    showScenario(tab);
+    // Keep the selected scenario linkable without invoking the router's scroll behavior.
+    var hash = tab === afterSalesTab ? '#shopping/after-sales' : '#shopping';
+    history.replaceState(history.state, '', hash);
+  }
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () { chooseScenario(tab); });
+  });
+  tablist.addEventListener('keydown', function (ev) {
+    var next;
+    if (ev.key === 'Home') next = purchaseTab;
+    else if (ev.key === 'End') next = afterSalesTab;
+    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight') next = ev.target === purchaseTab ? afterSalesTab : purchaseTab;
+    if (!next) return;
+    ev.preventDefault();
+    chooseScenario(next);
+    next.focus({ preventScroll: true });
+  });
+
+  function showLinkedScenario() {
+    var parts = location.hash.slice(1).split('/');
+    if (parts[0] === 'shopping') showScenario(parts[1] === 'after-sales' ? afterSalesTab : purchaseTab);
+  }
+  window.addEventListener('hashchange', showLinkedScenario);
+  showLinkedScenario();
+
   var catalogue = byId('shopping-records');
   var runs;
 
@@ -33,6 +75,13 @@
         return order.merchant_name + ' · ' + money(order.paid_cents);
       }).join(' · ');
     }
+    if (reply.return_quote) return reply.return_quote.return_quote_id + ' · ' + money(reply.return_quote.refund_cents) + ' quoted refund';
+    if (reply.exchange_quote) return reply.exchange_quote.exchange_quote_id + ' · ' + money(reply.exchange_quote.fee_cents) + ' quoted fee';
+    if (reply.return_case) {
+      return reply.return_case.return_id + ' · ' + reply.return_case.status +
+        (reply.return_case.status === 'settled' ? ' · ' + money(reply.return_case.refunded_cents) + ' refunded' : '');
+    }
+    if (reply.exchange) return reply.exchange.exchange_id + ' · ' + reply.exchange.status;
     if (reply.reservation && entry.action !== 'price_cart') {
       return reply.reservation.reservation_id + ' · holds stock until ' + reply.reservation.expires_at.slice(11, 19);
     }
@@ -49,6 +98,9 @@
     if (entry.kind === 'restock') return 'Added ' + effect.added + ' units of ' + effect.variant_id;
     if (entry.kind === 'controller') return 'Scripted shopper wakes to respond';
     if (entry.kind === 'reservation_expiry') return 'Scheduled expiry of ' + entry.data.reservation_id;
+    if (entry.kind === 'orders_before_episode') return 'Load the orders delivered before this episode';
+    if (entry.kind === 'return_inspection') return 'Merchant inspects return ' + entry.data.return_id;
+    if (entry.kind === 'exchange_inspection') return 'Merchant inspects exchange ' + entry.data.exchange_id;
     if (entry.type === 'open') return 'Observation ends at ' + entry.observation_end.slice(11, 19);
     if (entry.type === 'close') return 'Observation complete';
     return entry.reason || entry.kind || entry.type;
@@ -69,11 +121,17 @@
     var scripted = entry.by === 'controller';
     var cost = entry.cost_s >= 60 ? Math.floor(entry.cost_s / 60) + ' min ' + entry.cost_s % 60 + ' s' : entry.cost_s + ' s';
     return '<details class="sx' + (scripted ? ' scripted' : '') + (entry.ok ? '' : ' fail') + '"><summary class="sx-row">' + time +
-      '<span class="who">' + (scripted ? 'Shopper' : 'Agent') + '</span><span class="act">' + esc(entry.action) + '</span>' +
+      '<span class="who">' + (entry.seat === 'shopper' ? 'Shopper' : 'Agent') + '</span><span class="act">' + esc(entry.action) + '</span>' +
       '<span class="sum">' + (entry.ok ? '' : '<b>' + esc(entry.error) + '</b> ') + esc(callSummary(entry, reply)) + '</span>' +
       '<span class="cost">+' + cost + '</span></summary><div class="sx-body"><div><h5>Payload</h5><pre class="json">' +
       pretty(entry.payload || entry.raw) + '</pre></div><div><h5>' + (entry.ok ? 'Response' : 'Error') + '</h5><pre class="json">' +
       pretty(reply) + '</pre></div><p class="note">Log entry ' + entry.i + ' · commit sequence ' + entry.seq + '</p></div></details>';
+  }
+
+  function renderLog(run) {
+    return '<h5>Event log</h5><p class="note">' + run.events.length + ' entries · times in UTC · replay verified · log head <code>' +
+      esc(run.head) + '</code></p><p class="note">Open a row for the call payload and response or the recorded world event.</p>' +
+      '<div class="sess">' + run.events.map(function (entry) { return logRow(entry, run); }).join('') + '</div>';
   }
 
   function renderRun(run) {
@@ -92,15 +150,18 @@
       (score.regret_cents === null ? '' : ' · regret ' + money(score.regret_cents)) + ' · ' + process.calls + ' agent calls · ' +
       process.refused + ' refused · ' + process.world_minutes + ' world minutes</p>' +
       '<h5>Orders placed</h5>' + (orders ? '<ul class="plain-list">' + orders + '</ul>' : '<p class="note">0 orders placed.</p>') +
-      '<h5>Event log</h5><p class="note">' + run.events.length + ' entries · times in UTC · replay verified · log head <code>' +
-      esc(run.head) + '</code></p><p class="note">Open a row for the call payload and response or the recorded world event.</p>' +
-      '<div class="sess">' + run.events.map(function (entry) { return logRow(entry, run); }).join('') + '</div>';
+      renderLog(run);
   }
 
-  catalogue.addEventListener('toggle', function (ev) {
+  document.addEventListener('toggle', function (ev) {
     var detail = ev.target;
     var kind = detail.getAttribute('data-shopping-run');
     if (!kind || !detail.open) return;
+    if (kind === 'after-sales') {
+      var log = detail.querySelector('[data-shopping-log]');
+      if (!log.firstElementChild) log.innerHTML = renderLog(JSON.parse(document.getElementById('data-shopping-after-session').textContent));
+      return;
+    }
     var body = detail.querySelector('.shopping-run');
     if (body.firstElementChild) return;
     if (!runs) runs = JSON.parse(document.getElementById('data-shopping-runs').textContent);

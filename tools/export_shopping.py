@@ -1,44 +1,93 @@
-"""Refresh the site's purchase data from a MAC-benchmark checkout."""
+"""Refresh Shopping task data and replay-verified sessions from a MAC-benchmark checkout."""
 import argparse
 import json
 import sys
 from pathlib import Path
 
 
-def recorded_run(episode, score):
-    """Replay the sealed run and capture the responses whose digests the kernel logged."""
-    from macbench.domains.shopping.tasks import bare_kernel
-    from macbench.kernel.engine import verified_final_state
+def verified_trace(kernel, make_kernel):
+    """Replay a sealed run and capture the responses whose digests the kernel logged."""
+    from macbench.kernel.engine import digest_of, verified_final_state
 
-    sealed = episode.kernel.seal()
+    sealed = kernel.seal()
     responses = {}
 
     def recording_kernel():
-        kernel = bare_kernel(episode.task)
-        call = kernel.call
+        replay = make_kernel()
+        call = replay.call
 
         def capture(seat, request, origin="seat", wake_with=()):
-            start = len(kernel.log)
+            start = len(replay.log)
             result = call(seat, request, origin=origin, wake_with=wake_with)
             # A seat's wait may have logged several controller calls before its own call.
-            entry = next(e for e in kernel.log[start:] if e["type"] == "call" and e["by"] == origin)
+            entry = next(e for e in replay.log[start:] if e["type"] == "call" and e["by"] == origin and e["seat"] == seat)
             responses[entry["i"]] = result.result if result.ok else result.error.model_dump(mode="json")
             return result
 
-        kernel.call = capture
-        return kernel
+        replay.call = capture
+        return replay
 
     final = verified_final_state(recording_kernel, sealed)
-    assert score.valid and final is not None, episode.task.task_id
+    assert final is not None, sealed["head"]
     events = sealed["events"]
-    assert set(responses) == {e["i"] for e in events if e["type"] == "call"}, episode.task.task_id
+    calls = [e for e in events if e["type"] == "call"]
+    assert set(responses) == {e["i"] for e in calls}, sealed["head"]
+    for entry in calls:
+        reply = responses[entry["i"]]
+        assert (digest_of(reply) == entry["result"] if entry["ok"] else reply["code"] == entry["error"]), entry["i"]
     service = final["service"]
     market = {"demand": iter(service["demand_log"]), "restock": iter(service["restock_log"])}
+    trace = {
+        "head": sealed["head"], "events": events, "responses": responses,
+        "market": {e["i"]: next(market[e["kind"]]) for e in events if e["type"] == "event" and e["kind"] in market},
+    }
+    return trace, service
+
+
+def recorded_run(episode, score):
+    from macbench.domains.shopping.tasks import bare_kernel
+
+    assert score.valid, episode.task.task_id
+    trace, service = verified_trace(episode.kernel, lambda: bare_kernel(episode.task))
     order_fields = ("order_id", "merchant_name", "paid_cents", "promised_delivery_date")
     orders = [{k: order[k] for k in order_fields} for order in service["orders"].values()]
+    return {**trace, "score": score.as_dict(), "orders": orders}
+
+
+def recorded_after_sales():
+    from macbench.domains.shopping import examples
+    from macbench.domains.shopping.service import make_kernel
+
+    def world():
+        return make_kernel(examples.AFTER_SCENARIO)
+
+    kernel = world()
+    for seat, request, result in examples.aftersale_session():
+        reply = kernel.call(seat, request).model_dump(mode="json")
+        assert reply == result, request["action"]
+    kernel.stop("End of the worked after-sales session")
+    trace, state = verified_trace(kernel, world)
+
+    return_case, = state["returns"].values()
+    exchange, = state["exchanges"].values()
+    assert return_case["status"] == "settled" and exchange["status"] == "completed"
+    order = state["orders"][return_case["order_id"]]
+    assert order["order_id"] == exchange["order_id"]
+    methods = {method["payment_method_id"]: method["kind"] for method in state["wallets"][order["shopper"]]["payment_methods"]}
+    refunds = [{"amount_cents": record["amount_cents"], "method": methods[record["payment_method_id"]]}
+               for record in order["payments"] if record["payment_id"] in return_case["refunds"]]
+    returned, = return_case["units"]
+    exchanged, = exchange["units"]
+    quote = state["return_quotes"][return_case["return_quote_id"]]
+    returned_quote = next(unit for unit in quote["units"] if unit["unit_id"] == returned["unit_id"])
     return {
-        "head": sealed["head"], "events": events, "responses": responses, "score": score.as_dict(), "orders": orders,
-        "market": {e["i"]: next(market[e["kind"]]) for e in events if e["type"] == "event" and e["kind"] in market},
+        **trace,
+        "outcome": {
+            "merchant": order["merchant_name"], "order_id": order["order_id"], "delivered_at": order["delivered_at"],
+            "window_end": order["return_window_ends_at"], "discount_cents": order["discount_cents"],
+            "returned": {**returned_quote, "settled_cents": return_case["refunded_cents"], "payments": refunds},
+            "exchanged": exchanged,
+        },
     }
 
 
@@ -69,7 +118,7 @@ def main():
     benchmark = parser.parse_args().benchmark.resolve()
     sys.path.insert(0, str(benchmark / "src"))
 
-    from macbench.domains.shopping import catalog, examples, foils, generator, interface, reference, tasks
+    from macbench.domains.shopping import catalog, examples, foils, generator, interface, reference, rules, tasks
 
     dev = benchmark / "tasks" / "shopping" / "dev"
     manifest = json.loads((dev / "manifest.json").read_text(encoding="utf-8"))
@@ -103,6 +152,7 @@ def main():
 
     inventory = catalog.load()
     spec = interface.INTERFACE.export(set())
+    after_sales = recorded_after_sales()
     action_fields = ("group", "name", "roles", "time_cost_s", "wait_field", "errors")
     checkout = ("price_cart", "reserve_cart", "create_proposal", "grant_authorization", "place_order")
     data = {
@@ -113,13 +163,17 @@ def main():
         "tasks": records,
         "actions": [{key: action[key] for key in action_fields} for action in spec["actions"]],
         "examples": {name: {key: examples.EXAMPLES[name][key] for key in ("request", "response")} for name in checkout},
+        "after_sales": {"quote_minutes": rules.AFTERSALE_QUOTE_TTL_MINUTES, "inspection_minutes": rules.INSPECTION_MINUTES},
     }
     out = Path(__file__).resolve().parents[1] / "data"
     (out / "shopping.json").write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     run_rows = [f"  {json.dumps(task_id)}: {json.dumps(pair, ensure_ascii=False, separators=(',', ':'))}"
                 for task_id, pair in runs.items()]
     (out / "shopping_runs.json").write_text("{\n" + ",\n".join(run_rows) + "\n}\n", encoding="utf-8")
-    print(f"{len(records)} purchase tasks, {sum(len(pair) for pair in runs.values())} replay-verified runs, {len(data['actions'])} actions")
+    (out / "shopping_after_session.json").write_text(
+        json.dumps(after_sales, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    print(f"{len(records)} purchase tasks, {sum(len(pair) for pair in runs.values())} purchase runs, "
+          f"{len(after_sales['events'])} entries in the after-sales session, {len(data['actions'])} actions")
 
 
 if __name__ == "__main__":
